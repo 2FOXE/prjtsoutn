@@ -1,0 +1,1764 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
+import { Form, Button, Modal, Carousel } from "react-bootstrap";
+import { highlightText } from '../utils/textUtils';
+import TablePagination from "@mui/material/TablePagination";
+// import PrintList from "./PrintList";
+// import ExportPdfButton from "./exportToPdf";
+import "jspdf-autotable";
+import Search from "../Acceuil/Search";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PeopleIcon from "@mui/icons-material/People";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import {
+  faTrash,
+  faFileExcel,
+  faPlus,
+  faMinus,
+  faCircleInfo,
+  faSquarePlus,
+  faEdit,
+  faList,
+  faPrint,
+  faFilePdf,
+} from "@fortawesome/free-solid-svg-icons";
+import * as XLSX from "xlsx";
+import "../style.css";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import { Checkbox, Fab, Toolbar } from "@mui/material";
+import { useOpen } from "../Acceuil/OpenProvider"; // Importer le hook personnalisé
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
+
+//------------------------- Tarifs Chambre ---------------------//
+const TarifChambre = () => {
+  const [tarifChambre, setTarifChambre] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+
+  const [tarifsChambre, setTarifsChambre] = useState([]);
+
+  //---------------form-------------------//
+  const [newTypeChambre, setNewTypeChambre] = useState({
+    code: "",
+    type_chambre: "",
+    nb_lit: "",
+    nb_salle: "",
+    commentaire: "",
+    lit_supp: ""
+  });
+  const [editingTypeChambre, setEditingTypeChambre] = useState({})
+  const [editingDesignation, setEditingDesignation] = useState({})
+
+
+  const [newDesignation, setNewDesignation] = useState({
+    id: "",
+    created_at: "",
+    updated_at: "",
+    designation: "",
+    photo: ""
+  });
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showEditModalDesignation, setShowEditModalDesignation] = useState(false);
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState([]);
+  const [categorieId, setCategorie] = useState();
+
+const [typeChambre, setTypeChambre] = useState('');
+
+const [typesChambre, setTypesChambre] = useState([]);
+
+
+  const [showForm, setShowForm] = useState(false);
+  
+  
+  const [formData, setFormData] = useState({
+    code: "",
+    type_chambre: "", 	
+    designation: "",
+    single: "",
+    double: "",
+    triple: "",
+    lit_supp: "",
+  });
+  const [formDataDesignation, setFormDataDesignation] = useState({
+    designation: "", 	
+    photo: "",
+  });
+  const [errors, setErrors] = useState({
+    code: "",
+    type_chambre: "", 
+    designation: "",		
+    single: "",
+    double: "",
+    triple: "",
+    lit_supp: "",
+  });
+  const [typeErrors, setTypeErrors] = useState({
+    code: "",
+    type_chambre: "", 
+    nb_salle: "",		
+    nb_lit: "",
+    nb_litAdd: "",
+    commentaire: "",
+  });
+  const [tarifChambreErrors, setTarifChambreErrors] = useState({
+    designation: "",
+    photo: null
+  })
+  
+  const [formContainerStyle, setFormContainerStyle] = useState({
+    right: "-100%",
+  });
+  const [tableContainerStyle, setTableContainerStyle] = useState({
+    marginRight: "0px",
+  });
+  //-------------------edit-----------------------//
+  const [editingTarifChambre, setEditingTarifChambre] = useState(null); // State to hold the client being edited
+  const [editingTarifChambreId, setEditingTarifChambreId] = useState(null);
+  const [showAddCategory, setShowAddCategory] = useState(false); 
+  const [showAddDesignation, setShowAddDesignation] = useState(false); 
+  const [showAddRepas, setShowAddRepas] = useState(false); 
+  const [showAddCategorySite, setShowAddCategorySite] = useState(false); // Gère l'affichage du formulaire
+
+  const [showAddRegein, setShowAddRegein] = useState(false); // Gère l'affichage du formulaire
+  const [showAddRegeinSite, setShowAddRegeinSite] = useState(false); // Gère l'affichage du formulaire
+
+  const [showAddSecteur, setShowAddSecteur] = useState(false); // Gère l'affichage du formulaire
+
+  const [showAddMod, setShowAddMod] = useState(false); // Gère l'affichage du formulaire
+
+  //-------------------Pagination-----------------------/
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [page, setPage] = useState(0);
+  const [filteredTarifChambre, setFilteredTarifChambre] = useState([]);
+  // Pagination calculations
+  const indexOfLastTarif = (page + 1) * rowsPerPage;
+  const indexOfFirstTarif = indexOfLastTarif - rowsPerPage;
+  const currentChambres = tarifChambre?.slice(indexOfFirstTarif, indexOfLastTarif);
+  //-------------------Selected-----------------------/
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  //-------------------Search-----------------------/
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTarifChambreId, setSelectedTarifChambreId] = useState(null);
+  //------------------------Site-Client---------------------
+  const [editingsitechambre, setEditingsitechambre] = useState(null);
+  const [editingsitechambreId, setEditingsitechambreId] = useState(null);
+
+  const [expandedRows, setExpandedRows] = useState([]);
+  const [expandedRowsContact, setExpandedRowsContact] = useState([]);
+  const [expandedRowsContactSite, setExpandedRowsContactsite] = useState([]);
+
+
+  const { open } = useOpen();
+  const { dynamicStyles } = useOpen();
+  const [selectedProductsData, setSelectedProductsData] = useState([]);
+  const [selectedProductsDataRep, setSelectedProductsDataRep] = useState([]);
+
+
+  const fetchTarifChambre = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/tarifs-chambre");
+      const data = response.data;
+  
+      setTarifChambre(data.tarifsChambreDetail);
+      setTarifsChambre(data.tarifsChambre);
+      setTypesChambre(data.typesChambre);
+  
+      localStorage.setItem("tarifChambre", JSON.stringify(data.tarifsChambreDetail));
+      localStorage.setItem("tarifsChambre", JSON.stringify(data.tarifsChambre));
+      localStorage.setItem("typesChambre", JSON.stringify(data.typesChambre));
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        Swal.fire({
+          icon: "error",
+          title: "Accès refusé",
+          text: "Vous n'avez pas l'autorisation de voir la liste des Tarifs Chambre.",
+        });
+      }
+    }
+  };
+  
+  useEffect(() => {
+    const storedTarifChambre = localStorage.getItem("tarifChambre");
+    const storedTarifsChambre = localStorage.getItem("tarifsChambre");
+    const storedTypesChambre = localStorage.getItem("typesChambre");
+    storedTarifsChambre && setTarifsChambre(JSON.parse(storedTarifsChambre));
+    storedTarifChambre && setTarifChambre(JSON.parse(storedTarifChambre));
+    storedTypesChambre && setTypesChambre(JSON.parse(storedTypesChambre));
+
+    if (!storedTarifChambre || !storedTypesChambre || !storedTarifsChambre)
+      fetchTarifChambre();
+    
+  }, []);
+
+
+  const toggleRow = (tarifChambreId) => {
+    setExpandedRows((prevExpandedRows) =>
+      prevExpandedRows.includes(tarifChambreId)
+        ? prevExpandedRows?.filter((id) => id !== tarifChambreId)
+        : [...prevExpandedRows, tarifChambreId]
+    );
+  };
+  const toggleRowContact = (tarifChambreId) => {
+    setExpandedRowsContact((prevExpandedRows) =>
+      prevExpandedRows.includes(tarifChambreId)
+        ? prevExpandedRows?.filter((id) => id !== tarifChambreId)
+        : [...prevExpandedRows, tarifChambreId]
+    );
+  };
+  const toggleRowContactSite = (TarifChambreId) => {
+    setExpandedRowsContactsite((prevExpandedRows) =>
+      prevExpandedRows.includes(TarifChambreId)
+        ? prevExpandedRows?.filter((id) => id !== TarifChambreId)
+        : [...prevExpandedRows, TarifChambreId]
+    );
+  };
+  //---------------------------------------------
+
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]:
+        e.target.type === "file" ? e.target.files[0] : e.target.value,
+    });
+  };
+
+  // const handleChange = (e) => {
+  //   setUser({
+  //     ...user,
+  //     [e.target.name]:
+  //       e.target.type === "file" ? e.target.files[0] : e.target.value,
+  //   });
+  // };
+  //------------------------- tarif Chambre EDIT---------------------//
+
+  const handleEdit = (tarifChambre) => {
+    setEditingTarifChambre(tarifChambre); 
+    setErrors({})
+    
+    // Populate form data with tarif Chambre details
+    setFormData({
+      code: tarifChambre.code,
+        type_chambre: tarifChambre.type_chambre.id,
+        designation: tarifChambre.tarif_chambre.id,
+        single: tarifChambre.single,
+        double: tarifChambre?.double,
+        triple: tarifChambre?.triple,
+        lit_supp: tarifChambre?.lit_supp
+  });
+    if (formContainerStyle.right === "-100%") {
+      setFormContainerStyle({ right: "0" });
+      setTableContainerStyle({ marginRight: "650px" });
+    } else {
+      closeForm();
+    }
+  };
+  useEffect(() => {
+    if (editingTarifChambreId !== null) {
+      setFormContainerStyle({ right: "0" });
+      setTableContainerStyle({ marginRight: "650px" });
+    }
+  }, [editingTarifChambreId]);
+
+  useEffect(() => {
+    const validateData = () => {
+      const newErrors = { ...errors };
+      const newTypeErrors = { ...typeErrors };
+      const newTarifChambreErrors = { ...tarifChambreErrors };
+      // Validation L'insertion de Tarif Chambre Detail
+      const codes = tarifChambre.filter((chambre) => chambre.code);
+      newErrors.designation = (selectedCategory || formData.designation) === "";
+      newErrors.type_chambre = formData.type_chambre === "";
+      newErrors.single = formData.single === "";
+      if (!editingTarifChambre)
+        newErrors.code = formData.code === "" || codes.some((chambre) => sanitizeInput(chambre.code) === sanitizeInput(formData.code));
+      else
+      newErrors.code = (formData.code === "" || codes.some((chambre) => sanitizeInput(chambre.code) === sanitizeInput(formData.code))) 
+    && sanitizeInput(editingTarifChambre.code) != sanitizeInput(formData.code);
+      newErrors.double = formData.double === "";
+      newErrors.triple = formData.triple === "";
+      newErrors.lit_supp = formData.lit_supp === "";
+      // newErrors.montant = formData.montant < 5 || formData.montant == null;
+      // Validation L'insertion de Type Chambre
+      const typesCodes = typesChambre.filter((chambre) => chambre.code);
+      if (!newTypeChambre)
+      newTypeErrors.code = newTypeChambre.code === "" || typesCodes.some((chambre) => sanitizeInput(chambre.code) === sanitizeInput(newTypeChambre.code));
+      else 
+      newTypeErrors.code = newTypeChambre.code === "" || typesCodes.some((chambre) => sanitizeInput(chambre.code) === sanitizeInput(newTypeChambre.code)) 
+      && sanitizeInput(newTypeChambre.code) != sanitizeInput(editingTypeChambre.code);
+      newTypeErrors.nb_lit = newTypeChambre.nb_lit === "";
+      newTypeErrors.nb_litAdd = newTypeChambre.nb_lit === "";
+      newTypeErrors.nb_salle = newTypeChambre.nb_salle === "";
+      newTypeErrors.commentaire = newTypeChambre.commentaire === "";
+      newTypeErrors.type_chambre = newTypeChambre.type_chambre === "" || typesCodes.some((chambre) => sanitizeInput(chambre.type_chambre) === sanitizeInput(newTypeChambre.type_chambre))
+      && sanitizeInput(newTypeChambre.type_chambre) != sanitizeInput(editingTypeChambre.type_chambre);
+      // Validation L'insertion de Tarif Chambre (Designation & Photo)
+      const designations = tarifsChambre.filter((chambre) => chambre.designation);
+      newTarifChambreErrors.designation = newDesignation.designation === "" || designations.some((chambre) => sanitizeInput(chambre.designation) === sanitizeInput(newDesignation.designation))
+      && sanitizeInput(newDesignation.designation || "") != sanitizeInput(editingDesignation.designation || "");
+      newTarifChambreErrors.designationAdd = newDesignation.designation === "" || designations.some((chambre) => sanitizeInput(chambre.designation) === sanitizeInput(newDesignation.designation));
+      // newTarifChambreErrors.photo = newDesignation.photo === "";
+      setErrors(newErrors);
+      setTypeErrors(newTypeErrors);
+      setTarifChambreErrors(newTarifChambreErrors);
+      return true;
+    };
+  
+    validateData();
+  }, [formData, newTypeChambre, newDesignation]);
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const hasErrors = Object.values(errors).some(error => error === true);
+      if (hasErrors) { 
+        alert("Veuillez remplir tous les champs obligatoires.");
+        return;
+      }
+
+      const url = editingTarifChambre 
+          ? `http://localhost:8000/api/tarifs-chambre/${editingTarifChambre.id}`
+          : "http://localhost:8000/api/tarifs-chambre";
+      const method = editingTarifChambre ? "put" : "post";
+
+      let requestData;
+
+      if (editingTarifChambre) {
+        requestData = {
+        code: formData.code,
+        type_chambre: formData.type_chambre,
+        tarif_chambre: formData.designation,
+        single: formData.single,
+        double: formData.double,
+        triple: formData.triple,
+        lit_supp: formData.lit_supp,
+        }
+      }
+      else {
+      const formDatad = new FormData();
+      formDatad.append("code", formData.code);
+      formDatad.append("type_chambre", formData.type_chambre);
+      formDatad.append("tarif_chambre", formData.designation || selectedCategory);
+      formDatad.append("single", formData.single);
+      formDatad.append("double", formData.double);
+      formDatad.append("triple", formData.triple);
+      formDatad.append("lit_supp", formData.lit_supp);
+      requestData = formDatad;
+      } 
+      try {
+          const response = await axios({
+              method: method,
+              url: url,
+              data: requestData,
+          });
+          
+          if (response.status === 200 || response.status === 201) {
+              fetchTarifChambre();
+              const successMessage = `Tarif Chambre ${editingTarifChambre ? "modifié" : "ajouté"} avec succès.`;
+              Swal.fire({
+                  icon: "success",
+                  title: "Succès!",
+                  text: successMessage,
+              });
+              // Reset form and errors
+              setSelectedProductsData([]);
+              setSelectedProductsDataRep([]);
+              setFormData({
+                code: "", 	
+                type_chambre: "", 	
+                designation: "",
+                single: "",
+                double: "",
+                triple: "",
+                lit_supp: "",
+              });
+              setErrors({
+                code: "",
+                type_chambre: "", 	
+                designation: "",
+                single: "",
+                double: "",
+                triple: "",
+                lit_supp: "",
+              });
+              setEditingTarifChambre(null);
+              closeForm();
+          }
+      } catch (error) {
+          setTimeout(() => {
+              setErrors({
+                code: error.response.data?.errors?.code,
+                type_chambre: error.response.data?.errors?.type_chambre,
+                designation: error.response.data?.errors?.tarif_chambre,
+                single: error.response.data?.errors?.single,
+                double: error.response.data?.errors?.double,
+                triple: error.response.data?.errors?.triple,
+                lit_supp: error.response.data?.errors?.lit_supp,
+              });
+          }, 3000);
+      }
+  };
+
+
+    //------------------------- CHAMBRE FORM---------------------//
+
+    const handleShowFormButtonClick = () => {
+      if (formContainerStyle.right === "-100%") {
+        setFormContainerStyle({ right: "0" });
+        setTableContainerStyle({ marginRight: "650px" });
+      } else {
+        closeForm();
+      }
+    };
+
+    const closeForm = () => {
+      setFormContainerStyle({ right: "-100%" });
+      setTableContainerStyle({ marginRight: "0" });
+      setShowForm(false);  
+      setTypeErrors({});
+      setFormData({
+        code: "",
+        type_chambre: "", 
+        designation: "",	
+        single: "",
+        double: "",
+        triple: "",
+        lit_supp: "",
+      });
+      setErrors({
+        code: "",
+        type_chambre: "", 
+        designation: "",		
+        single: "",
+        double: "",
+        triple: "",
+        lit_supp: "",
+      });
+      setSelectedProductsData([])
+      setSelectedProductsDataRep([])
+      setEditingTarifChambre(null); // Clear editing client
+    };
+  //-------------------------SITE CLIENT----------------------------//
+  //-------------------------  SUBMIT---------------------//
+  const handleSelectItem = (item) => {
+    const selectedIndex = selectedItems.findIndex(
+      (selectedItem) => selectedItem.id === item.id
+    );
+
+    if (selectedIndex === -1) {
+      setSelectedItems([...selectedItems, item.id]);
+    } else {
+      const updatedItems = [...selectedItems];
+      updatedItems.splice(selectedIndex, 1);
+      setSelectedItems(updatedItems);
+    }
+
+  };
+
+  const getSelectedTarifChambreIds = () => {
+    return selectedItems?.map((item) => item.id);
+  };
+  
+  
+  //------------------------- CLIENT PAGINATION---------------------//
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    const selectedRows = parseInt(event.target.value, 10);
+    setRowsPerPage(selectedRows);
+    localStorage.setItem('rowsPerPageChambres', selectedRows);  // Store in localStorage
+    setPage(0);
+  };
+
+  useEffect(() => {
+    const savedRowsPerPage = localStorage.getItem('rowsPerPageChambres');
+    if (savedRowsPerPage) {
+      setRowsPerPage(parseInt(savedRowsPerPage, 10));
+    }
+  }, []);
+
+  //------------------------- CLIENT DELETE---------------------//
+
+  const handleDelete = (designation_code) => {
+    Swal.fire({
+      title: "Êtes-vous sûr de vouloir supprimer ce tarif ?",
+      showDenyButton: true,
+      showCancelButton: false,
+      confirmButtonText: "Oui",
+      denyButtonText: "Non",
+      customClass: {
+        actions: "my-actions",
+        cancelButton: "order-1 right-gap",
+        confirmButton: "order-2",
+        denyButton: "order-3",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://localhost:8000/api/tarifs-chambre/${designation_code}`)
+          .then(() => {
+            fetchTarifChambre();
+            Swal.fire({
+              icon: "success",
+              title: "Succès!",
+              text: "Tarif Chambre supprimé avec succès.",
+            });
+          })
+          .catch((error) => {
+            if (error.response && error.response.status === 400) {
+              Swal.fire({
+                icon: "error",
+                title: "Erreur",
+                text: error.response.data.message,
+              });
+            }
+          });
+      } 
+    });
+  };
+  
+  //-------------------------Select Delete --------------------//
+  const handleDeleteSelected = () => {
+    Swal.fire({
+      title: "Êtes-vous sûr de vouloir supprimer ?",
+      showDenyButton: true,
+      showCancelButton: false,
+      confirmButtonText: "Oui",
+      denyButtonText: "Non",
+      customClass: {
+        actions: "my-actions",
+        cancelButton: "order-1 right-gap",
+        confirmButton: "order-2",
+        denyButton: "order-3",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        selectedItems.forEach((item) => {
+          axios
+            .delete(`http://localhost:8000/api/tarifs-chambre/${item}`)
+            .then(() => {
+              fetchTarifChambre();
+              Swal.fire({
+                icon: "success",
+                title: "Succès!",
+                text: "Tarif Chambre supprimé avec succès.",
+              });
+            })
+            .catch((error) => {
+              Swal.fire({
+                icon: "error",
+                title: "Erreur!",
+                text: error.response.data.message,
+              });
+            });
+        });
+    
+      }
+    });
+    setSelectedItems([]);
+    fetchTarifChambre();
+  };
+
+  const handleSelectAllChange = () => {
+    setSelectAll(!selectAll);
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(tarifChambre?.map((TarifChambre) => TarifChambre.id));
+    }
+  };
+  const handleCheckboxChange = (itemId) => {
+    if (selectedItems.includes(itemId)) {
+      setSelectedItems(selectedItems?.filter((id) => id !== itemId));
+    } else {
+      setSelectedItems([...selectedItems, itemId]);
+    }
+  };
+
+  const exportToExcel = () => {
+    const table = document.getElementById('tarifChambreTable');
+    const workbook = XLSX.utils.table_to_book(table, { sheet: 'Tarifs Chambre' });
+    XLSX.writeFile(workbook, 'tarifs_chambre_table.xlsx');
+  };
+
+  
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Manually adding HTML content
+    const title = 'Table Tarifs Chambre';
+    doc.text(title, 14, 16);
+    
+    doc.autoTable({
+      head: [['Type Chambre', 'Single', 'Double', 'Triple', 'Lit Supplementaires']],
+      body: filteredTarifchambre?.map(tarifChambre => [
+        tarifChambre?.code ? { content: 'Tarif Chambre Code', rowSpan: 1 } : '',
+        tarifChambre.single || '',
+        tarifChambre.double || '',
+        tarifChambre.triple || '',
+        tarifChambre.lit_supp || '',
+      ]),
+      startY: 20,
+      theme: 'grid',
+      styles: { fontSize: 8, overflow: 'linebreak' },
+      headStyles: { fillColor: '#007bff' }
+    });
+  
+    doc.save('tarifs_chambre_table.pdf');
+  };
+  
+
+  const printTable = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Tarifs Chambre List</title>
+          <style>
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th, td {
+              border: 1px solid black;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Tarifs Chambre List</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Tarif Chambre Code</th>
+                <th>Single</th>
+                <th>Double</th>
+                <th>Triple</th>
+                <th>Lit Supplementaires</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredTarifchambre?.map(tarifChambre => `
+                <tr>
+                  <td>${tarifChambre?.code || ''}</td>
+                  <td>${tarifChambre.single || ''}</td>
+                  <td>${tarifChambre.double || ''}</td>
+                  <td>${tarifChambre?.triple || ''}</td>
+                  <td>${tarifChambre?.lit_supp || ''}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+  
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  document.addEventListener("change", async function (event) {
+    if (event.target && event.target.id.startsWith("actionDropdown_")) {
+      const [action, typeId] = event.target.value.split("_");
+      if (action === "delete") {
+        // Delete action
+        handleDeleteChambre(typeId);
+      } else if (action === "edit") {
+        // Edit action
+        handleEditChambre(typeId);
+      }
+      event.target.value = "";
+    }
+  });
+
+
+  
+
+
+
+  //-----------------------------------------//
+
+  const handleAddEmptyRow = () => {
+    setSelectedProductsData([...selectedProductsData, {}]);
+};
+  const handleAddEmptyRowRep = () => {
+    setSelectedProductsDataRep([...selectedProductsDataRep, {}]);
+};
+const handleDeleteProduct = (index, id) => {
+  const updatedSelectedProductsData = [...selectedProductsData];
+  updatedSelectedProductsData.splice(index, 1);
+  setSelectedProductsData(updatedSelectedProductsData);
+};
+
+const handleInputChange = (index, field, value) => {
+  const updatedProducts = [...selectedProductsData];
+  updatedProducts[index][field] = value;
+
+
+  let newErrors = {...errors};
+  if (field === 'name' && value === '') {
+    newErrors.nb_lit = 'Le Nombre de lit est obligatoire.';
+  } else {
+    newErrors.nb_lit = '';
+  }
+  setSelectedProductsData(updatedProducts);
+
+  setErrors(newErrors);
+};
+const handleInputChangeRep = (index, field, value) => {
+  const updatedProducts = [...selectedProductsDataRep];
+  updatedProducts[index][field] = value;
+  let newErrors = {...errors};
+  
+
+
+
+
+
+  setErrors(newErrors);
+  setSelectedProductsDataRep(updatedProducts);
+};
+
+
+const handleChambreFilterChange = (e) => {
+  setTypeChambre(e.target.value);
+};
+
+
+
+const filteredTarifchambre = tarifChambre?.filter((tarifChambre) => {
+  return (
+    ((typeChambre ? tarifChambre?.type_chambre.type_chambre == typeChambre : true) &&
+    (selectedCategory ? tarifChambre.tarif_chambre.id === selectedCategory : true)) &&
+      (
+        (searchTerm ? tarifChambre?.code.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
+        (searchTerm ? tarifChambre?.type_chambre?.type_chambre.toLowerCase().includes(searchTerm.toLowerCase()) : true) || 
+        (searchTerm ? String(tarifChambre?.single).includes(searchTerm) : true) ||
+        (searchTerm ? String(tarifChambre?.double).includes(searchTerm) : true) ||
+        (searchTerm ? String(tarifChambre?.triple).includes(searchTerm) : true) ||
+        (searchTerm ? String(tarifChambre?.lit_supp).includes(searchTerm) : true) 
+      )
+  );
+});
+
+const handleAddTypeChambre = async () => {
+  const hasErrors = Object.values(typeErrors).some(error => error === true);
+      if (hasErrors) {
+        alert("Veuillez remplir tous les champs obligatoires.");
+        return;  
+      }
+  try {
+    const formData = new FormData();
+    formData.append("code", newTypeChambre.code);
+    formData.append("type_chambre", newTypeChambre.type_chambre);
+    formData.append("nb_lit", newTypeChambre.nb_lit);
+    formData.append("nb_salle", newTypeChambre.nb_salle);
+    formData.append("commentaire", newTypeChambre.commentaire);
+    const response = await axios.post("http://localhost:8000/api/types-chambre", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    await fetchTarifChambre();
+    if (response.status === 201) {
+            Swal.fire({
+                        icon: "success",
+                        title: "Succès!",
+                        text: "Type Chambre ajoutée avec succès.",
+                      });
+                      fetchTarifChambre();
+                      setShowAddCategory(false);
+    }
+  } catch (error) {
+    setErrors({
+      code: error.response.data?.errors?.code,
+      type_chambre: error.response.data?.errors?.type_chambre,
+      nb_lit: error.response.data?.errors?.nb_lit,
+      nb_salle: error.response.data?.errors?.nb_salle,
+      commentaire: error.response.data?.errors?.commentaire,
+    });
+  }
+};
+
+const handleAddDesignation = async () => {
+  try {
+    const hasErrors = Object.values(tarifChambreErrors).some(error => error === true);
+      if (hasErrors) {
+        alert("Veuillez remplir tous les champs obligatoires.");
+        return;  
+      }
+    const formData = new FormData();
+    if (newDesignation.photo) {
+      formData.append('photo', newDesignation.photo);
+    }
+    formData.append("designation", newDesignation.designation);
+    
+    const response = await axios.post(
+      "http://localhost:8000/api/desigs-chambre", formData
+    );
+
+    await fetchTarifChambre(); 
+    Swal.fire({
+                icon: "success",
+                title: "Succès!",
+                text: "Tarif Chambre ajoutée avec succès.",
+              }); // Hide the modal after success
+              setShowAddDesignation(false);
+              setNewDesignation({
+                photo: null,
+                designation: "",
+              })
+  } catch (error) {
+    setTimeout(() => {
+      setErrors({
+        designation: error.response.data?.errors?.designation,
+        photo: error.response.data?.errors?.photo,
+      });
+  }, 3000);
+  }
+};
+
+const handleSaveTypeChambre = async () => {
+  try {
+    const hasErrors = Object.values(typeErrors).some(error => error === true);
+      if (hasErrors) { 
+        alert("Veuillez remplir tous les champs obligatoires.");
+        return;
+      }
+    await axios.put(`http://localhost:8000/api/types-chambre/${categorieId}`, newTypeChambre);
+    await fetchTarifChambre();
+    setSelectedCategoryId([])
+            Swal.fire({
+        icon: "success",
+        title: "Succès!",
+        text: "Tarif Chambre modifiée avec succès.",
+      });
+      setShowEditModal(false);
+  } catch (error) {
+    setTimeout(() => {
+      setErrors({
+        code: error.response.data?.errors?.code,
+        type_chambre: error.response.data?.errors?.type_chambre,
+        nb_lit: error.response.data?.errors?.nb_lit,
+        nb_salle: error.response.data?.errors?.nb_salle,
+        commentaire: error.response.data?.errors?.commentaire,
+      });
+  }, 3000);
+  }
+};
+
+const handleSaveDesignation = async () => {
+  const formData = new FormData();
+  formData.append('_method', 'put');
+    if (newDesignation.photo) {
+      formData.append('photo', newDesignation.photo);
+    }
+    formData.append("designation", newDesignation.designation);
+
+  try {
+    const response = await axios.post(`http://localhost:8000/api/desigs-chambre/${categorieId}`,formData);
+
+    await fetchTarifChambre(); // Refresh categories after adding
+    setShowEditModalDesignation(false);
+    
+    // Show success message
+    Swal.fire({
+      icon: "success",
+      title: "Succès!",
+      text: "Tarif Chambre modifiée avec succès.",
+    });
+    
+    // Clear the form state
+    setNewDesignation({ designation: '', photo: null });
+  } catch (error) {
+    setTimeout(() => {
+      setErrors({
+        designation_edit: error.response.data?.errors?.designation,
+        photo_edit: error.response.data?.errors?.photo,
+      });
+  }, 3000);
+  }
+};
+
+
+const handleDeleteDesignation = async (categorieId) => {
+  try {
+    await axios.delete(`http://localhost:8000/api/desigs-chambre/${categorieId}`);
+    
+    // Notification de succès
+    Swal.fire({
+      icon: "success",
+      title: "Succès!",
+      text: "Tarif Chambre supprimée avec succès.",
+    });
+    await fetchTarifChambre(); // Refresh categories after adding
+
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Erreur!",
+      text: error.response.data.message,
+    });
+  }
+};
+
+const handleDeleteTypeChambre = async (categorieId) => {
+  try {
+    await axios.delete(`http://localhost:8000/api/types-chambre/${categorieId}`);
+    
+    // Notification de succès
+    Swal.fire({
+      icon: "success",
+      title: "Succès!",
+      text: "Tarif Chambre supprimée avec succès.",
+    });
+    await fetchTarifChambre(); // Refresh categories after adding
+
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Erreur!",
+      text: error.response.data.message,
+    });
+  }
+};
+
+const handleDeleteChambre = async (categorieId) => {
+  try {
+    await axios.delete(`http://localhost:8000/api/tarifs-chambre/${categorieId}`);
+    
+    // Notification de succès
+    Swal.fire({
+      icon: "success",
+      title: "Succès!",
+      text: "Tarif chambre supprimée avec succès.",
+    });
+    await fetchTarifChambre(); // Refresh categories after adding
+
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Erreur!",
+      text: error.response.data.message,
+    });
+  }
+};
+
+const handleEditChambre
+= (categorieId) => {
+  setSelectedCategoryId(categorieId);
+  setCategorie(categorieId.id)
+  setShowEditModal(true);
+};
+const handleEditTypeChambre = (typeChambre) => {
+  setNewTypeChambre(typeChambre);
+  setEditingTypeChambre(typeChambre);
+  setCategorie(typeChambre.id);
+  setShowEditModal(true);
+};
+
+const handleEditDesignation = (categorieId) => {
+  setNewDesignation(categorieId);
+  setEditingDesignation(categorieId);
+  setCategorie(categorieId.id)
+  setShowEditModalDesignation(true);
+};
+
+const [activeIndex, setActiveIndex] = useState(0);
+const handleSelect = (selectedIndex) => {
+  setActiveIndex(selectedIndex);
+};
+const chunkArray = (array, size) => {
+  const result = [];
+  for (let i = 0; i < array?.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+  return result;
+};
+const chunkSize = 9;
+const chunks = chunkArray(tarifsChambre, chunkSize);
+
+
+const handleCategoryFilterChange = (catId) => {
+ 
+  setSelectedCategory(catId);
+};
+const DisplayAddTypeChambre = () => {
+  setShowAddCategory(true);
+  setNewTypeChambre({
+    code: "",
+    type_chambre: "",
+    nb_salle: "",
+    nb_lit: "",
+    commentaire: ""
+  })
+  setErrors({})
+}
+const sanitizeInput = (val) => {
+  const newVal = val.toLowerCase().trim();
+  return newVal
+}
+  return (
+    <ThemeProvider theme={createTheme()}>
+      <Box sx={{...dynamicStyles}}>
+        <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 4 }}>
+
+       
+          <div
+            className="d-flex justify-content-between align-items-center"
+            style={{ marginTop: "15px" }}
+          >
+            <h3 className="titreColore">
+              {/* <PeopleIcon style={{ fontSize: "24px", marginRight: "8px" }} /> */}
+              Liste des Tarifs
+            </h3>
+            <div className="d-flex">
+              <div style={{ width: "500px", marginRight: "20px" }}>
+                <Search onSearch={handleSearch} type="search" />
+              </div>
+              <div>
+              <FontAwesomeIcon
+    style={{
+      cursor: "pointer",
+      color: "grey",
+      fontSize: "2rem",
+    }}
+    onClick={printTable}  
+    icon={faPrint}
+    className="me-2"
+  />
+                  <FontAwesomeIcon
+      style={{
+        cursor: "pointer",
+        color: "red",
+        fontSize: "2rem",
+        marginLeft: "15px",
+      }}
+      onClick={exportToPDF}
+            icon={faFilePdf}
+    />
+
+                <FontAwesomeIcon
+                  icon={faFileExcel}
+                  onClick={exportToExcel}
+                  style={{
+                    cursor: "pointer",
+                    color: "green",
+                    fontSize: "2rem",
+                    marginLeft: "15px",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {
+          
+          <div style={{height:'125px',marginTop:'-15px'}}>
+          <h5 className="container-d-flex justify-content-start AjouteBotton"style={{marginBottom:'-3px'}} >Tarifs de Chambre</h5>
+          <div className=" bgSecteur" >
+
+<Carousel activeIndex={activeIndex} onSelect={handleSelect} interval={null}
+nextIcon={<FaArrowRight size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%' ,marginTop:'-50px',marginRight:"5px",marginLeft:"-5px"}} />}
+prevIcon={<FaArrowLeft size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%',marginTop:'-50px',marginRight:"-5px",marginLeft:"5px"}} />}>
+
+{chunks?.map((chunk, chunkIndex) => (
+<Carousel.Item key={chunkIndex}>
+<div className="d-flex justify-content-start">
+<a href="#" style={{marginLeft:'60px'}}>
+<div
+className={`category-item ${selectedCategory === '' ? 'active' : ''}`} 
+onClick={() => handleCategoryFilterChange("")}
+>
+<img
+src={'../../images/bayd.jpg'}
+alt={'tout'}
+loading="lazy"
+className={`rounded-circle category-img ${selectedCategory === '' ? 'selected' : ''}`}
+/>
+<p className="category-text">Tout</p>
+</div>
+</a>
+
+{chunk?.map((category, index) => (
+<a href="#" className="mx-5" key={index}>
+<div 
+className={`category-item ${selectedCategory === category.id ? 'active' : ''}`} 
+onClick={() => handleCategoryFilterChange(category.id)}
+>
+<img
+  src={category.photo ? `http://127.0.0.1:8000/storage/${category.photo}` : "http://localhost:8000/storage/chambre-img.webp"}
+  alt={category.designation}
+loading="lazy"
+className={`rounded-circle category-img ${selectedCategory === category.id ? 'selected' : ''}`}
+/>
+<p className="category-text">{category.designation}</p>
+</div>
+</a>
+))}
+</div>
+</Carousel.Item>
+))}
+</Carousel>
+</div>
+          </div>
+
+          }
+
+          <div className="container-d-flex justify-content-start">
+            <div style={{ display: "flex", alignItems: "center" ,marginTop:'15px' ,padding:'0'}}>
+             
+              <a
+                onClick={handleShowFormButtonClick}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  marginTop: "5px"
+                }}
+                className="AjouteBotton"
+              >
+ <FontAwesomeIcon
+                    icon={faPlus}
+                    className=" AjouteBotton"
+                    style={{ cursor: "pointer" }}
+                  />Ajouter un Tarif Chambre
+              </a>
+
+            </div>
+
+            <div className="filters" >
+            
+
+    <Form.Select aria-label="Default select example"
+    value={typeChambre} onChange={handleChambreFilterChange}
+    style={{width:'10%' ,height:"35px",position:'absolute', left: '81%',  top: '224px'}}>
+    <option value="">Sélectionner Type de Chambre</option>
+    {tarifChambre?.map((type) => (
+        <option value={type.type_chambre.type_chambre}>
+          {type.type_chambre.type_chambre}
+        </option>
+    ))}
+    </Form.Select>
+</div>
+
+        <div style={{ marginTop:"0px",}}>
+        <div id="formContainer" className="" style={{...formContainerStyle,marginTop:'0px',maxHeight:'700px',overflow:'auto',padding:'0'}}>
+              <Form className="col row" onSubmit={handleSubmit} style={{zIndex: 9999}}>
+                <Form.Label className="text-center ">
+                <h4
+                     style={{
+                      fontSize: "25px", 
+                      fontFamily: "Arial, sans-serif", 
+                      fontWeight: "bold", 
+                      color: "black",
+                      borderBottom: "2px solid black", 
+                      paddingBottom: "5px",
+                    }}
+                    >
+                      {editingTarifChambre ? "Modifier" : "Ajouter"} un Tarif</h4>
+                </Form.Label>
+                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Tarif Code</Form.Label>
+                <Form.Control
+                type="text"
+                name="code"
+                placeholder="Tarif Code"
+                isInvalid={!!errors.code}
+                value={formData.code}
+                onChange={handleChange}
+              />
+              </Form.Group>
+                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+                <FontAwesomeIcon
+                    icon={faPlus}
+                    className=" text-primary"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setShowAddDesignation(true)}
+                  />
+                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Tarif Chambre</Form.Label>
+                <Form.Select
+                      name="designation"
+                      isInvalid={!!errors.designation}
+                      value={formData.designation ? formData.designation : selectedCategory}
+                      onChange={handleChange}>
+                      <option value="">Sélectionner un Tarif Chambre</option>
+                        {tarifsChambre?.map((tarif) => (
+                            <option value={tarif?.id}>
+                            {tarif?.designation}
+                            </option>
+                        ))}
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+                <FontAwesomeIcon
+                    icon={faPlus}
+                    className=" text-primary"
+                    style={{ cursor: "pointer" }}
+                    onClick={DisplayAddTypeChambre} 
+
+                  />
+                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Type Chambre</Form.Label>
+                <Form.Select
+                      name="type_chambre"
+                      value={formData.type_chambre}
+                      isInvalid={!!errors.type_chambre}
+                      onChange={handleChange}>
+                      <option value="">Sélectionner Type de Chambre</option>
+                        {typesChambre?.map((tarif) => (
+                            <option value={tarif.id}>
+                            {tarif?.type_chambre}
+                            </option>
+                        ))}
+                  </Form.Select>
+                </Form.Group>
+
+                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Single</Form.Label>
+                <Form.Control
+                type="number"
+                name="single"
+                min="0"
+                placeholder="Prix de Single"
+                value={formData.single}
+                isInvalid={!!errors.single}
+                onChange={handleChange}
+              />
+                </Form.Group>
+                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Double</Form.Label>
+                <Form.Control
+                type="number"
+                name="double"
+                min="0"
+                placeholder="Prix de Double"
+                value={formData.double}
+                isInvalid={!!errors.double}
+                onChange={handleChange}
+              />
+        </Form.Group>
+        <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Triple</Form.Label>
+                <Form.Control
+                type="number"
+                name="triple"
+                min="0"
+                placeholder="Prix de Triple"
+                value={formData.triple}
+                isInvalid={!!errors.triple}
+                onChange={handleChange}
+              />
+        </Form.Group>
+        <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Lit Supplementaires</Form.Label>
+                <Form.Control
+                type="number"
+                name="lit_supp"
+                min="0"
+                placeholder="Prix de lit Supp"
+                value={formData.lit_supp}
+                isInvalid={!!errors.lit_supp}
+                onChange={handleChange}
+              />
+        </Form.Group>
+                
+
+                
+        
+      <Modal show={showAddCategory} onHide={() => setShowAddCategory(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Ajouter un Type Chambre</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+          <Form.Group>
+              <Form.Label>Code Chambre</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Code Chambre"
+                name="code"
+                isInvalid={!!typeErrors.code}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, code: e.target.value })}
+              />
+            </Form.Group>
+          <Form.Group>
+              <Form.Label>Type Chambre</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Type Chambre"
+                name="type_chambre"
+                isInvalid={!!typeErrors.type_chambre}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, type_chambre: e.target.value })}
+              />
+            </Form.Group>
+            
+            <Form.Group>
+              <Form.Label>Nombre de Lit</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Nombre de Lit"
+                name="nb_lit"
+                min="0"
+                isInvalid={typeErrors.nb_litAdd}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nb_lit: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Nombre de Salle</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Nombre de Salle"
+                name="nb_salle"
+                min="0"
+                isInvalid={!!typeErrors.nb_salle}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nb_salle: e.target.value })}
+              />
+            </Form.Group>
+            
+            <Form.Group>
+              <Form.Label>Commentaire</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Commentaire"
+                isInvalid={!!typeErrors.commentaire}
+                name="commentaire"
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, commentaire: e.target.value })}
+              />
+            </Form.Group>
+      </Form>
+            
+            <Form.Group className="mt-3">
+            <div className="form-group mt-3" style={{maxHeight:'500px',overflowY:'auto'}}>
+            <table className="table">
+              <thead>
+                <tr>
+                <th>Code Chambre</th>
+                  <th>Type Chambre</th>
+                  <th>Nombre de Lit</th>
+                  <th>Nombre de Salle</th>
+                  <th>Commentaire</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {typesChambre?.map(categ => (
+                  <tr>
+                    <td>{categ.code}</td>
+                    <td>{categ.type_chambre}</td>
+                    <td>{categ.nb_lit}</td>
+                    <td>{categ.nb_salle}</td>
+                    <td>{categ.commentaire}</td>
+                    <td>
+    <FontAwesomeIcon
+                                  onClick={() => handleEditTypeChambre(categ)}
+                                  icon={faEdit}
+                                  style={{
+                                    color: "#007bff",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                                <span style={{ margin: "0 8px" }}></span>
+                                <FontAwesomeIcon
+                                  onClick={() => handleDeleteTypeChambre(categ.id)}
+                                  icon={faTrash}
+                                  style={{
+                                    color: "#ff0000",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+            </Form.Group>
+          <Form.Group className=" d-flex justify-content-center">
+        
+        <Fab
+    variant="extended"
+    className="btn-sm Fab mb-2 mx-2"
+    type="submit"
+    onClick={handleAddTypeChambre}
+  >
+    Valider
+  </Fab>
+  <Fab
+    variant="extended"
+    className="btn-sm FabAnnule mb-2 mx-2"
+    onClick={() => setShowAddCategory(false)}
+  >
+    Annuler
+  </Fab>
+  </Form.Group>
+      </Modal.Body>
+      </Modal>
+    
+    <Modal show={showEditModalDesignation} onHide={() => setShowEditModalDesignation(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Modifier un Tarif Chambre</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+          <Form.Group>
+                <Form.Label>Photo</Form.Label>
+                  <Form.Control
+                    type="file"
+                    name="photo"
+                    isInvalid={!!tarifChambreErrors.photo}
+                    onChange={(e) => setNewDesignation({ ...newDesignation, photo: e.target.files[0] })}
+                    className="form-control"
+                    lang="fr"
+                  />
+                </Form.Group>
+            <Form.Group>
+              <Form.Label>Designation</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Designation"
+                name="designation"
+                isInvalid={!!tarifChambreErrors.designation}
+                value={newDesignation.designation}
+                onChange={(e) => setNewDesignation({ ...newDesignation, designation: e.target.value })}
+                />
+            </Form.Group>
+      </Form>
+      </Modal.Body>
+      
+      <Form.Group className=" d-flex justify-content-center">
+        
+        <Fab
+    variant="extended"
+    className="btn-sm Fab mb-2 mx-2"
+    type="submit"
+    onClick={handleSaveDesignation}
+  >
+    Valider
+  </Fab>
+  <Fab
+    variant="extended"
+    className="btn-sm FabAnnule mb-2 mx-2"
+    onClick={() => setShowEditModalDesignation(false)}  >
+    Annuler
+  </Fab>
+      </Form.Group>
+    </Modal>
+    <Modal show={showAddDesignation} onHide={() => setShowAddDesignation(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Ajouter un Tarif Chambre</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form encType="multipart/form-data">
+          <Form.Group>
+                <Form.Label>Photo</Form.Label>
+                  <Form.Control
+                    type="file"
+                    name="photo"
+                    isInvalid={tarifChambreErrors.photo}
+                    onChange={(e) => setNewDesignation({ ...newDesignation, photo: e.target.files[0] })}
+                    className="form-control"
+                    lang="fr"
+                  />
+                </Form.Group>
+            <Form.Group>
+              <Form.Label>Designation</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Designation"
+                name="designation"
+                isInvalid={tarifChambreErrors.designationAdd}
+                onChange={(e) => setNewDesignation({ ...newDesignation, designation: e.target.value })}
+              />
+            </Form.Group>
+      </Form>
+            
+            <Form.Group className="mt-3">
+            <div className="form-group mt-3" style={{maxHeight:'500px',overflowY:'auto'}}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Designation</th>
+                  <th>Photo</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tarifsChambre?.map(categ => (
+                  <tr>
+                    <td>{categ?.designation}</td>
+                    <td>  
+                    <img
+                        src={categ.photo ? `http://127.0.0.1:8000/storage/${categ.photo}` : "http://localhost:8000/storage/chambre-img.webp"}
+                        alt={categ.designation}
+                        loading="lazy"
+                        className={`rounded-circle category-img`}
+                      />
+                    </td>
+                    <td>
+                        <FontAwesomeIcon
+                                  onClick={() => handleEditDesignation(categ)}
+                                  icon={faEdit}
+                                  style={{
+                                    color: "#007bff",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                                <span style={{ margin: "0 8px" }}></span>
+                                <FontAwesomeIcon
+                                  onClick={() => handleDeleteDesignation(categ.id)}
+                                  icon={faTrash}
+                                  style={{
+                                    color: "#ff0000",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+            </Form.Group>
+          <Form.Group className=" d-flex justify-content-center">
+        
+        <Fab
+    variant="extended"
+    className="btn-sm Fab mb-2 mx-2"
+    type="submit"
+    onClick={handleAddDesignation}
+  >
+    Valider
+  </Fab>
+  <Fab
+    variant="extended"
+    className="btn-sm FabAnnule mb-2 mx-2"
+    onClick={() => setShowAddDesignation(false)}
+  >
+    Annuler
+  </Fab>
+  </Form.Group>
+      </Modal.Body>
+      </Modal>
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Modifier Type de Chambre</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+        <Form.Group>
+              <Form.Label>Code Chambre</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Code Chambre"
+                name="code"
+                isInvalid={typeErrors.code}
+                value={newTypeChambre.code}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, code: e.target.value })}
+              />
+            </Form.Group>
+        <Form.Group>
+              <Form.Label>Type Chambre</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Type de Chambre"
+                name="type_chambre"
+                isInvalid={typeErrors.type_chambre}
+                value={newTypeChambre.type_chambre}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, type_chambre: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Nombre de Lit</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Nombre de Lit"
+                name="nb_lit"
+                isInvalid={typeErrors.nb_lit}
+                value={newTypeChambre.nb_lit}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nb_lit: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Nombre de Salle</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Nombre de Salle"
+                name="nb_salle"
+                isInvalid={typeErrors.nb_salle}
+                value={newTypeChambre.nb_salle}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nb_salle: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Commentaire</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Commentaire"
+                name="commentaire"
+                isInvalid={typeErrors.commentaire}
+                value={newTypeChambre.commentaire}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, commentaire: e.target.value })}
+              />
+            </Form.Group>
+        </Form>
+      </Modal.Body>
+      
+      <Form.Group className=" d-flex justify-content-center">
+        
+        <Fab
+    variant="extended"
+    className="btn-sm Fab mb-2 mx-2"
+    type="submit"
+    onClick={handleSaveTypeChambre}
+  >
+    Valider
+  </Fab>
+  <Fab
+    variant="extended"
+    className="btn-sm FabAnnule mb-2 mx-2"
+    onClick={() => setShowEditModal(false)}  >
+    Annuler
+  </Fab>
+      </Form.Group>
+    </Modal>
+          
+  <Form.Group className="mt-5 d-flex justify-content-center">
+        
+        <Fab
+    variant="extended"
+    className="btn-sm Fab mb-2 mx-2"
+    type="submit"
+  >
+    Valider
+  </Fab>
+  <Fab
+    variant="extended"
+    className="btn-sm FabAnnule mb-2 mx-2"
+    onClick={closeForm}
+  >
+    Annuler
+  </Fab>
+      </Form.Group>
+              </Form>
+            </div>
+        </div>
+            <div className="">
+              <div
+                id="tableContainer"
+                className="table-responsive"
+                style={{...tableContainerStyle, overflowX: 'auto', minWidth: '650px',
+                  maxHeight: '700px', overflow: 'auto',
+
+                  marginTop:'0px',
+                }}
+              >
+                 <table className="table table-bordered" id="tarifChambreTable" style={{ marginTop: "-5px", }}>
+  <thead className="text-center table-secondary" style={{ position: 'sticky', top: -1, backgroundColor: '#ddd', zIndex: 1,padding:'10px'}}>
+    <tr className="tableHead">
+      <th className="tableHead">
+        <input type="checkbox" checked={selectAll} onChange={handleSelectAllChange} />
+      </th>
+      <th className="tableHead">Tarif Code</th>
+      <th className="tableHead">Type Chambre</th>
+      <th className="tableHead">Single</th>
+      <th className="tableHead">Double</th>
+      <th className="tableHead">Triple</th>
+      <th className="tableHead">Lit Supplementaires</th>
+      <th className="tableHead">Action</th>
+    </tr>
+  </thead>
+  <tbody className="text-center" style={{ backgroundColor: '#007bff' }}>
+    {filteredTarifchambre
+      ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      ?.map((tarifChambre) => {
+      return(
+        <React.Fragment>
+          <tr>
+      
+            <td style={{ backgroundColor: "white" }}>
+              <input
+                type="checkbox"
+                checked={selectedItems.some((item) => item === tarifChambre.id)}
+                onChange={() => handleCheckboxChange(tarifChambre.id)}
+              />
+            </td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(tarifChambre?.code, searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(tarifChambre?.type_chambre.type_chambre, searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifChambre.single), searchTerm) || ''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifChambre.double), searchTerm) || ''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifChambre.triple), searchTerm)|| ''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifChambre.lit_supp), searchTerm) || ''}</td>
+            <td style={{ backgroundColor: "white", whiteSpace: "nowrap" }}>
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <FontAwesomeIcon
+      onClick={() => handleEdit(tarifChambre)}
+      icon={faEdit}
+      style={{ color: "#007bff", cursor: "pointer", marginRight: "10px" }}
+    />
+    <FontAwesomeIcon
+      onClick={() => handleDelete(tarifChambre.id)}
+      icon={faTrash}
+      style={{ color: "#ff0000", cursor: "pointer", marginRight: "10px" }}
+    />
+  </div>  
+</td>
+
+          </tr>
+
+        </React.Fragment>
+      )
+       
+})}
+  </tbody>
+</table>
+
+                {/* )} */}
+               
+                <a href="#">
+                  <Button
+                  className="btn btn-danger btn-sm"
+                  onClick={handleDeleteSelected}
+                  disabled={selectedItems?.length === 0}
+                >
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  Supprimer selection
+                </Button>
+                </a>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10,15,20, 25]}
+                  component="div"
+                  count={filteredTarifchambre?.length || 0}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </div>
+            </div>
+          </div>
+        </Box>
+      </Box>
+    </ThemeProvider>
+  );
+};
+
+export default TarifChambre;
