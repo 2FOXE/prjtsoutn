@@ -10,6 +10,7 @@ import { highlightText } from '../utils/textUtils';
 import { sanitizeInput } from '../utils/sanitizeInput';
 import "jspdf-autotable";
 import Search from "../Acceuil/Search";
+ // Import the new responsive layout
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PeopleIcon from "@mui/icons-material/People";
 import jsPDF from 'jspdf';
@@ -83,16 +84,17 @@ const [typeRepas, setTypeRepas] = useState('');
 
   const [showForm, setShowForm] = useState(false);
   
-  
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
   const [formData, setFormData] = useState({
     type_repas: "", 	
     designation: "",
     montat: ""
   });
   const [errors, setErrors] = useState({
-    type_repas: "", 
-    designation: true,	
-    montant: ""
+    type_repas: false, 
+    designation: false,	
+    montant: false
   });
   const [formContainerStyle, setFormContainerStyle] = useState({
     right: "-100%",
@@ -279,74 +281,72 @@ const [typeRepas, setTypeRepas] = useState('');
     validateData();
   }, [formData, newDesignation]);
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const hasErrors = Object.values(errors).some(error => error === true);
-      if (hasErrors) {
-        alert(JSON.stringify(errors))
-        alert("Veuillez remplir tous les champs obligatoires.");
-        return;  
-      }
-      
-      const url = editingTarifRepas 
-          ? `${API_URL}/tarifs-repas/${editingTarifRepas?.id}`
-          : `${API_URL}/tarifs-repas`;
+  // handler for form submission
 
-      let requestData;
-      if (editingTarifRepas) {
-        requestData = {
-        _method: "put",
-        type_repas: formData.type_repas,
-        tarif_repas: formData.designation,
-        montant: formData.montant,
-        }
-      }
-      else {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    // Mark the form as submitted
+    setHasSubmitted(true);
+  
+    // Check for empty fields
+    const newErrors = {
+      type_repas: formData.type_repas === "",
+      designation: formData.designation === "",
+      montant: formData.montant === ""
+    };
+    setErrors(newErrors); // Update error state
+  
+    // If there are validation errors, show alert and return
+    const hasErrors = Object.values(newErrors).some((error) => error === true);
+    if (hasErrors) {
+      Swal.fire({
+        icon: "error",
+        title: "Veuillez remplir tous les champs obligatoires.",
+      });
+      return;
+    }
+  
+    // Proceed with API call if no errors
+    try {
+      const url = editingTarifRepas
+        ? `${API_URL}/tarifs-repas/${editingTarifRepas?.id}`
+        : `${API_URL}/tarifs-repas`;
+  
       const formDatad = new FormData();
       formDatad.append("type_repas", formData.type_repas);
-      formDatad.append("tarif_repas", formData.designation || selectedCategory);
+      formDatad.append("tarif_repas", formData.designation);
       formDatad.append("montant", formData.montant);
-      requestData = formDatad;
-      } 
-      try {
-          const response = await axios.post(
-              url,
-              requestData
-          );
-              fetchTarifRepas();
-              const successMessage = `Tarif Repas ${editingTarifRepas ? "modifié" : "ajouté"} avec succès.`;
-              Swal.fire({
-                  icon: "success",
-                  title: "Succès!",
-                  text: successMessage,
-              });
-              // Reset form and errors
-              setSelectedProductsData([]);
-              setSelectedProductsDataRep([]);
-              setFormData({
-                type_repas: "",
-                designation: "",
-                montant: "",
-              });
-              setErrors({
-                type_repas: "",
-                designation: "", 	
-                montant: "",
-              });
-              setEditingTarifRepas(null);
-              closeForm();
-          
-      } catch (error) {
-          setTimeout(() => {
-              setErrors({
-                type_repas: error.response.data?.errors?.type_repas,
-                montant: error.response.data?.errors?.montant,
-                designation: error.response.data?.errors?.tarif_repas,
-              });
-          }, 3000);
-      }
-  };
 
+      // Add `_method: "PUT"` if editing an existing Tarif Repas
+      if (editingTarifRepas) {
+      formDatad.append("_method", "PUT");
+     }
+  
+      // Send a POST request
+
+      await axios.post(url, formDatad);
+      fetchTarifRepas();
+  
+      Swal.fire({
+        icon: "success",
+        title: `Tarif Repas ${editingTarifRepas ? "modifié" : "ajouté"} avec succès.`,
+      }).then(() => {
+        // Reset form and errors after success
+        setFormData({ type_repas: "", designation: "", montant: "" });
+        setErrors({ type_repas: false, designation: false, montant: false });
+        setHasSubmitted(false); // Reset submission state
+        closeForm(); // Close the form if needed
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur!",
+        text: error.response.data.message,
+      });
+    }
+  };
+  
 
     //------------------------- CHAMBRE FORM---------------------//
 
@@ -364,16 +364,23 @@ const [typeRepas, setTypeRepas] = useState('');
       setTableContainerStyle({ marginRight: "0" });
       setSelectedCategory("")
       setShowForm(false); // Hide the form
+
+      // Reset the form data
       setFormData({
         type_repas: "", 
         designation: "",	
         montant: "",
       });
+
+      // Reset the form errors
       setErrors({
         type_repas: false,
         designation: false, 	
         montant: false,
       });
+
+
+      setHasSubmitted(false); // Reset the submission state
       setSelectedProductsData([])
       setSelectedProductsDataRep([])
       setEditingTarifRepas(null); // Clear editing client
@@ -1061,8 +1068,8 @@ onClick={() => handleCategoryFilterChange(category?.id)}
 
         <div style={{ marginTop:"0px",}}>
         <div id="formContainer" className="" style={{...formContainerStyle,marginTop:'0px',maxHeight:'700px',overflow:'auto',padding:'0'}}>
-              <Form className="col row" onSubmit={handleSubmit}>
-                <Form.Label className="text-center ">
+              <Form className="d-flex flex-column align-items-start" onSubmit={handleSubmit}>
+                <Form.Label className="w-100 text-center">
                 <h4
                      style={{
                       fontSize: "25px", 
@@ -1071,32 +1078,46 @@ onClick={() => handleCategoryFilterChange(category?.id)}
                       color: "black",
                       borderBottom: "2px solid black", 
                       paddingBottom: "5px",
+              
                     }}
                     >
                       {editingTarifRepas ? "Modifier" : "Ajouter"} un Tarif</h4>
                 </Form.Label>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className=" text-primary"
-                    style={{ cursor: "pointer" }}
-                    onClick={handleShowTarifRepas}
-                  />
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Tarif Repas</Form.Label>
-                <Form.Select
-                      name="designation"
-                      // isValid={!errors.designation}
-                      isInvalid={!!errors.designation}
-                      value={formData.designation ? formData.designation : selectedCategory}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner un Tarif Repas</option>
+
+                 {/* // Type Repas  //     */}
+
+                 <Form.Group className="form-group">
+                    <FontAwesomeIcon
+                      icon={faPlus}
+                      className="text-primary"
+                      style={{ cursor: "pointer", marginRight: "8px" }}
+                      onClick={handleShowTarifRepas}
+                    />
+                    <Form.Label>Tarif Repas</Form.Label>
+                    <div style={{ flexGrow: 1, position: "relative" }}>
+                      <Form.Select
+                        name="designation"
+                        value={formData.designation}
+                        isInvalid={hasSubmitted && errors.designation}
+                        onChange={handleChange}
+                        style={{ minWidth: "100%" , marginRight: "15px" }}
+                      >
+                        <option value="">Sélectionner un Tarif Repas</option>
                         {tarifsRepas?.map((tarif) => (
-                            <option value={tarif?.id}>
-                            {tarif?.designation}
-                            </option>
+                          <option key={tarif.id} value={tarif.id}>
+                            {tarif.designation}
+                          </option>
                         ))}
-                  </Form.Select>
-                </Form.Group>
+                      </Form.Select>
+                      {hasSubmitted && errors.designation && (
+                        <Form.Control.Feedback type="invalid">
+                          Required
+                        </Form.Control.Feedback>
+                      )}
+                    </div>
+                  </Form.Group>
+
+
                 <Modal show={showEditModalDesignation} onHide={() => setShowEditModalDesignation(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Modifier Tarif de Repas</Modal.Title>
@@ -1245,28 +1266,37 @@ onClick={() => handleCategoryFilterChange(category?.id)}
   </Form.Group>
       </Modal.Body>
       </Modal>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className=" text-primary"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setShowAddCategory(true)} // Affiche le formulaire
-                  />
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Type Repas</Form.Label>
-                <Form.Select
-                      name="type_repas"
-                      // isValid={!errors.type_repas}
-                      value={formData.type_repas}
-                      isInvalid={!!errors.type_repas}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner Type de Repas</option>
-                        {typesRepas?.map((type) => (
-                            <option value={type?.id}>
-                            {type.type_repas}
-                            </option>
-                        ))}
-                  </Form.Select>
-                </Form.Group>
+      <Form.Group className="form-group">
+            <FontAwesomeIcon
+              icon={faPlus}
+              className="text-primary"
+              style={{ cursor: "pointer", marginRight: "8px" }}
+              onClick={() => setShowAddCategory(true)}
+            />
+            <Form.Label>Type Repas</Form.Label>
+            <div style={{ flexGrow: 1, position: "relative" }}>
+              <Form.Select
+                name="type_repas"
+                value={formData.type_repas}
+                isInvalid={hasSubmitted && errors.type_repas}
+                onChange={handleChange}
+                style={{ minWidth: "100%" , marginRight: "15px"}}
+              >
+                <option value="">Sélectionner Type de Repas</option>
+                {typesRepas?.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.type_repas}
+                  </option>
+                ))}
+              </Form.Select>
+              {hasSubmitted && errors.type_repas && (
+                <Form.Control.Feedback type="invalid">
+                  Required
+                </Form.Control.Feedback>
+              )}
+            </div>
+      </Form.Group>
+
                 <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Modifier Type de Repas</Modal.Title>
@@ -1404,36 +1434,67 @@ onClick={() => handleCategoryFilterChange(category?.id)}
   </Form.Group>
       </Modal.Body>
       </Modal>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Montant</Form.Label>
-                <Form.Control
-                type="number"
-                name="montant"
-                isInvalid={!!errors.montant}
-                placeholder="Montant"
-                min="0"
-                value={formData.montant}
-                onChange={handleChange}
-            />
-            
-                </Form.Group>
-  <Form.Group className="mt-5 d-flex justify-content-center">
-        
-        <Fab
-    variant="extended"
-    className="btn-sm Fab mb-2 mx-2"
-    type="submit"
-  >
-    Valider
-  </Fab>
-  <Fab
-    variant="extended"
-    className="btn-sm FabAnnule mb-2 mx-2"
-    onClick={closeForm}
-  >
-    Annuler
-  </Fab>
-      </Form.Group>
+
+      {/* // Montant //  */}
+      
+      <Form.Group className="form-group" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px" }}>
+  {/* Placeholder for the "+" icon */}
+  <div style={{ width: "18px" }}></div> 
+
+  <Form.Label style={{ minWidth: "170px", fontWeight: "bold", marginRight: "0" }}>
+    Montant
+  </Form.Label>
+
+  <div style={{ flexGrow: 1, position: "relative" }}>
+    <Form.Control
+      type="number"
+      name="montant"
+      value={formData.montant}
+      isInvalid={hasSubmitted && errors.montant}
+      onChange={handleChange}
+      style={{ minWidth: "100%", maxWidth: "400px" }} // Ensures the width is consistent
+    />
+    {hasSubmitted && errors.montant && (
+      <Form.Control.Feedback type="invalid" style={{ fontSize: "12px", position: "absolute", top: "100%", left: "0" }}>
+        Required
+      </Form.Control.Feedback>
+    )}
+  </div>
+</Form.Group>
+
+
+
+<Form.Group className="mt-5 tarif-button-container">
+  <div className="button-container">
+    <Fab
+      variant="extended"
+      className="btn-sm Fab mb-2 mx-2"
+      type="submit"
+    >
+      Valider
+    </Fab>
+    <Fab
+      variant="extended"
+      className="btn-sm FabAnnule mb-2 mx-2"
+      onClick={closeForm}
+    >
+      Annuler
+    </Fab>
+  </div>
+</Form.Group>
+
+
+
+
+
+
+
+
+
+
+
+
+
               </Form>
             </div>
         </div>
