@@ -52,7 +52,7 @@ const TarifChambre = () => {
   const [editingTypeChambre, setEditingTypeChambre] = useState({})
   const [editingDesignation, setEditingDesignation] = useState({})
 
-
+  const [hasSubmitted, setHasSubmitted] = useState(false); // Track form submission state
   const [newDesignation, setNewDesignation] = useState({
     id: "",
     created_at: "",
@@ -243,26 +243,30 @@ const [typesChambre, setTypesChambre] = useState([]);
   //------------------------- tarif Chambre EDIT---------------------//
 
   const handleEdit = (tarifChambre) => {
-    setEditingTarifChambre(tarifChambre); 
     setErrors({})
+    setEditingTarifChambre(tarifChambre); 
+    
     
     // Populate form data with tarif Chambre details
     setFormData({
-      code: tarifChambre.code,
-        type_chambre: tarifChambre.type_chambre.id,
-        designation: tarifChambre.tarif_chambre.id,
-        single: tarifChambre.single,
-        double: tarifChambre?.double,
-        triple: tarifChambre?.triple,
-        lit_supp: tarifChambre?.lit_supp
+      code: tarifChambre.code || "",
+        type_chambre: tarifChambre.type_chambre.id || "",
+        designation: tarifChambre.tarif_chambre.id || "",
+        single: tarifChambre.single || "",
+        double: tarifChambre?.double || "",
+        triple: tarifChambre?.triple || "",
+        lit_supp: tarifChambre?.lit_supp || "",
   });
+      // Sélectionner automatiquement la ligne à modifier
+      setSelectedItems([tarifChambre.id]);
+
     if (formContainerStyle.right === "-100%") {
       setFormContainerStyle({ right: "0" });
       setTableContainerStyle({ marginRight: "650px" });
-    } else {
-      closeForm();
-    }
+    } 
   };
+
+
   useEffect(() => {
     if (editingTarifChambreId !== null) {
       setFormContainerStyle({ right: "0" });
@@ -316,85 +320,94 @@ const [typesChambre, setTypesChambre] = useState([]);
   
     validateData();
   }, [formData, newTypeChambre, newDesignation]);
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const hasErrors = Object.values(errors).some(error => error === true);
-      if (hasErrors) { 
-        alert("Veuillez remplir tous les champs obligatoires.");
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setHasSubmitted(true); // Set hasSubmitted to true when form is submitted
+    
+    // Validation logic based on errors and hasSubmitted flag
+    const hasErrors = Object.values(errors).some(error => error === true);
+    if (hasErrors) {
+        Swal.fire({
+                icon: "error",
+                title: "Veuillez remplir tous les champs obligatoires.",
+              });
         return;
-      }
+    }
 
-      const url = editingTarifChambre 
-          ? `http://localhost:8000/api/tarifs-chambre/${editingTarifChambre.id}`
-          : "http://localhost:8000/api/tarifs-chambre";
-      const method = editingTarifChambre ? "put" : "post";
+    const url = editingTarifChambre 
+        ? `http://localhost:8000/api/tarifs-chambre/${editingTarifChambre.id}`
+        : "http://localhost:8000/api/tarifs-chambre";
+    const method = editingTarifChambre ? "put" : "post";
 
-      let requestData;
+    let requestData;
 
-      if (editingTarifChambre) {
+    if (editingTarifChambre) {
         requestData = {
-        code: formData.code,
-        type_chambre: formData.type_chambre,
-        tarif_chambre: formData.designation,
-        single: formData.single,
-        double: formData.double,
-        triple: formData.triple,
-        lit_supp: formData.lit_supp,
+            code: formData.code,
+            type_chambre: formData.type_chambre,
+            tarif_chambre: formData.designation,
+            single: formData.single,
+            double: formData.double,
+            triple: formData.triple,
+            lit_supp: formData.lit_supp,
         }
-      }
-      else {
-      const formDatad = new FormData();
-      formDatad.append("code", formData.code);
-      formDatad.append("type_chambre", formData.type_chambre);
-      formDatad.append("tarif_chambre", formData.designation || selectedCategory);
-      formDatad.append("single", formData.single);
-      formDatad.append("double", formData.double);
-      formDatad.append("triple", formData.triple);
-      formDatad.append("lit_supp", formData.lit_supp);
-      requestData = formDatad;
-      } 
-      try {
-          const response = await axios({
-              method: method,
-              url: url,
-              data: requestData,
-          });
-          
-          if (response.status === 200 || response.status === 201) {
-              fetchTarifChambre();
-              const successMessage = `Tarif Chambre ${editingTarifChambre ? "modifié" : "ajouté"} avec succès.`;
-              Swal.fire({
-                  icon: "success",
-                  title: "Succès!",
-                  text: successMessage,
-              });
-              // Reset form and errors
-              setSelectedProductsData([]);
-              setSelectedProductsDataRep([]);
-              setFormData({
-                code: "", 	
-                type_chambre: "", 	
+    }
+    else {
+        const formDatad = new FormData();
+        formDatad.append("code", formData.code);
+        formDatad.append("type_chambre", formData.type_chambre);
+        formDatad.append("tarif_chambre", formData.designation || selectedCategory);
+        formDatad.append("single", formData.single);
+        formDatad.append("double", formData.double);
+        formDatad.append("triple", formData.triple);
+        formDatad.append("lit_supp", formData.lit_supp);
+        requestData = formDatad;
+    }
+
+    try {
+        const response = await axios({
+            method: method,
+            url: url,
+            data: requestData,
+        });
+
+        if (response.status === 200 || response.status === 201) {
+            fetchTarifChambre();
+            const successMessage = `Tarif Chambre ${editingTarifChambre ? "modifié" : "ajouté"} avec succès.`;
+            Swal.fire({
+                icon: "success",
+                title: "Succès!",
+                text: successMessage,
+            });
+
+            // Reset form and errors
+            setSelectedProductsData([]);
+            setSelectedProductsDataRep([]);
+            setFormData({
+                code: "", 
+                type_chambre: "", 
                 designation: "",
                 single: "",
                 double: "",
                 triple: "",
                 lit_supp: "",
-              });
-              setErrors({
+            });
+            setErrors({
                 code: "",
-                type_chambre: "", 	
+                type_chambre: "", 
                 designation: "",
                 single: "",
                 double: "",
                 triple: "",
                 lit_supp: "",
-              });
-              setEditingTarifChambre(null);
-              closeForm();
-          }
-      } catch (error) {
-          setTimeout(() => {
-              setErrors({
+            });
+            setEditingTarifChambre(null);
+            closeForm();
+        }
+    } catch (error) {
+        setTimeout(() => {
+            setErrors({
                 code: error.response.data?.errors?.code,
                 type_chambre: error.response.data?.errors?.type_chambre,
                 designation: error.response.data?.errors?.tarif_chambre,
@@ -402,50 +415,86 @@ const [typesChambre, setTypesChambre] = useState([]);
                 double: error.response.data?.errors?.double,
                 triple: error.response.data?.errors?.triple,
                 lit_supp: error.response.data?.errors?.lit_supp,
-              });
-          }, 3000);
-      }
-  };
-
+            });
+        }, 3000);
+    }
+};
 
     //------------------------- CHAMBRE FORM---------------------//
 
     const handleShowFormButtonClick = () => {
+      setEditingTarifChambre(null);
+      setFormData({
+        code: "",
+        type_chambre: "",
+        designation: "",
+        single: "",
+        double: "",
+        triple: "",
+        lit_supp: "",
+    });
+
+    // Reset general form errors (validation errors)
+    setErrors({
+        code: "",
+        type_chambre: "",
+        designation: "",
+        single: "",
+        double: "",
+        triple: "",
+        lit_supp: "",
+    });
       if (formContainerStyle.right === "-100%") {
         setFormContainerStyle({ right: "0" });
         setTableContainerStyle({ marginRight: "650px" });
-      } else {
-        closeForm();
-      }
+      } 
     };
 
     const closeForm = () => {
+      // Reset styles to hide the form and reset table layout
       setFormContainerStyle({ right: "-100%" });
       setTableContainerStyle({ marginRight: "0" });
-      setShowForm(false);  
+      setSelectedCategory("")
+      setSelectedItems([]); // Désélectionne toutes les cases
+      // Close the form by setting showForm to false
+      setShowForm(false);
+  
+      // Reset type-specific errors
       setTypeErrors({});
+  
+      // Reset the form data fields to empty values
       setFormData({
-        code: "",
-        type_chambre: "", 
-        designation: "",	
-        single: "",
-        double: "",
-        triple: "",
-        lit_supp: "",
+          code: "",
+          type_chambre: "",
+          designation: "",
+          single: "",
+          double: "",
+          triple: "",
+          lit_supp: "",
       });
+  
+      // Reset general form errors (validation errors)
       setErrors({
-        code: "",
-        type_chambre: "", 
-        designation: "",		
-        single: "",
-        double: "",
-        triple: "",
-        lit_supp: "",
+          code: "",
+          type_chambre: "",
+          designation: "",
+          single: "",
+          double: "",
+          triple: "",
+          lit_supp: "",
       });
-      setSelectedProductsData([])
-      setSelectedProductsDataRep([])
+  
+      // Clear the selected product data
+      setSelectedProductsData([]);
+      setSelectedProductsDataRep([]);
+  
+      // Clear any ongoing editing data
       setEditingTarifChambre(null); // Clear editing client
-    };
+  
+      // Reset the 'hasSubmitted' flag to ensure no validation messages are shown on reopening the form
+      setHasSubmitted(false); // Reset hasSubmitted flag to false
+  };
+  
   //-------------------------SITE CLIENT----------------------------//
   //-------------------------  SUBMIT---------------------//
   const handleSelectItem = (item) => {
@@ -579,10 +628,39 @@ const [typesChambre, setTypesChambre] = useState([]);
     }
   };
   const handleCheckboxChange = (itemId) => {
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems?.filter((id) => id !== itemId));
+    let updatedSelection = [...selectedItems];
+  
+    if (updatedSelection.includes(itemId)) {
+      updatedSelection = updatedSelection.filter((id) => id !== itemId);
     } else {
-      setSelectedItems([...selectedItems, itemId]);
+      updatedSelection.push(itemId);
+    }
+  
+    setSelectedItems(updatedSelection);
+  
+    // Si un seul élément est sélectionné, afficher ses infos dans le formulaire
+    if (updatedSelection.length === 1) {
+      const selectedTarif = tarifChambre.find((item) => item.id === updatedSelection[0]);
+      if (selectedTarif) {
+        setEditingTarifChambre(selectedTarif);
+        setFormData({
+          code: selectedTarif.code?.id || "",
+          type_chambre: selectedTarif.type_chambre?.id || "",
+          single: selectedTarif.single?.id || "",
+          double: selectedTarif.double || "",
+          triple: selectedTarif.triple || "",
+          lit_supp: selectedTarif.lit_supp || "",
+        });
+  
+        if (formContainerStyle.right === "-100%") {
+          setFormContainerStyle({ right: "0" });
+          setTableContainerStyle({ marginRight: "650px" });
+        }
+      }
+    } 
+    // Si aucune case n'est cochée, fermer le formulaire
+    else if (updatedSelection.length === 0) {
+      closeForm();
     }
   };
 
@@ -1122,7 +1200,7 @@ className={`rounded-circle category-img ${selectedCategory === category.id ? 'se
           }
 
           <div className="container-d-flex justify-content-start">
-            <div style={{ display: "flex", alignItems: "center" ,marginTop:'15px' ,padding:'0'}}>
+            <div style={{ display: "flex", alignItems: "center" ,marginTop:'-16px' ,padding:'15px'}}>
              
               <a
                 onClick={handleShowFormButtonClick}
@@ -1130,15 +1208,22 @@ className={`rounded-circle category-img ${selectedCategory === category.id ? 'se
                   display: "flex",
                   alignItems: "center",
                   cursor: "pointer",
-                  marginTop: "5px"
+                  marginTop: "5px",
+                  backgroundColor: "#329982",
+                  color: "white",
+                  borderRadius: "10px",
+                  fontWeight: "bold"  , 
+                  marginLeft: "96%",
+                  padding: "6px 15px",
+                  height: "40px",
                 }}
-                className="AjouteBotton"
+                className="gap-2 AjouteBotton"
               >
  <FontAwesomeIcon
                     icon={faPlus}
-                    className=" AjouteBotton"
-                    style={{ cursor: "pointer" }}
-                  />Ajouter un Tarif Chambre
+                    className="AjouteBotton"
+                    style={{ cursor: "pointer" ,color: "white" }}
+                  />
               </a>
 
             </div>
@@ -1148,7 +1233,8 @@ className={`rounded-circle category-img ${selectedCategory === category.id ? 'se
 
     <Form.Select aria-label="Default select example"
     value={typeChambre} onChange={handleChambreFilterChange}
-    style={{width:'10%' ,height:"35px",position:'absolute', left: '81%',  top: '224px'}}>
+    style={{width:'12%' ,height:"40px",position:'absolute', left: '81%',  top: '224px',cursor: "pointer",
+      borderRadius: "10px", color: "black", fontWeight: "bold"}}>
     <option value="">Sélectionner Type de Chambre</option>
     {tarifChambre?.map((type) => (
         <option value={type.type_chambre.type_chambre}>
@@ -1174,109 +1260,165 @@ className={`rounded-circle category-img ${selectedCategory === category.id ? 'se
                     >
                       {editingTarifChambre ? "Modifier" : "Ajouter"} un Tarif</h4>
                 </Form.Label>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Tarif Code</Form.Label>
-                <Form.Control
-                type="text"
-                name="code"
-                placeholder="Tarif Code"
-                isInvalid={!!errors.code}
-                value={formData.code}
-                onChange={handleChange}
-              />
-              </Form.Group>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className=" text-primary"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setShowAddDesignation(true)}
-                  />
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Tarif Chambre</Form.Label>
-                <Form.Select
-                      name="designation"
-                      isInvalid={!!errors.designation}
-                      value={formData.designation ? formData.designation : selectedCategory}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner un Tarif Chambre</option>
-                        {tarifsChambre?.map((tarif) => (
-                            <option value={tarif?.id}>
-                            {tarif?.designation}
-                            </option>
-                        ))}
-                  </Form.Select>
-                </Form.Group>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className=" text-primary"
-                    style={{ cursor: "pointer" }}
-                    onClick={DisplayAddTypeChambre} 
+                
+{/* Form Container */}
+<div className="form-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
 
-                  />
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Type Chambre</Form.Label>
-                <Form.Select
-                      name="type_chambre"
-                      value={formData.type_chambre}
-                      isInvalid={!!errors.type_chambre}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner Type de Chambre</option>
-                        {typesChambre?.map((tarif) => (
-                            <option value={tarif.id}>
-                            {tarif?.type_chambre}
-                            </option>
-                        ))}
-                  </Form.Select>
-                </Form.Group>
+  {/* First Row */}
+  <div style={{ flex: '1 1 45%', minWidth: '300px' }}>
+    <Form.Group className="custom-form-group" controlId="code">
+      <Form.Label>Tarif Code</Form.Label>
+      <Form.Control
+        type="text"
+        name="code"
+        placeholder="Tarif Code"
+        isInvalid={hasSubmitted && !!errors.code}
+        value={formData.code}
+        onChange={handleChange}
+      />
+      {hasSubmitted && errors.code && (
+        <Form.Text className="text-danger">Required</Form.Text>
+      )}
+    </Form.Group>
+  </div>
 
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Single</Form.Label>
-                <Form.Control
-                type="number"
-                name="single"
-                min="0"
-                placeholder="Prix de Single"
-                value={formData.single}
-                isInvalid={!!errors.single}
-                onChange={handleChange}
-              />
-                </Form.Group>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Double</Form.Label>
-                <Form.Control
-                type="number"
-                name="double"
-                min="0"
-                placeholder="Prix de Double"
-                value={formData.double}
-                isInvalid={!!errors.double}
-                onChange={handleChange}
-              />
-        </Form.Group>
-        <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Triple</Form.Label>
-                <Form.Control
-                type="number"
-                name="triple"
-                min="0"
-                placeholder="Prix de Triple"
-                value={formData.triple}
-                isInvalid={!!errors.triple}
-                onChange={handleChange}
-              />
-        </Form.Group>
-        <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Lit Supplementaires</Form.Label>
-                <Form.Control
-                type="number"
-                name="lit_supp"
-                min="0"
-                placeholder="Prix de lit Supp"
-                value={formData.lit_supp}
-                isInvalid={!!errors.lit_supp}
-                onChange={handleChange}
-              />
-        </Form.Group>
+  <div style={{ flex: '1 1 45%', minWidth: '300px' }}>
+    <Form.Group className="custom-form-group" controlId="designation">
+      <div className="icon-container">
+        <FontAwesomeIcon
+          icon={faPlus}
+          className="text-primary"
+          style={{ cursor: "pointer" }}
+          onClick={() => setShowAddDesignation(true)}
+        />
+        <Form.Label>Tarif Chambre</Form.Label>
+      </div>
+      <Form.Select
+        name="designation"
+        isInvalid={hasSubmitted && !!errors.designation}
+        value={formData.designation || selectedCategory}
+        onChange={handleChange}
+      >
+        <option value="">Sélectionner un Tarif Chambre</option>
+        {tarifsChambre?.map((tarif) => (
+          <option key={tarif?.id} value={tarif?.id}>
+            {tarif?.designation}
+          </option>
+        ))}
+      </Form.Select>
+      {hasSubmitted && errors.designation && (
+        <Form.Text className="text-danger">Required</Form.Text>
+      )}
+    </Form.Group>
+  </div>
+
+  {/* Second Row */}
+  <div style={{ flex: '1 1 45%', minWidth: '300px' }}>
+    <Form.Group className="custom-form-group" controlId="type_chambre">
+      <div className="icon-container">
+        <FontAwesomeIcon
+          icon={faPlus}
+          className="text-primary"
+          style={{ cursor: "pointer" }}
+          onClick={DisplayAddTypeChambre}
+        />
+        <Form.Label>Type Chambre</Form.Label>
+      </div>
+      <Form.Select
+        name="type_chambre"
+        value={formData.type_chambre}
+        isInvalid={hasSubmitted && !!errors.type_chambre}
+        onChange={handleChange}
+      >
+        <option value="">Sélectionner Type de Chambre</option>
+        {typesChambre?.map((tarif) => (
+          <option key={tarif.id} value={tarif.id}>
+            {tarif?.type_chambre}
+          </option>
+        ))}
+      </Form.Select>
+      {hasSubmitted && errors.type_chambre && (
+        <Form.Text className="text-danger">Required</Form.Text>
+      )}
+    </Form.Group>
+  </div>
+
+  {/* Price Fields */}
+  <div style={{ flex: '1 1 45%', minWidth: '300px' }}>
+    <Form.Group className="custom-form-group" controlId="single">
+      <Form.Label>Single</Form.Label>
+      <Form.Control
+        type="number"
+        name="single"
+        min="0"
+        placeholder="Prix de Single"
+        value={formData.single}
+        isInvalid={hasSubmitted && !!errors.single}
+        onChange={handleChange}
+      />
+      {hasSubmitted && errors.single && (
+        <Form.Text className="text-danger">Required</Form.Text>
+      )}
+    </Form.Group>
+  </div>
+
+  <div style={{ flex: '1 1 45%', minWidth: '300px' }}>
+    <Form.Group className="custom-form-group" controlId="double">
+      <Form.Label>Double</Form.Label>
+      <Form.Control
+        type="number"
+        name="double"
+        min="0"
+        placeholder="Prix de Double"
+        value={formData.double}
+        isInvalid={hasSubmitted && !!errors.double}
+        onChange={handleChange}
+      />
+      {hasSubmitted && errors.double && (
+        <Form.Text className="text-danger">Required</Form.Text>
+      )}
+    </Form.Group>
+  </div>
+
+  <div style={{ flex: '1 1 45%', minWidth: '300px' }}>
+    <Form.Group className="custom-form-group" controlId="triple">
+      <Form.Label>Triple</Form.Label>
+      <Form.Control
+        type="number"
+        name="triple"
+        min="0"
+        placeholder="Prix de Triple"
+        value={formData.triple}
+        isInvalid={hasSubmitted && !!errors.triple}
+        onChange={handleChange}
+      />
+      {hasSubmitted && errors.triple && (
+        <Form.Text className="text-danger">Required</Form.Text>
+      )}
+    </Form.Group>
+  </div>
+
+  <div style={{ flex: '1 1 45%', minWidth: '300px' }}>
+    <Form.Group className="custom-form-group" controlId="lit_supp">
+      <Form.Label>Lit Supplémentaires</Form.Label>
+      <Form.Control
+        type="number"
+        name="lit_supp"
+        min="0"
+        placeholder="Prix de lit Supp"
+        value={formData.lit_supp}
+        isInvalid={hasSubmitted && !!errors.lit_supp}
+        onChange={handleChange}
+      />
+      {hasSubmitted && errors.lit_supp && (
+        <Form.Text className="text-danger">Required</Form.Text>
+      )}
+    </Form.Group>
+  </div>
+</div> 
+
+
+
                 
 
                 
@@ -1694,8 +1836,8 @@ className={`rounded-circle category-img ${selectedCategory === category.id ? 'se
             <td style={{ backgroundColor: "white" }}>
               <input
                 type="checkbox"
-                checked={selectedItems.some((item) => item === tarifChambre.id)}
-                onChange={() => handleCheckboxChange(tarifChambre.id)}
+                checked={selectedItems.includes(tarifChambre?.id)}
+                onChange={() => handleCheckboxChange(tarifChambre?.id)}
               />
             </td>
             <td style={{ backgroundColor: "white" }}>{highlightText(tarifChambre?.code, searchTerm) ||''}</td>
@@ -1712,7 +1854,7 @@ className={`rounded-circle category-img ${selectedCategory === category.id ? 'se
       style={{ color: "#007bff", cursor: "pointer", marginRight: "10px" }}
     />
     <FontAwesomeIcon
-      onClick={() => handleDelete(tarifChambre.id)}
+      onClick={() => handleDelete(tarifChambre?.id)}
       icon={faTrash}
       style={{ color: "#ff0000", cursor: "pointer", marginRight: "10px" }}
     />
@@ -1735,6 +1877,12 @@ className={`rounded-circle category-img ${selectedCategory === category.id ? 'se
                   className="btn btn-danger btn-sm"
                   onClick={handleDeleteSelected}
                   disabled={selectedItems?.length === 0}
+                  style={{
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                    fontSize: "17px",
+                    color: "white",
+                  }}
                 >
                   <FontAwesomeIcon
                     icon={faTrash}

@@ -55,6 +55,8 @@ const TarifRepas = () => {
   });
 
 
+  
+
 
   //---------------form-------------------//
   const [newRepas, setNewRepas] = useState({
@@ -243,17 +245,21 @@ const [typeRepas, setTypeRepas] = useState('');
 
     // Populate form data with tarif Repas details
     setFormData({
-        type_repas: tarifRepas.type_repas?.id,
-        designation: tarifRepas.tarif_repas?.id,
-        montant: tarifRepas.montant,
+        type_repas: tarifRepas.type_repas?.id || "",
+        designation: tarifRepas.tarif_repas?.id || "",
+        montant: tarifRepas.montant || "",
   });
+    // Sélectionner automatiquement la ligne à modifier
+    setSelectedItems([tarifRepas.id]);
+  
     if (formContainerStyle.right === "-100%") {
       setFormContainerStyle({ right: "0" });
       setTableContainerStyle({ marginRight: "650px" });
-    } else {
-      closeForm();
-    }
+    } 
   };
+
+
+
   useEffect(() => {
     if (editingTarifRepasId !== null) {
       setFormContainerStyle({ right: "0" });
@@ -351,11 +357,21 @@ const [typeRepas, setTypeRepas] = useState('');
     //------------------------- CHAMBRE FORM---------------------//
 
     const handleShowFormButtonClick = () => {
+      setEditingTarifRepas(null);
+      setFormData({
+        type_repas: "",
+        designation: "",
+        montant: "",
+      });
+      setErrors({
+        type_repas: false,
+        designation: false,
+        montant: false,
+      });
+      // Si le formulaire est fermé, on l’ouvre, sinon on le laisse tel quel.
       if (formContainerStyle.right === "-100%") {
         setFormContainerStyle({ right: "0" });
         setTableContainerStyle({ marginRight: "650px" });
-      } else {
-        closeForm();
       }
     };
 
@@ -364,6 +380,8 @@ const [typeRepas, setTypeRepas] = useState('');
       setTableContainerStyle({ marginRight: "0" });
       setSelectedCategory("")
       setShowForm(false); // Hide the form
+      setSelectedItems([]); // Désélectionne toutes les cases
+
 
       // Reset the form data
       setFormData({
@@ -469,6 +487,7 @@ const [typeRepas, setTypeRepas] = useState('');
   
   //-------------------------Select Delete --------------------//
   const handleDeleteSelected = () => {
+
     Swal.fire({
       title: "Êtes-vous sûr de vouloir supprimer ?",
       showDenyButton: true,
@@ -525,13 +544,41 @@ const [typeRepas, setTypeRepas] = useState('');
       setSelectedItems(tarifRepas?.map((TarifRepas) => TarifRepas?.id));
     }
   };
+
+
+
   const handleCheckboxChange = (itemId) => {
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems?.filter((id) => id !== itemId));
-    } else {
-      setSelectedItems([...selectedItems, itemId]);
+  let updatedSelection = [...selectedItems];
+
+  if (updatedSelection.includes(itemId)) {
+    updatedSelection = updatedSelection.filter((id) => id !== itemId);
+  } else {
+    updatedSelection.push(itemId);
+  }
+
+  setSelectedItems(updatedSelection);
+
+  // Si un seul élément est sélectionné, on l'affiche dans le formulaire
+  if (updatedSelection.length === 1) {
+    const selectedTarif = tarifRepas.find((item) => item.id === updatedSelection[0]);
+    if (selectedTarif) {
+      setEditingTarifRepas(selectedTarif);
+      setFormData({
+        type_repas: selectedTarif.type_repas?.id || "",
+        designation: selectedTarif.tarif_repas?.id || "",
+        montant: selectedTarif.montant || "",
+      });
+
+      if (formContainerStyle.right === "-100%") {
+        setFormContainerStyle({ right: "0" });
+        setTableContainerStyle({ marginRight: "650px" });
+      }
     }
-  };
+  } else if (updatedSelection.length === 0) {
+    closeForm();
+  }
+};
+
 
   const exportToExcel = () => {
     const table = document.getElementById('tarifRepasTable');
@@ -676,6 +723,8 @@ const handleInputChangeRep = (index, field, value) => {
   setErrors(newErrors);
   setSelectedProductsDataRep(updatedProducts);
 };
+
+
 
 
 const handleRepasFilterChange = (e) => {
@@ -1033,31 +1082,54 @@ onClick={() => handleCategoryFilterChange(category?.id)}
 
           }
 
-          <div className="container-d-flex justify-content-start">
-            <div style={{ display: "flex", alignItems: "center" ,marginTop:'20px' ,padding:'0'}}>
-             
-              <a
-                onClick={handleShowFormButtonClick}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                }}
-                className="AjouteBotton"
-              >
+        <div className="container-d-flex justify-start sm:justify-between">
+          <div style={{ display: "flex", alignItems: "center", marginTop: '-12px', padding: '15px' }}>
+
+            <button
+              onClick={handleShowFormButtonClick}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                backgroundColor: "#329982",
+                color: "white",
+                borderRadius: "10px",
+                fontWeight: "bold",
+                marginLeft: "96%",  // Keep your marginLeft for large screens
+                padding: "6px 15px",
+                border: "none",
+                height: "40px",
+              }}
+              className="gap-2 AjouteBotton sm:ml-0 md:ml-auto" // Add responsive margin class
+            >
+
                 <FontAwesomeIcon
                     icon={faPlus}
                     className=" AjouteBotton"
-                    style={{ cursor: "pointer" }}
-                  />Ajouter un Tarif Repas
-              </a>
+                    style={{ cursor: "pointer" ,color: "white"}}
+                  />
+              </button>
             </div>
             <div className="filters" 
             >
-    <Form.Select aria-label="Default select example"
-    value={typeRepas} onChange={handleRepasFilterChange}
-    style={{width:'10%' ,height:"35px",position:'absolute', left: '81%',  top: '224px'}}>
-    <option value="">Sélectionner Type Repas</option>
+        <Form.Select
+        aria-label="Default select example"
+        value={typeRepas}
+        onChange={handleRepasFilterChange}
+        style={{
+          width: '12%', // Keep your width for large screens
+          height: "40px",
+          position: 'absolute',
+          left: '81%', // Keep your left for large screens
+          top: '224px',
+          cursor: "pointer",
+          borderRadius: "10px",
+          color: "black",
+          fontWeight: "bold",
+        }}
+        className="sm:w-3/4 md:w-1/2 lg:w-1/4"  // Add responsive width here
+      >
+    <option value="" style={{ fontWeight: "bold", color: "white" }}>Sélectionner Type Repas</option>
         {
           typesRepas?.map((type) => (
             <option value={type.type_repas}>{type.type_repas}</option>
@@ -1530,7 +1602,7 @@ onClick={() => handleCategoryFilterChange(category?.id)}
             <td style={{ backgroundColor: "white" }}>
               <input
                 type="checkbox"
-                checked={selectedItems.some((item) => item === tarifRepas?.id)}
+                checked={selectedItems.includes(tarifRepas?.id)}
                 onChange={() => handleCheckboxChange(tarifRepas?.id)}
               />
             </td>
@@ -1566,6 +1638,12 @@ onClick={() => handleCategoryFilterChange(category?.id)}
                   className="btn btn-danger btn-sm"
                   onClick={handleDeleteSelected}
                   disabled={selectedItems?.length === 0}
+                  style={{
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                    fontSize: "17px",
+                    color: "white",
+                  }}
                 >
                   <FontAwesomeIcon
                     icon={faTrash}

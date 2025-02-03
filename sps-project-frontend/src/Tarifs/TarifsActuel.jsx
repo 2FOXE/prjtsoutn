@@ -58,6 +58,7 @@ const TarifsActuel = () => {
 const [typeChambre, setTypeChambre] = useState('');
 const [typeRepas, setTypeRepas] = useState('');
 const [typeReduction, setTypeReduction] = useState('');
+const [DateDebut, setDateDebut] = useState();
 
   const [showForm, setShowForm] = useState(false);
   
@@ -172,6 +173,8 @@ const [typeReduction, setTypeReduction] = useState('');
     }
   };
   
+
+  
   useEffect(() => {
     const storedTarifsActuel = localStorage.getItem("tarifsActuel");
     const storedtarifsChambre = localStorage.getItem("tarifsChambreActuel");
@@ -265,26 +268,26 @@ const [typeReduction, setTypeReduction] = useState('');
   //------------------------- tarif Actuel EDIT---------------------//
 
   const handleEdit = (tarifActuel) => {
+    setErrors({});
     setEditingTarifActuel(tarifActuel); 
-
+    
     // Populate form data with tarif Actuel details
     setFormData({
-      date_debut: tarifActuel.date_debut,
-      date_fin: tarifActuel.date_fin,
-      tarif_chambre: tarifActuel?.tarif_chambre?.id,
-      tarif_repas: tarifActuel?.tarif_repas?.id,
-      tarif_reduction: tarifActuel?.tarif_reduction?.id,
+      date_debut: tarifActuel.date_debut || "",
+      date_fin: tarifActuel.date_fin || "",
+      tarif_chambre: tarifActuel?.tarif_chambre?.id || "",
+      tarif_repas: tarifActuel?.tarif_repas?.id || "",
+      tarif_reduction: tarifActuel?.tarif_reduction?.id || "",
   });
   
+  setSelectedItems([tarifActuel.id]);
 
     // setSelectedProductsDataRep(chambre.represantant?.map(contact => ({ ...contact })));
 
     if (formContainerStyle.right === "-100%") {
       setFormContainerStyle({ right: "0" });
       setTableContainerStyle({ marginRight: "650px" });
-    } else {
-      closeForm();
-    }
+    } 
   };
   useEffect(() => {
     if (editingTarifActuelId !== null) {
@@ -307,100 +310,72 @@ const [typeReduction, setTypeReduction] = useState('');
     validateData();
   }, [formData]);
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const hasErrors = Object.values(errors).some(error => error === true);
-      if (hasErrors) {
-        alert("Veuillez remplir tous les champs obligatoires.");
-        return;  
-      }
-      const url = editingTarifActuel 
-          ? `http://localhost:8000/api/tarifs-actuel/${editingTarifActuel.id}`
-          : "http://localhost:8000/api/tarifs-actuel";
-      const method = editingTarifActuel ? "put" : "post";
 
-      let requestData;
 
-      if (editingTarifActuel) {
-        requestData = {
-        date_debut: formData.date_debut,
-        date_fin: formData.date_fin,
-        tarif_chambre: formData.tarif_chambre,
-        tarif_repas: formData.tarif_repas,
-        tarif_reduction: Number(formData.tarif_reduction),
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    setHasSubmitted(true); // Mark the form as submitted
+  
+    // Validation
+    const newErrors = {};
+    newErrors.date_debut = formData.date_debut === "" || formData.date_debut > formData.date_fin;
+    newErrors.date_fin = formData.date_fin === "" || formData.date_fin < formData.date_debut;
+    newErrors.tarif_chambre = formData.tarif_chambre === "";
+    newErrors.tarif_repas = formData.tarif_repas === "";
+    newErrors.tarif_reduction = formData.tarif_reduction === "";
+  
+    setErrors(newErrors); // Update error state
+  
+    // If there are errors, show an alert and stop submission
+    if (Object.values(newErrors).some((error) => error)) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Veuillez remplir tous les champs obligatoires.",
+      });
+      return;
+    }
+  
+    // Proceed with submitting the form
+    const url = editingTarifActuel
+      ? `http://localhost:8000/api/tarifs-actuel/${editingTarifActuel.id}`
+      : "http://localhost:8000/api/tarifs-actuel";
+    const method = editingTarifActuel ? "put" : "post";
+  
+    try {
+      const response = await axios({
+        method: method,
+        url: url,
+        data: formData,
+      });
+  
+      if (response.status === 200 || response.status === 201) {
+        fetchTarifsActuel(); // Refresh the data
+        Swal.fire({
+          icon: "success",
+          title: "Succès!",
+          text: `Tarif Actuel ${editingTarifActuel ? "modifié" : "ajouté"} avec succès.`,
+        });
+        closeForm(); // Close the form and reset the state
       }
-      else {
-      const formDatad = new FormData();
-      formDatad.append("date_debut", formData.date_debut);
-      formDatad.append("date_fin", formData.date_fin);
-      formDatad.append("tarif_chambre", formData.tarif_chambre);
-      formDatad.append("tarif_repas", formData.tarif_repas);
-      formDatad.append("tarif_reduction", formData.tarif_reduction);
-      requestData = formDatad;
-      } 
-      try {
-          const response = await axios({
-              method: method,
-              url: url,
-              data: requestData,
-          });
-          
-          if (response.status === 200 || response.status === 201) {
-              fetchTarifsActuel();
-              const successMessage = `Tarif Actuel ${editingTarifActuel ? "modifié" : "ajouté"} avec succès.`;
-              Swal.fire({
-                  icon: "success",
-                  title: "Succès!",
-                  text: successMessage,
-              });
-              // Reset form and errors
-              setSelectedProductsData([]);
-              setSelectedProductsDataRep([]);
-              setFormData({
-                date_debut: "", 	
-                date_fin: "",
-                tarif_chambre: "",
-                tarif_repas: "",
-                tarif_reduction: "",
-              });
-              setErrors({
-                date_debut: "", 	
-                date_fin: "",
-                tarif_chambre: "",
-                tarif_repas: "",
-                tarif_reduction: "",
-              });
-              setEditingTarifActuel(null);
-              closeForm();
-          }
-      } catch (error) {
-          if (error.response) {
-              const serverErrors = error.response.data.error;
-              
-          }
-          setTimeout(() => {
-              setErrors({});
-          }, 3000);
-      }
+    } catch (error) {
+      console.error("Error during submission:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: error.response?.data?.error || "Une erreur s'est produite.",
+      });
+    }
   };
+  
+  
 
 
     //------------------------- CHAMBRE FORM---------------------//
 
     const handleShowFormButtonClick = () => {
-      if (formContainerStyle.right === "-100%") {
-        setFormContainerStyle({ right: "0" });
-        setTableContainerStyle({ marginRight: "650px" });
-      } else {
-        closeForm();
-      }
-    };
-
-    const closeForm = () => {
-      setFormContainerStyle({ right: "-100%" });
-      setTableContainerStyle({ marginRight: "0" });
-      setShowForm(false); // Hide the form
+      setEditingTarifActuel(null);
       setFormData({
         date_debut: "", 	
         date_fin: "",
@@ -409,12 +384,42 @@ const [typeReduction, setTypeReduction] = useState('');
         tarif_reduction: "",
       });
       setErrors({
-        date_debut: "", 	
-        date_fin: "",
-        tarif_chambre: "",
-        tarif_repas: "",
-        tarif_reduction: "",
+        date_debut: false, 	
+        date_fin: false,
+        tarif_chambre: false,
+        tarif_repas: false,
+        tarif_reduction:false,
       });
+
+      if (formContainerStyle.right === "-100%") {
+        setFormContainerStyle({ right: "0" });
+        setTableContainerStyle({ marginRight: "650px" });
+      } 
+    };
+
+
+    const closeForm = () => {
+      setFormContainerStyle({ right: "-100%" });
+      setTableContainerStyle({ marginRight: "0" });
+      setShowForm(false); // Hide the form
+      setSelectedItems([]); // Désélectionne toutes les cases
+
+     // Reset form data and errors
+  setFormData({
+    date_debut: "",
+    date_fin: "",
+    tarif_chambre: "",
+    tarif_repas: "",
+    tarif_reduction: "",
+  });
+  setErrors({
+    date_debut: "",
+    date_fin: "",
+    tarif_chambre: "",
+    tarif_repas: "",
+    tarif_reduction: "",
+  });
+      setHasSubmitted(false); // Reset submission state
       setSelectedProductsData([])
       setSelectedProductsDataRep([])
       setEditingTarifActuel(null); // Clear editing client
@@ -506,6 +511,14 @@ const [typeReduction, setTypeReduction] = useState('');
   
   //-------------------------Select Delete --------------------//
   const handleDeleteSelected = () => {
+    if (selectedItems.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Aucune sélection",
+        text: "Veuillez sélectionner au moins un élément à supprimer.",
+      });
+      return;
+    }
     Swal.fire({
       title: "Êtes-vous sûr de vouloir supprimer ?",
       showDenyButton: true,
@@ -554,13 +567,43 @@ const [typeReduction, setTypeReduction] = useState('');
       setSelectedItems(tarifsActuel?.map((tarifActuel) => tarifActuel.id));
     }
   };
+
+
   const handleCheckboxChange = (itemId) => {
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems?.filter((id) => id !== itemId));
+    let updatedSelection = [...selectedItems];
+  
+    if (updatedSelection.includes(itemId)) {
+      updatedSelection = updatedSelection.filter((id) => id !== itemId);
     } else {
-      setSelectedItems([...selectedItems, itemId]);
+      updatedSelection.push(itemId);
+    }
+  
+    setSelectedItems(updatedSelection);
+    const selectedTarif = tarifsActuel.find((item) => item.id === itemId);
+
+    // Si un seul élément est sélectionné, on l'affiche dans le formulaire
+    if (updatedSelection.length === 1) {
+      if (selectedTarif) {
+        setEditingTarifActuel(selectedTarif);
+        setFormData({
+          date_debut: selectedTarif.date_debut?.id || "",
+          date_fin: selectedTarif.date_fin?.id || "",
+          tarif_chambre: selectedTarif.tarif_chambre || "",
+          tarif_reduction: selectedTarif.tarif_chambre || "",
+          tarif_repas: selectedTarif.tarif_chambre || "",
+        });
+  
+        if (formContainerStyle.right === "-100%") {
+          setFormContainerStyle({ right: "0" });
+          setTableContainerStyle({ marginRight: "650px" });
+        }
+      }
+    } // Si aucune case n'est cochée, fermer le formulaire
+      else if (updatedSelection.length === 0) {
+      closeForm();
     }
   };
+  
 
   const exportToExcel = () => {
     const table = document.getElementById('tarifsActuelTable');
@@ -568,7 +611,7 @@ const [typeReduction, setTypeReduction] = useState('');
     XLSX.writeFile(workbook, 'tarifs_actuel_table.xlsx');
   };
 
-  
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const exportToPDF = () => {
     const doc = new jsPDF();
     
@@ -712,6 +755,13 @@ const handleTypeReductionChange = (e) => {
 };
 
 
+
+const handleDateDebutFilterChange = (e) => {
+  setDateDebut(e.target.value);
+};
+
+
+
 const filteredTarifsActuel = tarifsActuel?.filter((tarifActuel) => {
   return (
     (typeChambre ? tarifActuel.tarif_chambre?.type_chambre?.designation == typeChambre : true) &&
@@ -719,11 +769,16 @@ const filteredTarifsActuel = tarifsActuel?.filter((tarifActuel) => {
     (typeReduction ? tarifActuel.tarif_reduction?.designation == typeReduction : true) &&
     (selectedCategory ? tarifActuel.id
       === selectedCategory : true) &&
-      (searchTerm ? tarifActuel?.date_debut.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
+    (DateDebut ? tarifActuel.date_debut?.includes(DateDebut) : true) && // ✅ Correction ici
+      (searchTerm ? Object.values(tarifActuel).some(value =>
+        typeof value === "string" ? value.toLowerCase().includes(searchTerm.toLowerCase()) : false
+      ) : true)
+
+     /* (searchTerm ? tarifActuel?.date_debut.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
       (searchTerm ? tarifActuel?.date_fin?.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
       (searchTerm ? tarifActuel?.tarif_chambre?.designation?.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
       (searchTerm ? tarifActuel?.tarif_repas?.designation?.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
-      (searchTerm ? tarifActuel?.tarif_reduction?.designation?.toLowerCase().includes(searchTerm.toLowerCase()) : true) 
+      (searchTerm ? tarifActuel?.tarif_reduction?.designation?.toLowerCase().includes(searchTerm.toLowerCase()) : true) */
   );
 });
 
@@ -805,35 +860,59 @@ const handleCategoryFilterChange = (catId) => {
 
           {
           
-            <div style={{height:'125px',marginTop:'-15px'}}>
-              <h5 className="container-d-flex justify-content-start AjouteBotton"style={{marginBottom:'-3px'}} >{/*Secteur d'activité*/}</h5> 
-              <div className=" bgSecteur" >
-
+              <div className=" bgSecteur">
               </div>
-            </div>
 
           }
 
           <div className="container-d-flex justify-content-start">
-            <div style={{ display: "flex", alignItems: "center" ,marginTop:'15px' ,padding:'0'}}>
+            <div style={{ display: "flex", alignItems: "center" ,marginTop:'-12px' ,padding:'15px'}}>
              
-              <a
+              <button
                 onClick={handleShowFormButtonClick}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   cursor: "pointer",
+                  backgroundColor: "#329982",
+                  color: "white",
+                  borderRadius: "10px",
+                  fontWeight: "bold"  , 
+                  marginLeft: "96%",
+                  padding: "6px 15px",
+                  height: "40px",
+                  border: "none",
                 }}
-                className="AjouteBotton"
+                className="gap-2 AjouteBotton"
               >
  <FontAwesomeIcon
                     icon={faPlus}
                     className=" AjouteBotton"
-                    style={{ cursor: "pointer" }}
-                  />Ajouter un Tarif
-              </a>
+                    style={{ cursor: "pointer", color: "white" }} 
+                  />
+              </button>
 
             </div>
+
+
+
+                <div className="filters" 
+                            >
+                    <Form.Select aria-label="Default select example"
+                    value={DateDebut} onChange={handleDateDebutFilterChange}
+                    style={{width:'12%' ,height:"40px",position:'absolute', left: '81%',  top: '129px',cursor: "pointer",
+                      borderRadius: "10px", color: "black", fontWeight: "bold"}}>
+                    <option value="" style={{ fontWeight: "bold", color: "white" }}>Sélectionner la Date</option>
+                    {tarifsActuel
+                      ?.map((tarif) => tarif.date_debut) // Récupérer toutes les dates
+                      ?.filter((date, index, self) => self.indexOf(date) === index) // Éviter les doublons
+                      ?.map((date) => (
+                    <option key={date} value={date}>{date}</option>
+                    ))
+                      }
+                    </Form.Select>
+                </div>
+                
 
         <div style={{ marginTop:"0px",}}>
         <div id="formContainer" className="" style={{...formContainerStyle,marginTop:'0px',maxHeight:'700px',overflow:'auto',padding:'0'}}>
@@ -851,84 +930,117 @@ const handleCategoryFilterChange = (catId) => {
                     >
                       {editingTarifActuel ? "Modifier" : "Ajouter"} un Tarif</h4>
                 </Form.Label>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Date Debut</Form.Label>
-                <Form.Control
-                type="datetime-local"
-                name="date_debut"
-                placeholder="Date Debut"
-                isInvalid={!!errors.date_debut}
-                value={formData.date_debut}
-                onChange={handleChange}
-              />
-              <Form.Text className="text-danger">
-                {errors.date_debut}
-              </Form.Text>
-                </Form.Group>
 
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Date Fin</Form.Label>
+
+                <Form.Group className="col-sm-6 mt-2">
+                <Form.Label>Date Début</Form.Label>
                 <Form.Control
+                  type="datetime-local"
+                  name="date_debut"
+                  value={formData.date_debut}
+                  isInvalid={hasSubmitted && !!errors.date_debut} // Check if form has been submitted and there's an error
+                  onChange={(e) => setFormData({ ...formData, date_debut: e.target.value })}
+                />
+                {hasSubmitted && errors.date_debut && (
+                  <Form.Control.Feedback type="invalid">
+                    Date Début is required and must be before Date Fin.
+                  </Form.Control.Feedback>
+                )}
+              </Form.Group>
+
+                
+
+              <Form.Group className="col-sm-6 mt-2">
+              <Form.Label>Date Fin</Form.Label>
+              <Form.Control
                 type="datetime-local"
                 name="date_fin"
-                placeholder="Date Fin"
-                isInvalid={!!errors.date_fin}
                 value={formData.date_fin}
-                onChange={handleChange}
+                isInvalid={hasSubmitted && !!errors.date_fin} // Check if form has been submitted and there's an error
+                onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
               />
-              <Form.Text className="text-danger">
-                {errors.date_fin}
-              </Form.Text>
-                </Form.Group>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                  <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px'}}>Tarif Chambre</Form.Label>                  <Form.Select
-                      name="tarif_chambre"
-                      value={formData.tarif_chambre}
-                      isInvalid={!!errors.tarif_chambre}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner Tarif de Chambre</option>
-                      {tarifChambre?.map((tarif) => (
-                          <option key={tarif?.id} value={tarif?.id}>
-                            {tarif?.designation}
-                          </option>
-                      ))}
-                  </Form.Select>
-                </Form.Group>
+              {hasSubmitted && errors.date_fin && (
+                <Form.Control.Feedback type="invalid">
+                  Date Fin is required and must be after Date Début.
+                </Form.Control.Feedback>
+              )}
+            </Form.Group>
 
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                  <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px'}}>Tarif Repas</Form.Label>
-                  <Form.Select
-                      name="tarif_repas"
-                      value={formData.tarif_repas}
-                      isInvalid={!!errors.tarif_repas}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner Tarif de Repas</option>
-                      {tarifRepas?.map((tarif) => (
-                          <option key={tarif?.id} value={tarif?.id}>
-                            {tarif?.designation}
-                          </option>
-                      ))}
-                  </Form.Select>
-                  <Form.Text className="text-danger">
-                      {errors.tarif_repas}
-                  </Form.Text>
-                </Form.Group>
 
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                  <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px'}}>Tarif Reduction</Form.Label>
-                  <Form.Select
-                      name="tarif_reduction"
-                      value={formData.tarif_reduction}
-                      isInvalid={!!errors.tarif_reduction}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner Tarif de Reduction</option>
-                      {tarifReduction?.map((tarif) => (
-                          <option key={tarif?.id} value={tarif?.id}>
-                            {tarif?.designation}
-                          </option>
-                      ))}
-                  </Form.Select>
-                </Form.Group> 
+
+                
+            <Form.Group className="col-sm-6 mt-2">
+            <Form.Label>Tarif Chambre</Form.Label>
+            <Form.Select
+              name="tarif_chambre"
+              value={formData.tarif_chambre}
+              isInvalid={hasSubmitted && !!errors.tarif_chambre} // Check if form has been submitted and there's an error
+              onChange={(e) => setFormData({ ...formData, tarif_chambre: e.target.value })}
+            >
+              <option value="">Sélectionner un tarif de chambre</option>
+              {tarifChambre?.map((tarif) => (
+                <option key={tarif?.id} value={tarif?.id}>
+                  {tarif?.designation}
+                </option>
+              ))}
+            </Form.Select>
+            {hasSubmitted && errors.tarif_chambre && (
+              <Form.Control.Feedback type="invalid">
+                Required.
+              </Form.Control.Feedback>
+            )}
+          </Form.Group>
+
+
+
+          <Form.Group className="col-sm-6 mt-2">
+          <Form.Label>Tarif Repas</Form.Label>
+          <Form.Select
+            name="tarif_repas"
+            value={formData.tarif_repas}
+            isInvalid={hasSubmitted && !!errors.tarif_repas} // Check if form has been submitted and there's an error
+            onChange={(e) => setFormData({ ...formData, tarif_repas: e.target.value })}
+          >
+            <option value="">Sélectionner un tarif de repas</option>
+            {tarifRepas?.map((tarif) => (
+              <option key={tarif?.id} value={tarif?.id}>
+                {tarif?.designation}
+              </option>
+            ))}
+          </Form.Select>
+          {hasSubmitted && errors.tarif_repas && (
+            <Form.Control.Feedback type="invalid">
+              Required.
+            </Form.Control.Feedback>
+          )}
+        </Form.Group>
+
+
+
+
+        <Form.Group className="col-sm-6 mt-2">
+  <Form.Label>Tarif Reduction</Form.Label>
+  <Form.Select
+    name="tarif_reduction"
+    value={formData.tarif_reduction}
+    isInvalid={hasSubmitted && !!errors.tarif_reduction} // Check if form has been submitted and there's an error
+    onChange={(e) => setFormData({ ...formData, tarif_reduction: e.target.value })}
+  >
+    <option value="">Sélectionner un tarif de réduction</option>
+    {tarifReduction?.map((tarif) => (
+      <option key={tarif?.id} value={tarif?.id}>
+        {tarif?.designation}
+      </option>
+    ))}
+  </Form.Select>
+  {hasSubmitted && errors.tarif_reduction && (
+    <Form.Control.Feedback type="invalid">
+      Required
+    </Form.Control.Feedback>
+  )}
+</Form.Group>
+
+
   <Form.Group className="mt-5 d-flex justify-content-center">
         <Fab
     variant="extended"
@@ -984,7 +1096,7 @@ const handleCategoryFilterChange = (catId) => {
             <td style={{ backgroundColor: "white" }}>
               <input
                 type="checkbox"
-                checked={selectedItems.some((item) => item === tarifActuel.id)}
+                checked={selectedItems.includes(tarifActuel?.id)}
                 onChange={() => handleCheckboxChange(tarifActuel.id)}
               />
             </td>
@@ -1164,6 +1276,12 @@ const handleCategoryFilterChange = (catId) => {
                   className="btn btn-danger btn-sm"
                   onClick={handleDeleteSelected}
                   disabled={selectedItems?.length === 0}
+                  style={{
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                    fontSize: "17px",
+                    color: "white",
+                  }}
                 >
                   <FontAwesomeIcon
                     icon={faTrash}

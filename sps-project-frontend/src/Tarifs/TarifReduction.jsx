@@ -241,22 +241,27 @@ const [newTypeReduction, setNewTypeReduction] = useState({
   //------------------------- tarif Reduction EDIT---------------------//
 
   const handleEdit = (tarifReduction) => {
+    setErrors({})
     setEditingTarifReduction(tarifReduction); 
 
     // Populate form data with tarif Reduction details
     setFormData({
-        designation: tarifReduction.tarif_reduction?.id,
-        type_reduction: tarifReduction.type_reduction?.id,
-        montant: tarifReduction.montant,
-        percentage: tarifReduction.percentage,
+        designation: tarifReduction.tarif_reduction?.id || "",
+        type_reduction: tarifReduction.type_reduction?.id || "",
+        montant: tarifReduction.montant || "",
+        percentage: tarifReduction.percentage || "",
   });
+        // Sélectionner automatiquement la ligne à modifier
+        setSelectedItems([tarifReduction.id]);
+
     if (formContainerStyle.right === "-100%") {
       setFormContainerStyle({ right: "0" });
       setTableContainerStyle({ marginRight: "650px" });
-    } else {
-      closeForm();
-    }
+    } 
   };
+
+
+
   useEffect(() => {
     if (editingTarifReductionId !== null) {
       setFormContainerStyle({ right: "0" });
@@ -296,110 +301,133 @@ const [newTypeReduction, setNewTypeReduction] = useState({
   }, [formData, newTypeReduction, newDesignation, selectedCategory]);
 
   
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const hasErrors = Object.values(errors).some(error => error === true);
-      
-      if (hasErrors) {
-        alert("Veuillez remplir tous les champs obligatoires.");
-        return;  
-      }
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    setHasSubmitted(true); // Mark form as submitted
+  
+    // Check for empty fields
+    const newErrors = {
+      type_reduction: formData.type_reduction === "",
+      designation: formData.designation === "",
+      percentage: formData.percentage === "",
+      montant: (formData.montant < 5 || formData.montant == null),
+    };
+  
+    setErrors(newErrors); // Update error state
+  
+    // If there are validation errors, show alert and return
+    if (Object.values(newErrors).some((error) => error)) {
+      Swal.fire({
+        icon: "error",
+        title: "Veuillez remplir tous les champs obligatoires.",
+      });
+      return;
+    }
+  
+    try {
       const url = editingTarifReduction 
-          ? `http://localhost:8000/api/tarifs-reduction/${editingTarifReduction?.id}`
-          : "http://localhost:8000/api/tarifs-reduction";
+        ? `http://localhost:8000/api/tarifs-reduction/${editingTarifReduction?.id}`
+        : "http://localhost:8000/api/tarifs-reduction";
+  
       const method = editingTarifReduction ? "put" : "post";
-
-      let requestData;
-
+      let requestData = new FormData();
+  
+      requestData.append("type_reduction", formData.type_reduction);
+      requestData.append("tarif_reduction", formData.designation || selectedCategory);
+      requestData.append("montant", formData.montant);
+      requestData.append("percentage", formData.percentage);
+  
       if (editingTarifReduction) {
-        requestData = {
-        type_reduction: formData.type_reduction,
-        tarif_reduction: formData.designation,
-        montant: formData.montant,
-        percentage: formData.percentage
-        }
+        requestData.append("_method", "PUT");
       }
-      else {
-      const formDatad = new FormData();
-      formDatad.append("type_reduction", formData.type_reduction);
-      formDatad.append("tarif_reduction", formData.designation || selectedCategory);
-      formDatad.append("montant", formData.montant);
-      formDatad.append("percentage", formData.percentage);
-      requestData = formDatad;
-      } 
-      try {
-          const response = await axios({
-              method: method,
-              url: url,
-              data: requestData,
-          });
-          
-          if (response.status === 200 || response.status === 201) {
-              fetchTarifReduction();
-              const successMessage = `Tarif Reduction ${editingTarifReduction ? "modifié" : "ajouté"} avec succès.`;
-              Swal.fire({
-                  icon: "success",
-                  title: "Succès!",
-                  text: successMessage,
-              });
-              // Reset form and errors
-              setSelectedProductsData([]);
-              setSelectedProductsDataRep([]);
-              setFormData({
-                type_reduction: "",
-                designation: "",
-                montant: "",
-                percentage: ""
-              });
-              setErrors({
-                type_reduction: "", 
-                designation: "",	
-                montant: "",
-                percentage: ""
-              });
-              setEditingTarifReduction(null);
-              closeForm();
-          }
-      } catch (error) {
-          if (error.response) {
-              const serverErrors = error.response.data.error;
-              
-          }
-          setTimeout(() => {
-              setErrors({});
-          }, 3000);
+  
+      const response = await axios({
+        method: "post",
+        url: url,
+        data: requestData,
+      });
+  
+      if (response.status === 200 || response.status === 201) {
+        fetchTarifReduction();
+        Swal.fire({
+          icon: "success",
+          title: ` ${editingTarifReduction ? "Modifié" : "Ajouté"} avec succès.`,
+        });
+  
+        // Reset form and errors
+        setFormData({
+          type_reduction: "",
+          designation: "",
+          montant: "",
+          percentage: ""
+        });
+  
+        setErrors({
+          type_reduction: false,
+          designation: false,
+          montant: false,
+          percentage: false
+        });
+  
+        setHasSubmitted(false); // Reset submission state
+        setEditingTarifReduction(null);
+        closeForm(); // Close form after successful submission
       }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur!",
+        text: error.response?.data?.error || "Une erreur s'est produite.",
+      });
+    }
   };
-
 
     //------------------------- Reduction FORM---------------------//
 
     const handleShowFormButtonClick = () => {
-      if (formContainerStyle.right === "-100%") {
-        setFormContainerStyle({ right: "0" });
-        setTableContainerStyle({ marginRight: "650px" });
-      } else {
-        closeForm();
-      }
-    };
-
-    const closeForm = () => {
-      setFormContainerStyle({ right: "-100%" });
-      setTableContainerStyle({ marginRight: "0" });
-      setShowForm(false); // Hide the form
+      setEditingTarifReduction(null);
       setFormData({
-        type_reduction: "", 
-        designation: "",	
+        type_reduction: "",
+        designation: "",
         montant: "",
         percentage: ""
       });
       setErrors({
-        type_reduction: "",
-        designation: "", 	
-        montant: "",
-        percentage: ""
+        type_reduction: false,
+        designation: false,
+        montant: false,
+        percentage: false,
       });
+
+      if (formContainerStyle.right === "-100%") {
+        setFormContainerStyle({ right: "0" });
+        setTableContainerStyle({ marginRight: "650px" });
+      } 
+    };
+
+    // Close the form
+    const closeForm = () => {
+      setFormContainerStyle({ right: "-100%" });
+      setTableContainerStyle({ marginRight: "0" });
+      setShowForm(false); // Hide the form
+      setSelectedCategory("")
+      setSelectedItems([]); // Désélectionne toutes les cases
+     // Reset form data and errors
+  setFormData({
+    type_reduction: "",
+    designation: "",
+    montant: "",
+    percentage: ""
+  });
+
+  setErrors({
+    type_reduction: "",
+    designation: "",
+    montant: "",
+    percentage: ""
+  });
+      setHasSubmitted(false); // Reset submission state
       setSelectedProductsData([])
       setSelectedProductsDataRep([])
       setEditingTarifReduction(null); // Clear editing client
@@ -558,13 +586,45 @@ const [newTypeReduction, setNewTypeReduction] = useState({
       setSelectedItems(tarifReduction?.map((TarifReduction) => TarifReduction?.id));
     }
   };
+ 
+
   const handleCheckboxChange = (itemId) => {
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems?.filter((id) => id !== itemId));
+    let updatedSelection = [...selectedItems];
+  
+    if (updatedSelection.includes(itemId)) {
+      updatedSelection = updatedSelection.filter((id) => id !== itemId);
     } else {
-      setSelectedItems([...selectedItems, itemId]);
+      updatedSelection.push(itemId);
+    }
+  
+    setSelectedItems(updatedSelection);
+  
+    // Si un seul élément est sélectionné, afficher ses infos dans le formulaire
+    if (updatedSelection.length === 1) {
+      const selectedTarif = tarifReduction.find((item) => item.id === updatedSelection[0]);
+      if (selectedTarif) {
+        setEditingTarifReduction(selectedTarif);
+        setFormData({
+          type_reduction: selectedTarif.type_reduction?.id || "",
+          percentage: selectedTarif.percentage?.id || "",
+          montant: selectedTarif.montant || "",
+        });
+  
+        if (formContainerStyle.right === "-100%") {
+          setFormContainerStyle({ right: "0" });
+          setTableContainerStyle({ marginRight: "650px" });
+        }
+      }
+    } 
+    // Si aucune case n'est cochée, fermer le formulaire
+    else if (updatedSelection.length === 0) {
+      closeForm();
     }
   };
+  
+
+
+
 
   const exportToExcel = () => {
     const table = document.getElementById('tarifReductionTable');
@@ -856,6 +916,7 @@ const handleReductionFilterChange = (e) => {
   setTypeReduction(e.target.value);
 };
 
+const [hasSubmitted, setHasSubmitted] = useState(false);
 
 
 const filteredTarifreduction = tarifReduction?.filter((tarifReduction) => {
@@ -1228,7 +1289,7 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
           }
 
           <div className="container-d-flex justify-content-start">
-            <div style={{ display: "flex", alignItems: "center" ,marginTop:'20px' ,padding:'0'}}>
+            <div style={{ display: "flex", alignItems: "center" ,marginTop:'-12px' ,padding:'15px'}}>
              
               <a
                 onClick={handleShowFormButtonClick}
@@ -1236,14 +1297,21 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
                   display: "flex",
                   alignItems: "center",
                   cursor: "pointer",
+                  backgroundColor: "#329982",
+                  color: "white",
+                  borderRadius: "10px",
+                  fontWeight: "bold"  , 
+                  marginLeft: "96%",
+                  padding: "6.5px 15px",
+                  height: "40px",
                 }}
-                className="AjouteBotton"
+                className="gap-2 AjouteBotton"
               >
  <FontAwesomeIcon
                     icon={faPlus}
                     className=" AjouteBotton"
-                    style={{ cursor: "pointer" }}
-                  />Ajouter un Tarif Reduction
+                    style={{ cursor: "pointer", color: "white"  }}
+                  />
               </a>
 
             </div>
@@ -1253,7 +1321,8 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
 
     <Form.Select aria-label="Default select example"
     value={typeReduction} onChange={handleReductionFilterChange}
-    style={{width:'10%' ,height:"35px",position:'absolute', left: '81%',  top: '224px'}}>
+    style={{width:'12%' ,height:"40px",position:'absolute', left: '81%',  top: '224px',cursor: "pointer",
+      borderRadius: "10px", color: "black", fontWeight: "bold"}}>
     <option value="">Sélectionner Type Reduction</option>
     {typesReduction?.map((type) => (
         <option value={type.type_reduction}>
@@ -1279,30 +1348,38 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
                     >
                       {editingTarifReduction ? "Modifier" : "Ajouter"} un Tarif</h4>
                 </Form.Label>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
+
+                <Form.Group className="form-group">
+                <div className="d-flex align-items-center w-100">
+                  <FontAwesomeIcon
                     icon={faPlus}
-                    className=" text-primary"
+                    className="text-primary me-2"
                     style={{ cursor: "pointer" }}
-                    onClick={() => setShowAddDesignation(true)}
+                    onClick={displayAddTypeReduction}
                   />
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Tarif Reduction</Form.Label>
-                <Form.Select
+                  <Form.Label className="me-3" style={{ minWidth: "150px" }}>Tarif Reduction</Form.Label>
+                  <div style={{ flexGrow: 1, position: "relative" }}>
+                    <Form.Select
                       name="designation"
-                      isInvalid={!!errors.designation}
+                      isInvalid={hasSubmitted && !!errors.designation} // Ensure it's a boolean
                       value={selectedCategory ? selectedCategory : formData.designation}
-                      onChange={handleChange}>
+                      onChange={handleChange}
+                    >
                       <option value="">Sélectionner un Tarif Reduction</option>
-                        {tarifsReduction?.map((tarif) => (
-                            <option value={tarif?.id}>
-                            {tarif?.designation}
-                            </option>
-                        ))}
-                  </Form.Select>
-              <Form.Text className="text-danger">
-                {errors.designation}
-              </Form.Text>
-                </Form.Group>
+                      {tarifsReduction?.map((tarif) => (
+                        <option key={tarif.id} value={tarif.id}>{tarif.designation}</option>
+                      ))}
+                    </Form.Select>
+                    {hasSubmitted && errors.designation && (
+                      <Form.Control.Feedback type="invalid" className="d-block">
+                        Required.
+                      </Form.Control.Feedback>
+                    )}
+                  </div>
+                </div>
+              </Form.Group>
+
+
                 <Modal show={showEditModalDesignation} onHide={() => setShowEditModalDesignation(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Modifier un Tarif de Reduction</Modal.Title>
@@ -1449,30 +1526,37 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
   </Form.Group>
       </Modal.Body>
       </Modal>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className=" text-primary"
-                    style={{ cursor: "pointer" }}
-                    onClick={displayAddTypeReduction}
-                  />
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Type Reduction</Form.Label>
+
+                <Form.Group className="form-group">
+            <div className="d-flex align-items-center w-100">
+              <FontAwesomeIcon
+                icon={faPlus}
+                className="text-primary me-2"
+                style={{ cursor: "pointer" }}
+                onClick={displayAddTypeReduction}
+              />
+              <Form.Label className="me-3" style={{ minWidth: "150px" }}>Type Reduction</Form.Label>
+              <div style={{ flexGrow: 1, position: "relative" }}>
                 <Form.Select
-                      name="type_reduction"
-                      isInvalid={!!errors.type_reduction}
-                      value={formData.type_reduction}
-                      onChange={handleChange}>
-                      <option value="">Sélectionner Type de Reduction</option>
-                        {typesReduction?.map((tarif) => (
-                            <option value={tarif?.id}>
-                            {tarif.type_reduction}
-                            </option>
-                        ))}
-                  </Form.Select>
-              <Form.Text className="text-danger">
-                {errors.type_reduction}
-              </Form.Text>
-                </Form.Group>
+                  name="type_reduction"
+                  isInvalid={hasSubmitted && errors.type_reduction}
+                  value={formData.type_reduction}
+                  onChange={handleChange}
+                >
+                  <option value="">Sélectionner Type de Reduction</option>
+                  {typesReduction?.map((tarif) => (
+                    <option key={tarif.id} value={tarif.id}>{tarif.type_reduction}</option>
+                  ))}
+                </Form.Select>
+                {hasSubmitted && errors.type_reduction && (
+                  <Form.Control.Feedback type="invalid" className="d-block">
+                    Required
+                  </Form.Control.Feedback>
+                )}
+              </div>
+            </div>
+          </Form.Group>
+
                 <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Modifier Type de Reduction</Modal.Title>
@@ -1614,36 +1698,52 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
       </Modal.Body>
       </Modal>
 
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Montant</Form.Label>
-                <Form.Control
-                type="number"
-                name="montant"
-                min="0"
-                isInvalid={!!errors.montant}
-                placeholder="Montant"
-                value={formData.montant}
-                onChange={handleChange}
+              <Form.Group className="form-group">
+                <div className="d-flex align-items-center w-100">
+                  <div style={{ width: "20px" }}></div> {/* Keeping the empty div */}
+                  <Form.Label className="me-3" style={{ minWidth: "150px" }}>Montant</Form.Label>
+                  <div style={{ flexGrow: 1, position: "relative" }}>
+                    <Form.Control
+                      type="number"
+                      name="montant"
+                      min="5"
+                      isInvalid={hasSubmitted && errors.montant}
+                      placeholder="Montant"
+                      value={formData.montant}
+                      onChange={handleChange}
+                    />
+                    {hasSubmitted && errors.montant && (
+                      <Form.Control.Feedback type="invalid" className="d-block">
+                        Le montant doit être supérieur ou égal à 5.
+                      </Form.Control.Feedback>
+                    )}
+                  </div>
+                </div>
+              </Form.Group>
+
+              <Form.Group className="form-group">
+        <div className="d-flex align-items-center w-100">
+          <div style={{ width: "20px" }}></div> {/* Keeping the empty div */}
+          <Form.Label className="me-3" style={{ minWidth: "150px" }}>Percentage</Form.Label>
+          <div style={{ flexGrow: 1, position: "relative" }}>
+            <Form.Control
+              type="number"
+              name="percentage"
+              min="0"
+              isInvalid={hasSubmitted && errors.percentage}
+              placeholder="Percentage"
+              value={formData.percentage}
+              onChange={handleChange}
             />
-            <Form.Text className="text-danger">
-                {errors.montant}
-            </Form.Text>
-                </Form.Group>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <Form.Label className="col-sm-4" style={{ flex: '1',marginRight: '20px', marginLeft: '10px' ,marginTop:'7px'}}>Percentage</Form.Label>
-                <Form.Control
-                type="number"
-                name="percentage"
-                min="0"
-                isInvalid={!!errors.percentage}
-                placeholder="Percentage"
-                value={formData.percentage}
-                onChange={handleChange}
-            />
-            <Form.Text className="text-danger">
-                {errors.percentage}
-            </Form.Text>
-                </Form.Group>
+            {hasSubmitted && errors.percentage && (
+              <Form.Control.Feedback type="invalid" className="d-block">
+                Required
+              </Form.Control.Feedback>
+            )}
+          </div>
+        </div>
+      </Form.Group>
+
   <Form.Group className="mt-5 d-flex justify-content-center">
         
         <Fab
@@ -1697,7 +1797,7 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
             <td style={{ backgroundColor: "white" }}>
               <input
                 type="checkbox"
-                checked={selectedItems.some((item) => item === tarifReduction?.id)}
+                checked={selectedItems.includes(tarifReduction?.id)}
                 onChange={() => handleCheckboxChange(tarifReduction?.id)}
               />
             </td>
@@ -1734,6 +1834,12 @@ className={`rounded-circle category-img ${selectedCategory === category?.id ? 's
                   className="btn btn-danger btn-sm"
                   onClick={handleDeleteSelected}
                   disabled={selectedItems?.length === 0}
+                  style={{
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                    fontSize: "17px",
+                    color: "white",
+                  }}
                 >
                   <FontAwesomeIcon
                     icon={faTrash}
