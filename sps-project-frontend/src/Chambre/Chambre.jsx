@@ -29,8 +29,8 @@ import Box from "@mui/material/Box";
 import { Checkbox, Fab, Toolbar } from "@mui/material";
 import { useOpen } from "../Acceuil/OpenProvider";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+
+
 
 //------------------------- Chambres ---------------------//
 const Chambre = () => {
