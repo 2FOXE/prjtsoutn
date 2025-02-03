@@ -45,6 +45,7 @@ class TarifRepasController extends Controller
 
     public function updateDesiTarif(Request $request, string $tarif_repas_code)
     {
+        dd($request->all());
         // Finding Photo
         $tarifRepas = TarifRepas::findOrFail($tarif_repas_code);
         // Validating Photo

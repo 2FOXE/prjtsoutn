@@ -19,16 +19,21 @@ class Chambre extends Model
         "wifi",
         "vue_id",
     ];
+    public function type_chambres()
+{
+    return $this->belongsTo(TypeChambre::class, 'type_chambres'); // Correct foreign key name
+}
 
-    public function type_chambre() {
-        return $this->belongsTo(TypeChambre::class, 'type_chambre');
-    }
-    public function vue() {
-        return $this->belongsTo(Vue::class, "vue_id");
-    }
-    public function etage() {
-        return $this->belongsTo(Etage::class, "etage_id");
-    }
+public function vue()
+{
+    return $this->belongsTo(Vue::class, 'vue_id'); // Matches 'vue_id' column in chambres table
+}
+
+public function etage()
+{
+    return $this->belongsTo(Etage::class, 'etage_id'); // Matches 'etage_id' column in chambres table
+}
+
 
     use HasFactory;
 }

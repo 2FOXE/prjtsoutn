@@ -21,8 +21,9 @@ class TypeChambre extends Model
         "commentaire",
     ];
     public function chambres() {
-        return $this->hasMany(Chambre::class, 'type_chambre');
+        return $this->hasMany(Chambre::class, 'type_chambres');
     }
+    
 
     public function tarif_chambre_detail() {
         return $this->hasMany(TarifChambreDetail::class, "type_chambre");

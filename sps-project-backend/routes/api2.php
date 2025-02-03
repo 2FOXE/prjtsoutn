@@ -67,6 +67,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EquipementController;
 use App\Http\Controllers\InterventionController;
 
+Route::middleware('auth:sanctum')->group(function () {
+  Route::get('/chambres', [ChambreController::class, 'index']);
+  Route::post('/chambres', [ChambreController::class, 'store']);
+});
 
 
 

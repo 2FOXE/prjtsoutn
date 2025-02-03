@@ -16,32 +16,27 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../AuthContext"; // Assuming useAuth is a custom context that handles the login state
 
 const defaultTheme = createTheme();
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState({ email: "", password: "", general: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth(); // Assuming you have an Auth context to manage user state
   const navigate = useNavigate();
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    setEmailError("");
+    setFormError({ ...formError, email: "" });
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    setPasswordError("");
-  };
-
-  const handleEror = () => {
-    setError("");
+    setFormError({ ...formError, password: "" });
   };
 
   const handleTogglePasswordVisibility = () => {
@@ -50,54 +45,40 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setFormError({ ...formError, general: "" });
 
     try {
+      // Step 1: Request CSRF token to make sure session is authenticated with Sanctum
+      await axios.get("http://localhost:8000/sanctum/csrf-cookie", { withCredentials: true });
+
+      // Step 2: Send login request to Laravel backend
       const response = await axios.post(
         "http://localhost:8000/api/login",
-        {
-          email: email,
-          password: password,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { email, password },
+        { withCredentials: true, headers: { "Content-Type": "application/json" } }
       );
 
-      const existingToken = localStorage.getItem("API_TOKEN");
-
-      if (!existingToken) {
-        localStorage.setItem("API_TOKEN", response.data.token);
-      } else {
-        localStorage.setItem("API_TOKEN", response.data.token);
-      }
-
-      const userData = response.data.user;
-
-      login(userData);
-      navigate("/");
+      // Step 3: Handle successful login
+      const token = response.data.token; // Token returned from Laravel backend
+      localStorage.setItem("API_TOKEN", token); // Store token in localStorage
+      login(response.data.user); // Assuming you have a login function to set user in context or state
+      navigate("/"); // Redirect to the homepage or dashboard
     } catch (error) {
-      console.error(error);
-
+      setIsLoading(false);
       if (error.response) {
         if (error.response.status === 422) {
-          setEmailError(error.response.data.errors.email);
-          setPasswordError(error.response.data.errors.password);
+          setFormError({
+            email: error.response.data.errors.email || "",
+            password: error.response.data.errors.password || "",
+            general: "",
+          });
         } else if (error.response.status === 401) {
-          navigate("/login");
-        } else if (error.response && error.response.status === 400) {
-          // Check specific error messages from the server
-          if (error.response.data.message === "Email not found") {
-            setEmailError("Email not found");
-          } else if (error.response.data.message === "Incorrect password") {
-            setPasswordError("Incorrect password");
-          } else {
-            setError("Email or password incorrect");
-          }
-        } else if (error.response.status === 200) {
-          navigate("/");
+          setFormError({ ...formError, general: "Unauthorized access, please check your credentials." });
+        } else if (error.response.status === 400) {
+          setFormError({ ...formError, general: "Email or password incorrect." });
+        } else {
+          setFormError({ ...formError, general: "Something went wrong, please try again later." });
         }
       }
     }
@@ -107,14 +88,7 @@ export default function Login() {
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 8,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
+        <Box sx={{ marginTop: 8, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
             <LockOutlinedIcon />
           </Avatar>
@@ -133,8 +107,8 @@ export default function Login() {
               autoFocus
               value={email}
               onChange={handleEmailChange}
-              error={Boolean(emailError)}
-              helperText={emailError}
+              error={Boolean(formError.email)}
+              helperText={formError.email}
             />
             <TextField
               margin="normal"
@@ -145,8 +119,8 @@ export default function Login() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={handlePasswordChange}
-              error={Boolean(passwordError)}
-              helperText={passwordError}
+              error={Boolean(formError.password)}
+              helperText={formError.password}
               id="password"
               autoComplete="current-password"
               InputProps={{
@@ -154,36 +128,33 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={handleTogglePasswordVisibility}
+                    aria-label="Toggle password visibility"
                     style={{
                       background: "none",
                       border: "none",
                       cursor: "pointer",
                     }}
                   >
-                    {showPassword ? (
-                      <VisibilityOffIcon />
-                    ) : (
-                      <VisibilityIcon />
-                    )}
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                   </button>
                 ),
               }}
             />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
+            <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
-            <Typography variant="body2" color="error" sx={{ mt: 1 }} onChange={handleEror}>
-              {error}
-            </Typography>
+            {formError.general && (
+              <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                {formError.general}
+              </Typography>
+            )}
           </Box>
         </Box>
       </Container>

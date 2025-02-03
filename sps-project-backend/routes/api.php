@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+// use Illuminate\Support\Facades\Route; // Duplicate import removed
 use App\Http\Controllers\VueController;
 use App\Http\Controllers\InfoController;
 use App\Http\Controllers\ZoneController;
@@ -9,7 +9,6 @@ use App\Http\Controllers\EtageController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EnfantController;
 use App\Http\Controllers\RegionController;
-use App\Http\Controllers\ChambreController;
 use App\Http\Controllers\SuiviInterventionController;
 use App\Http\Controllers\SecteurController;
 use App\Http\Controllers\TypeRepasController;
@@ -38,6 +37,7 @@ use App\Http\Controllers\TarifReductionDetailController;
 use App\Http\Controllers\SiteClientParticulierController;
 use App\Http\Controllers\SecteurClientParticulierController;
 use App\Http\Controllers\AgentController;
+use App\Http\Controllers\ChambreController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -80,6 +80,9 @@ Route::put('/tarifs-actuel/{tarif_actuel_code}', [TarifActuelController::class, 
 Route::delete('/tarifs-actuel/{tarif_actuel_code}', [TarifActuelController::class, 'supprimerTarifActuel']);
 
 // Types Chambre routes :Tested
+
+
+
 Route::get('/types-chambre', [TypeChambreController::class, 'getAll']);
 Route::post('/types-chambre', [TypeChambreController::class, 'ajouterTypeChambre']);
 Route::get('/types-chambre/{type_chambre_code}', [TypeChambreController::class, 'afficherTypeChambre']);
@@ -141,6 +144,11 @@ Route::get('/etages/{etage}', [EtageController::class, 'afficherEtage']);
 Route::put('/etages/{etage}', [EtageController::class, 'updateEtage']);
 Route::delete('/etages/{etage}', [EtageController::class, 'supprimerEtage']);
 
+Route::get('/chambres', [ChambreController::class, 'index']);
+Route::post('/chambres', [ChambreController::class, 'ajouterChambre']);
+
+Route::put('/chambres/{id}', [ChambreController::class, 'update']);
+Route::delete('/chambres/{id}', [ChambreController::class, 'destroy']);
 
 Route::get('/desigs-reduction', [TarifReductionController::class, 'getAll']);
 Route::post('/desigs-reduction', [TarifReductionController::class, 'ajouterDesiTarif']);
@@ -252,3 +260,21 @@ Route::get('/maintenances/{id}', [MaintenanceRecordController::class, 'show']);
 Route::put('/maintenances/{id}', [MaintenanceRecordController::class, 'update']);
 Route::post('/maintenances/{id}', [MaintenanceRecordController::class, 'update']);
 Route::delete('/maintenances/{id}', [MaintenanceRecordController::class, 'destroy']);
+ 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/chambres', [ChambreController::class, 'index']);
+
+    Route::post('/chambres', [ChambreController::class, 'store']);
+});
+Route::get('/chambres', [ChambreController::class, 'index']);
+use Illuminate\Support\Facades\Route;
+
+
+Route::middleware('auth:sanctum')->post('/chambres', [ChambreController::class, 'store']);
+
+use App\Http\Controllers\AuthController;
+
+// Correct route for POST requests
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::post('/register', [AuthController::class, 'register']);
