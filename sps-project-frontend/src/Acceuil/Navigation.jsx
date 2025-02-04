@@ -455,6 +455,17 @@ const Navigation = () => {
               </ListItemIcon>
                       <ListItemText primary="Tarifs de Reduction" />
                     </ListItem>
+                    <ListItem
+                        button
+                        component={Link}
+                        to="/tarifs_actuel"
+                        className="sidBarSucomposantColore"
+                    >
+                      <ListItemIcon>
+                      <FaFileInvoiceDollar className="iconSedBar"/>
+                      </ListItemIcon>   
+                      <ListItemText primary="Tarifs Actuel" />
+                    </ListItem>
                   </Collapse>
           </List>
           <List>
@@ -470,19 +481,7 @@ const Navigation = () => {
                       <ListItemText primary="Chambres" />
                     </ListItem>
           </List>
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/tarifs_actuel"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Tarifs Actuel" />
-                    </ListItem>
-          </List>
+        
           <List>
           <ListItem
                         button
