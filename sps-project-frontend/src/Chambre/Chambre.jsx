@@ -9,7 +9,7 @@ import "jspdf-autotable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PeopleIcon from "@mui/icons-material/People";
 import jsPDF from 'jspdf';
-import 'jspdf-autotable'; 
+
 import {
   faTrash,
   faFileExcel,
@@ -572,13 +572,13 @@ const Chambre = () => {
       {/* Left Arrow */}
       <div
         className="carousel-arrow left"
-        onClick={() => setActiveIndex(activeIndex - 1)}
+        onClick={() => setActiveIndexVue(activeIndexVue - 1)}
       >
         <FaArrowLeft />
       </div>
 
       {/* Vues Carousel */}
-      <Carousel activeIndex={activeIndex} onSelect={handleSelect} interval={null} controls={false} indicators={false}>
+      <Carousel activeIndex={activeIndexVue} onSelect={handleDelete} interval={null} controls={false} indicators={false}>
         {chunks?.map((chunk, chunkIndex) => (
           <Carousel.Item key={chunkIndex}>
             <div className="d-flex justify-content-start">
@@ -606,7 +606,7 @@ const Chambre = () => {
       {/* Right Arrow */}
       <div
         className="carousel-arrow right"
-        onClick={() => setActiveIndex(activeIndex + 1)}
+        onClick={() => setActiveIndexVue(activeIndexVue + 1)}
       >
         <FaArrowRight />
       </div>
@@ -620,13 +620,13 @@ const Chambre = () => {
       {/* Left Arrow */}
       <div
         className="carousel-arrow left"
-        onClick={() => setActiveIndex(activeIndex - 1)}
+        onClick={() => setActiveIndexVue(activeIndexVue - 1)}
       >
         <FaArrowLeft />
       </div>
 
       {/* Etages Carousel */}
-      <Carousel activeIndex={activeIndex} onSelect={handleSelect} interval={null} controls={false} indicators={false}>
+      <Carousel activeIndex={activeIndexVue} onSelect={handleDelete} interval={null} controls={false} indicators={false}>
         {chunks1?.map((chunk, chunkIndex) => (
           <Carousel.Item key={chunkIndex}>
             <div className="d-flex justify-content-start">
