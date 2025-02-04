@@ -380,11 +380,6 @@ const [typeRepas, setTypeRepas] = useState('');
       setTableContainerStyle({ marginRight: "0" });
       setSelectedCategory("")
       setShowForm(false); // Hide the form
-<<<<<<< HEAD
-=======
-      setSelectedItems([]); // Désélectionne toutes les cases
-
->>>>>>> origin/main
 
       // Reset the form data
       setFormData({
