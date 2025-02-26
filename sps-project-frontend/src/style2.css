@@ -1,0 +1,79 @@
+#formContainer {
+  position: fixed;
+  right: -900px; /* Débutera hors de l'écran */
+  width: 500px;
+  height: auto;
+  transition: right 0.3s ease; /* Effet de glissement du formulaire */
+  border: 3px solid rgb(224, 224, 224);
+  background-color: #fff;
+}
+#formContainer1SC {
+  position: fixed;
+  right: -900px; /* Débutera hors de l'écran */
+  width: 400px;
+  height: auto;
+  transition: right 0.3s ease; /* Effet de glissement du formulaire */
+  border: 3px solid rgb(224, 224, 224);
+  background-color: #fff;
+}
+#tableContainer {
+  margin-right: 350px; /* Espacement pour afficher le tableau à côté du formulaire */
+}
+
+a {
+  text-decoration: none;
+}
+.clientS {
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+  margin-left: 5px;
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+
+.table-hover {
+  background-color: rgb(23, 7, 7);
+  border-radius: 10px;
+}
+.page-header {
+  display: none;
+}
+.hidden {
+  display: none;
+}
+/* Custom CSS for the table header */
+.custom-table .ant-table-thead > tr > th {
+  background-color: #00afaa !important;
+  color: white; /* Change text color if needed */
+}
+.custom-table th, .custom-table td {
+  border: none !important;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+.container {
+  width: 100%;
+  height: 100vh;
+  overflow: auto;
+}
+.d-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.carousel {
+  width: 100%;
+  height: auto;
+}
+.bgSecteur {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
