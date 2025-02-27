@@ -89,6 +89,7 @@ const ReclamationPage = () => {
     departement_affecte: "",
     suivi: "",
     reponse: "",
+    date: "",
   });
   const [errors, setErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -98,6 +99,9 @@ const ReclamationPage = () => {
   const [newDepartment, setNewDepartment] = useState({ name: "" });
   const [departmentErrors, setDepartmentErrors] = useState({ name: false });
   const [editingDepartment, setEditingDepartment] = useState(null);
+  const [rowsPerPage, setRowsPerPage] = useState(5);  // Default to 5 rows per page
+  const [page, setPage] = useState(0);  // Start at page 0
+
 
   // ✅ Load Cached Data from IndexedDB
   const loadCachedData = useCallback(async () => {
@@ -199,9 +203,11 @@ const ReclamationPage = () => {
 
   // ✅ Load cached data instantly, then fetch fresh data
   useEffect(() => {
+    console.log("Departments:", departments); // Check if departments are populated correctly
     loadCachedData();
     fetchData();
   }, [loadCachedData, fetchData]);
+  
 
   // ✅ Pre-chunk departments before rendering to avoid delays
   const chunks = useMemo(() => chunkArray(departments, 9), [departments]);
@@ -209,20 +215,32 @@ const ReclamationPage = () => {
   // ✅ Optimized filtering logic
   useEffect(() => {
     const lowerSearchTerm = searchTerm.toLowerCase();
+  
     setFilteredReclamations(
       reclamations.filter((rec) => {
-        const matches = [
+        const matchesSearch = [
           rec.type_reclamation,
           rec.suivi,
           rec.reclamer_a_travers,
           rec.reponse,
-          rec.departement?.nom, // ✅ Ensure department name is included
-        ].some(field => field?.toLowerCase().includes(lowerSearchTerm));
+          rec.departement?.nom,
+        ].some((field) => field?.toLowerCase().includes(lowerSearchTerm));
   
-        return matches;
+        // If selectedDepartment is null, show all reclamations
+        const matchesDepartment = selectedDepartment
+          ? rec.departement?.id === selectedDepartment.id // Match by id
+          : true;
+  
+        return matchesSearch && matchesDepartment;
       })
     );
-  }, [reclamations, searchTerm]);
+  }, [reclamations, searchTerm, selectedDepartment]);
+  
+  
+  
+  
+  
+  
   
   
 
@@ -236,17 +254,19 @@ const ReclamationPage = () => {
         Type: rec.type_reclamation,
         "Réclamé à travers": rec.reclamer_a_travers,
         Département: rec.departement_affecte,
-        Suivi: rec.suivi,
+        Status: rec.suivi,
         Réponse: rec.reponse,
+        Date: new Date(rec.date).toLocaleDateString("fr-FR"), // ✅ Include date
       })),
     [filteredReclamations]
   );
+  
 
   // ✅ Export Handlers
   const exportToPDF = useCallback(() => {
     const doc = new jsPDF();
     doc.autoTable({
-      head: [["Type", "Réclamé à travers", "Département", "Suivi", "Réponse"]],
+      head: [["Type", "Réclamé à travers", "Département", "Status", "Réponse"]],
       body: exportData.map(Object.values),
     });
     doc.save("reclamations.pdf");
@@ -263,6 +283,11 @@ const ReclamationPage = () => {
   // table parts
   const columns = [
     { key: "type_reclamation", label: "Type de Réclamation", render: (item) => highlightText(item.type_reclamation, searchTerm) },
+    {
+      key: "date", 
+      label: "Date", 
+      render: (item) => item.date ? new Date(item.date).toLocaleDateString("fr-FR") : "Date non disponible"
+    },
     { key: "reclamer_a_travers", label: "Réclamé à Travers", render: (item) => highlightText(item.reclamer_a_travers, searchTerm) },
     { 
   key: "departement_nom", 
@@ -368,26 +393,36 @@ const ReclamationPage = () => {
   
   
   
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setReclamationFormData((prev) => ({ ...prev, [name]: value }));
+  
+    setReclamationFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  
+    // ✅ Real-time validation: Remove error when user types
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: value.trim() === "" ? "Champ requis" : "", // Clear error if value is filled
+    }));
   };
+  
   
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setHasSubmitted(true);
   
-    // Validation
-    const requiredFields = {
-      type_reclamation: !reclamationFormData.type_reclamation,
-      reclamer_a_travers: !reclamationFormData.reclamer_a_travers,
-      departement_affecte: !reclamationFormData.departement_affecte,
-    };
+    // Create errors object with string messages
+    const errors = {};
+    if (!reclamationFormData.type_reclamation.trim()) errors.type_reclamation = "Champ requis";
+    if (!reclamationFormData.reclamer_a_travers.trim()) errors.reclamer_a_travers = "Champ requis";
+    if (!reclamationFormData.departement_affecte) errors.departement_affecte = "Champ requis";
+    if (!reclamationFormData.date) errors.date = "Champ requis";
   
-    if (Object.values(requiredFields).some(field => field)) {
-      setErrors(requiredFields);
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
       Swal.fire("Erreur!", "Champs obligatoires manquants", "error");
       return;
     }
@@ -395,26 +430,20 @@ const ReclamationPage = () => {
     const payload = {
       type_reclamation: reclamationFormData.type_reclamation.trim(),
       reclamer_a_travers: reclamationFormData.reclamer_a_travers.trim(),
-      departement_id: parseInt(reclamationFormData.departement_affecte, 10), // ✅ Correct field name
+      departement_id: parseInt(reclamationFormData.departement_affecte, 10),
       suivi: reclamationFormData.suivi || "En attente",
       reponse: reclamationFormData.reponse?.trim() || "",
+      date: reclamationFormData.date,
     };
-    
-    console.log("Submitting Payload:", payload);    
   
     try {
-      console.log("Submitting payload:", payload); // ✅ Debugging log
-  
       const { id } = editingReclamation || {};
       const url = id 
         ? `http://localhost:8000/api/reclamations/${id}`
         : "http://localhost:8000/api/reclamations";
-      
       const method = id ? "put" : "post";
   
       const response = await axios[method](url, payload);
-  
-      console.log("Response:", response); // ✅ Debugging log
   
       if ([200, 201].includes(response.status)) {
         await fetchData();
@@ -422,11 +451,9 @@ const ReclamationPage = () => {
         Swal.fire("Succès!", `Réclamation ${id ? 'modifiée' : 'ajoutée'}`, "success");
       }
     } catch (error) {
-      console.error("Submission Error:", error.response?.data || error.message, error);
       Swal.fire("Erreur!", error.response?.data?.message || error.message, "error");
     }
   };
-  
 
 // Create filter options based on your departments data
 // Correct if rec.departement_affecte is the department name
@@ -434,8 +461,8 @@ const filterOptions = [
   {
     label: "Department",
     key: "departement_affecte",
-    options: departments.map((dept) => ({
-      value: dept.designation,  // Ensure you are using the department name
+    options: departments.map(dept => ({
+      value: dept.id.toString(),  // Pass the department ID as value
       label: dept.designation,
     })),
   },
@@ -443,15 +470,45 @@ const filterOptions = [
 
 
 
+const handleCategoryFilterChange = (departmentId, index) => {
+  if (!departmentId) {
+    // When "Tout" is selected, reset the selectedDepartment to null
+    setSelectedDepartment(null);
+    setActiveIndex(null);  // Reset active index when no department is selected
+  } else {
+    // Find the department by ID
+    const selectedDept = departments.find((dept) => dept.id === parseInt(departmentId, 10));
+
+    if (selectedDept) {
+      setSelectedDepartment({
+        id: selectedDept.id,
+        name: selectedDept.designation,
+      });
+      setActiveIndex(index); // Set the active index
+    } else {
+      setSelectedDepartment(null);
+      setActiveIndex(null);  // Reset active index if no department is found
+    }
+  }
+};
+
+
+
+
+
+
+
+
 // Handler for filter changes – adjust as needed for other filters
 const handleFilterChange = (key, value) => {
-  setSelectedDepartment(value);
-  setFilteredReclamations(
-    reclamations.filter(
-      rec => rec.departement?.nom === value // ✅ Properly checking department name
-    )
-  );
+  // Find the selected department by ID
+  const selectedDept = departments.find(dept => dept.id === parseInt(value, 10));
+
+  // Update the selected department based on the ID
+  setSelectedDepartment(selectedDept ? { id: selectedDept.id, name: selectedDept.designation } : null);
 };
+
+
 
 
 
@@ -548,6 +605,7 @@ const closeForm = () => {
       departement_affecte: "",
       suivi: "",
       reponse: "",
+      date: "",
     });
   
     setFormContainerStyle({ right: "0" });
@@ -582,6 +640,9 @@ const closeForm = () => {
       console.error(error); // log error for debugging purposes
     }
   };
+
+
+  
   
   
   const handleDeleteDepartment = async (id) => {
@@ -610,6 +671,16 @@ const closeForm = () => {
     }
 }; 
   
+
+const handleChangePage = (event, newPage) => {
+  setPage(newPage);  // Update page number
+};
+
+const handleChangeRowsPerPage = (event) => {
+  setRowsPerPage(parseInt(event.target.value, 10));  // Update rows per page
+  setPage(0);  // Reset to first page when rows per page change
+};
+
   
   
   return (
@@ -622,8 +693,8 @@ const closeForm = () => {
             exportToPDF={exportToPDF}
             printTable={() => window.print()}
             categories={departments}
-            selectedCategory={selectedDepartment}
-            handleCategoryFilterChange={setSelectedDepartment}
+            selectedCategory={selectedDepartment?.name}  // Ensure we pass the name
+            handleCategoryFilterChange={handleCategoryFilterChange}  // Handle filtering by name
             activeIndex={activeIndex}
             handleSelect={setActiveIndex}
             chunks={chunks}
@@ -654,11 +725,15 @@ const closeForm = () => {
               </h4>
 
               {/* Type de Réclamation */}
-              <Form.Group className="form-group d-flex align-items-center">
+              <Form.Group className="form-group d-flex align-items-center" style={{ marginBottom: "15px" }}>
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  style={{ visibility: "hidden", marginRight: "16px" }} // Empty space for alignment
+                />
                 <Form.Label className="form-label" style={{ minWidth: "195px" }}>
                   Type de Réclamation
                 </Form.Label>
-                <div style={{ flex: 1, position: "relative" }}>
+                <div style={{ flex: 1 }}>
                   <Form.Control
                     type="text"
                     name="type_reclamation"
@@ -666,18 +741,22 @@ const closeForm = () => {
                     onChange={handleChange}
                     isInvalid={hasSubmitted && !!errors.type_reclamation}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ width: "100%", textAlign: "left" }}>
-                    {hasSubmitted && errors.type_reclamation && "Required"}
+                  <Form.Control.Feedback type="invalid" style={{ textAlign: "left" }}>
+                    {hasSubmitted && errors.type_reclamation && "Champ requis"}
                   </Form.Control.Feedback>
                 </div>
               </Form.Group>
 
               {/* Réclamé à travers */}
-              <Form.Group className="form-group d-flex align-items-center">
+              <Form.Group className="form-group d-flex align-items-center" style={{ marginBottom: "15px" }}>
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  style={{ visibility: "hidden", marginRight: "16px" }} // Empty space for alignment
+                />
                 <Form.Label className="form-label" style={{ minWidth: "195px" }}>
                   Réclamé à travers
                 </Form.Label>
-                <div style={{ flex: 1, position: "relative" }}>
+                <div style={{ flex: 1 }}>
                   <Form.Control
                     type="text"
                     name="reclamer_a_travers"
@@ -685,54 +764,78 @@ const closeForm = () => {
                     onChange={handleChange}
                     isInvalid={hasSubmitted && !!errors.reclamer_a_travers}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ width: "100%", textAlign: "left" }}>
+                  <Form.Control.Feedback type="invalid" style={{ textAlign: "left" }}>
                     {hasSubmitted && errors.reclamer_a_travers && "Required"}
                   </Form.Control.Feedback>
                 </div>
               </Form.Group>
 
+              {/* Date */}
+              <Form.Group className="form-group d-flex align-items-center" style={{ marginBottom: "15px" }}>
+              <FontAwesomeIcon icon={faPlus} style={{ visibility: "hidden", marginRight: "16px" }} />
+              <Form.Label className="form-label" style={{ minWidth: "195px" }}>
+                Date
+              </Form.Label>
+              <div style={{ flex: 1 }}>
+                <Form.Control
+                  type="date"
+                  name="date"
+                  value={reclamationFormData.date}
+                  onChange={handleChange}
+                  isInvalid={hasSubmitted && !!errors.date} // ✅ Add validation check
+                />
+                <Form.Control.Feedback type="invalid" style={{ textAlign: "left" }}>
+                  {errors.date && "Champ requis"} {/* ✅ Show validation message */}
+                </Form.Control.Feedback>
+              </div>
+            </Form.Group>
+
+
               {/* Département */}
-              <Form.Group className="form-group d-flex align-items-center">
-              <FontAwesomeIcon 
-                    icon={faPlus} 
-                    className="text-primary ms-2" 
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setShowAddDepartmentModal(true)}
-                  />
+              <Form.Group className="form-group d-flex align-items-center" style={{ marginBottom: "15px" }}>
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  className="text-primary ms-2"
+                  style={{ cursor: "pointer", marginRight: "9px" }} // Visible icon for adding departments
+                  onClick={() => setShowAddDepartmentModal(true)}
+                />
                 <Form.Label className="form-label" style={{ minWidth: "195px" }}>
                   Département
                 </Form.Label>
-                <div style={{ flex: 1, position: "relative" }}>
-                <Form.Select
-                  name="departement_affecte"
-                  value={reclamationFormData.departement_affecte}
-                  onChange={(e) => {
-                    const selectedDept = departments.find(
-                      (dept) => dept.id === parseInt(e.target.value, 10)
-                    );
-                    console.log("Selected Department ID:", e.target.value);
-                    setReclamationFormData(prev => ({
-                      ...prev,
-                      departement_affecte: selectedDept?.id || ""
-                    }));
-                  }}
-                  isInvalid={hasSubmitted && !!errors.departement_affecte}
-                >
-                  <option value="">Sélectionner un département</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.designation}
-                    </option>
-                  ))}
-                </Form.Select>
-                  <Form.Control.Feedback type="invalid" style={{ width: "100%", textAlign: "left" }}>
+                <div style={{ flex: 1 }}>
+                  <Form.Select
+                    name="departement_affecte"
+                    value={reclamationFormData.departement_affecte}
+                    onChange={(e) => {
+                      const selectedDept = departments.find(
+                        (dept) => dept.id === parseInt(e.target.value, 10)
+                      );
+                      setReclamationFormData((prev) => ({
+                        ...prev,
+                        departement_affecte: selectedDept?.id || "",
+                      }));
+                    }}
+                    isInvalid={hasSubmitted && !!errors.departement_affecte}
+                  >
+                    <option value="">Sélectionner un département</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.designation}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid" style={{ textAlign: "left" }}>
                     {hasSubmitted && errors.departement_affecte && "Required"}
                   </Form.Control.Feedback>
                 </div>
               </Form.Group>
 
-              {/* Suivi */}
-              <Form.Group className="form-group d-flex align-items-center">
+              {/* Status */}
+              <Form.Group className="form-group d-flex align-items-center" style={{ marginBottom: "15px" }}>
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  style={{ visibility: "hidden", marginRight: "16px" }} // Empty space for alignment
+                />
                 <Form.Label className="form-label" style={{ minWidth: "195px" }}>
                   Status
                 </Form.Label>
@@ -752,7 +855,11 @@ const closeForm = () => {
               </Form.Group>
 
               {/* Réponse */}
-              <Form.Group className="form-group d-flex align-items-center">
+              <Form.Group className="form-group d-flex align-items-center" style={{ marginBottom: "15px" }}>
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  style={{ visibility: "hidden", marginRight: "16px" }} // Empty space for alignment
+                />
                 <Form.Label className="form-label" style={{ minWidth: "195px" }}>
                   Réponse
                 </Form.Label>
@@ -793,11 +900,19 @@ const closeForm = () => {
               handleCheckboxChange={handleCheckboxChange}
               handleEdit={handleEdit}
               handleDelete={handleDelete}
+              // renderCustomActions={(item) => (
+              //   // Add your custom action icons/buttons here
+              //   <FontAwesomeIcon
+              //     onClick={() => lfonction hna 
+              //     icon={faList}
+              //     style={{ color: "#00ff00", cursor: "pointer", marginRight: "10px" }}
+              //   />
+              // )}
               handleDeleteSelected={handleDeleteSelected}
-              rowsPerPage={5}
-              page={0}
-              handleChangePage={() => {}}
-              handleChangeRowsPerPage={() => {}}
+              rowsPerPage={rowsPerPage} // Pass rows per page state
+              page={page} // Pass current page state
+              handleChangePage={handleChangePage} // Handle page change
+              handleChangeRowsPerPage={handleChangeRowsPerPage} // Handle change in rows per page            
               expandedRows={expandedRows}
               toggleRowExpansion={toggleRowExpansion}
               renderExpandedRow={renderExpandedRow}

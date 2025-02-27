@@ -25,7 +25,11 @@ const ExpandRTable = ({
   expandedRows,
   toggleRowExpansion,
   renderExpandedRow,
+  renderCustomActions,
 }) => {
+  
+  const hasActions = handleEdit || handleDelete || renderCustomActions;
+
   return (
     <>
       <table className="table table-bordered" style={{ marginTop: "-5px" }}>
@@ -44,7 +48,7 @@ const ExpandRTable = ({
             {columns.map((column) => (
               <th key={column.key} className="tableHead ">{column.label}</th>
             ))}
-            <th className="tableHead">Action</th>
+            {hasActions && <th className="tableHead">Action</th>}
           </tr>
         </thead>
         <tbody className="text-center" style={{ backgroundColor: '#007bff' }}>
@@ -64,21 +68,31 @@ const ExpandRTable = ({
                     highlightText(item[column.key], searchTerm) || ''}
                   </td>
                 ))}
-                <td style={{ backgroundColor: "white", whiteSpace: "nowrap" }}>
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                    <FontAwesomeIcon
-                      onClick={() => handleEdit(item)}
-                      icon={faEdit}
-                      style={{ color: "#007bff", cursor: "pointer", marginRight: "10px" }}
-                    />
-                    <FontAwesomeIcon
-                      onClick={() => handleDelete(item.id)}
-                      icon={faTrash}
-                      style={{ color: "#ff0000", cursor: "pointer", marginRight: "10px" }}
-                    />
-                  
-                  </div>
-                </td>
+                  {/* Conditionally render Action cell */}
+                  {hasActions && (
+                  <td style={{ backgroundColor: "white", whiteSpace: "nowrap" }}>
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      {/* Conditionally render Edit icon */}
+                      {handleEdit && (
+                        <FontAwesomeIcon
+                          onClick={() => handleEdit(item)}
+                          icon={faEdit}
+                          style={{ color: "#007bff", cursor: "pointer", marginRight: "10px" }}
+                        />
+                      )}
+                      {/* Conditionally render Delete icon */}
+                      {handleDelete && (
+                        <FontAwesomeIcon
+                          onClick={() => handleDelete(item.id)}
+                          icon={faTrash}
+                          style={{ color: "#ff0000", cursor: "pointer", marginRight: "10px" }}
+                        />
+                      )}
+                      {/* Render custom actions if provided */}
+                      {renderCustomActions && renderCustomActions(item)}
+                    </div>
+                  </td>
+                )}
               </tr>
               {expandedRows[item.id] && (
                 <tr>

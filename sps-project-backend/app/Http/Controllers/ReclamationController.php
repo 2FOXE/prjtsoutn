@@ -17,6 +17,7 @@ class ReclamationController extends Controller
             'reclamer_a_travers' => 'required|string|max:255',
             'departement_id' => 'required|exists:departements,id',
             'suivi' => 'required|string|in:En cours,En attente,Traité,Résolu',
+            'date' => 'required|date',
         ]);
 
         $reclamation = Reclamation::create($data);
@@ -49,6 +50,7 @@ class ReclamationController extends Controller
             'departement_id' => 'nullable|exists:departements,id',
             'suivi' => 'nullable|string',
             'reponse' => 'nullable|string',
+            'date' => 'required|date',
         ]);
 
         $reclamation->update($data);
