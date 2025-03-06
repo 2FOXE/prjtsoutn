@@ -38,7 +38,6 @@ return new class extends Migration
             $table->unsignedBigInteger('zone_id')->nullable();
             $table->foreign('zone_id')->references('id')->on('zones')->onDelete('cascade');
             $table->unsignedBigInteger('region_id')->nullable();
-            $table->foreign('region_id')->references('id')->on('regions')->onDelete('cascade');
             $table->unsignedBigInteger('secteur_id')->nullable();
             $table->foreign('secteur_id')->references('id')->on('secteur_clients')->onDelete('cascade');
             $table->timestamps();

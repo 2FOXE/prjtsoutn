@@ -274,34 +274,31 @@ const Navigation = () => {
   // const toggleDrawer = () => {
   //   setOpen(!open);
   // };
-  return (
-    <ThemeProvider theme={defaultTheme}>
-      <Box sx={{
+return (
+  <ThemeProvider theme={defaultTheme}>
+    <Box sx={{
         marginLeft:'-20px',
         marginTop:'-20px',
-  position: 'fixed',
-  maxHeight: '1010px',
-  overflowY: 'auto',
-  scrollbarWidth: 'thin', /* For Firefox */
-  scrollbarColor: '#2c767c #e0e0e0', /* Scrollbar colors for Firefox */
-  '&::-webkit-scrollbar': {
-    width: '8px', /* Adjust width as needed */
-  },
-  '&::-webkit-scrollbar-thumb': {
-    backgroundColor: '#2c767c',
-  },
-  '&::-webkit-scrollbar-track': {
-    backgroundColor: '#2c767c',
-  },
-}}
->
+        position: 'fixed',
+        maxHeight: '1010px',
+        overflowY: 'auto',
+        scrollbarWidth: 'thin', /* For Firefox */
+        scrollbarColor: '#2c767c #e0e0e0', /* Scrollbar colors for Firefox */
+        '&::-webkit-scrollbar': {
+          width: '8px', /* Adjust width as needed */
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#2c767c',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: '#2c767c',
+        },}}>
         <CssBaseline />
         <AppBar position="fixed" open={open} className="beige-appbar">
           <Toolbar
             sx={{
               pr: "24px",
-            }}
-          >
+            }}>
             <IconButton
               edge="start"
               color="inherit"
@@ -310,8 +307,7 @@ const Navigation = () => {
               sx={{
                 marginRight: "36px",
                 ...(open && { display: "none" }),
-              }}
-            >
+              }}>
               <MenuIcon />
             </IconButton>
 
@@ -341,255 +337,263 @@ const Navigation = () => {
             </IconButton>
           </Toolbar>
         </AppBar>
-        <Drawer variant="permanent"
-          position="fixed"  open={open}>
-
-<Box
-          sx={{
-            
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom:'-60px'
-          }}
-        >
+      <Drawer variant="permanent"
+        position="fixed"  open={open}>
+        <Box sx={{  
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom:'-60px'
+          }}>
           <img src={'../../images/SPS2.png'} loading="lazy" alt="Logo" style={{ width: "52%", height: "auto" }} />
         </Box>
-          <Toolbar
-            sx={{
-              
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              px: [1],
-            }}
-          >
-            <IconButton onClick={handleToggle}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <List>
-                  <ListItem
-                  button
-                  onClick={()=>toggleSubmenu('client')}
-                  className="sidBarcomposantColore"
-              >
-                <ListItemIcon>
-                <BiSolidPurchaseTag className="iconSedBar"/>
-
-                </ListItemIcon>
-                <ListItemText primary="Clients" />
-                {client ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-              </ListItem>
-
-              <Collapse in={client} timeout="auto" unmountOnExit>
-                    <ListItem
-                        button
-                        component={Link}
-                        to="/clients_particulier"
-                        className="sidBarSucomposantColore"
-                    >
-                         <ListItemIcon>
-                         <FaFileCircleQuestion className="iconSedBar"/>
-              </ListItemIcon>
-                      <ListItemText primary="Clients Particulier" />
-                    </ListItem>
-                    <ListItem
-                        button
-                        component={Link}
-                        to="/clients_societe"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>
-                      <ListItemText primary="Clients Societe" />
-                    </ListItem>
-                  </Collapse>
-          </List>
-          <List>
-                  <ListItem
-                  button
-                  onClick={()=>toggleSubmenu('tarif')}
-                  className="sidBarcomposantColore"
-              >
-                <ListItemIcon>
-                <BiSolidPurchaseTag className="iconSedBar"/>
-
-                </ListItemIcon>
-                <ListItemText primary="Tarifs" />
-                {tarif ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-              </ListItem>
-
-              <Collapse in={tarif} timeout="auto" unmountOnExit>
-                    <ListItem
-                        button
-                        component={Link}
-                        to="/tarifs_repas"
-                        className="sidBarSucomposantColore"
-                    >
-                         <ListItemIcon>
-                         <FaFileCircleQuestion className="iconSedBar"/>
-              </ListItemIcon>
-                      <ListItemText primary="Tarifs de Repas" />
-                    </ListItem>
-                    <ListItem
-                        button
-                        component={Link}
-                        to="/tarifs_chambre"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>
-                      <ListItemText primary="Tarifs de Chambre" />
-                    </ListItem>
-                    <ListItem
-                        button
-                        component={Link}
-                        to="/tarifs_reduction"
-                        className="sidBarSucomposantColore"
-                    >
-                        <ListItemIcon>
-                        <FaFileCircleQuestion className="iconSedBar"/>
-              </ListItemIcon>
-                      <ListItemText primary="Tarifs de Reduction" />
-                    </ListItem>
-                    <ListItem
-                        button
-                        component={Link}
-                        to="/tarifs_actuel"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Tarifs Actuel" />
-                    </ListItem>
-                  </Collapse>
-          </List>
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/chambres"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>
-                      <ListItemText primary="Chambres" />
-                    </ListItem>
-          </List>
-        
-
-                  <List>
-                  <ListItem button component={Link} to="/reclamations" className="sidBarSucomposantColore">
-                      <ListItemIcon>
-                        <FaFileInvoiceDollar className="iconSedBar" />
-                      </ListItemIcon>
-                      <ListItemText primary="Réclamations" />
-                    </ListItem>
-                  </List>
-
-
-
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/prestataires"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Prestataires" />
-                    </ListItem>
-          </List>
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/equipements"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Equipements" />
-                    </ListItem>
-          </List>
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/interventions"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Interventions" />
-                    </ListItem>
-          </List>
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/intervenants"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Intervenants" />
-                    </ListItem>
-          </List>
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/maintenances"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Fiche de Maintenance" />
-                    </ListItem>
-          </List>
-          <List>
-          <ListItem
-                        button
-                        component={Link}
-                        to="/suivi_interventions"
-                        className="sidBarSucomposantColore"
-                    >
-                      <ListItemIcon>
-                      <FaFileInvoiceDollar className="iconSedBar"/>
-                      </ListItemIcon>   
-                      <ListItemText primary="Suivi des Interventions" />
-                    </ListItem>
-          </List>
+        <Toolbar sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          px: [1],}}>
+          <IconButton onClick={handleToggle}>
+            <ChevronLeftIcon />
+          </IconButton>
+        </Toolbar>
+        <Divider />
           <List>
             <ListItem
               button
-              onClick={() => {
-                handleLogoutClick();
-                logout();
-              }}
-              style={{ color: "red", background: "white" ,marginTop:"20px"}}
-            >
+              onClick={()=>toggleSubmenu('client')}
+              className="sidBarcomposantColore">
+
               <ListItemIcon>
-                <ExitToAppIcon style={{ color: "red" }} />
+                <BiSolidPurchaseTag className="iconSedBar"/>
               </ListItemIcon>
-              <ListItemText primary="Se déconnecter" />
+
+              <ListItemText primary="Clients" />
+                {client ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </ListItem>
+
+            <Collapse in={client} timeout="auto" unmountOnExit>
+              <ListItem
+                button
+                component={Link}
+                to="/clients_particulier"
+                className="sidBarSucomposantColore">
+                    
+                <ListItemIcon>
+                  <FaFileCircleQuestion className="iconSedBar"/>
+                </ListItemIcon>
+
+                <ListItemText primary="Clients Particulier" />
+              </ListItem>
+              
+              <ListItem
+                button
+                component={Link}
+                to="/clients_societe"
+                className="sidBarSucomposantColore">
+                          
+                <ListItemIcon>
+                  <FaFileInvoiceDollar className="iconSedBar"/>
+                </ListItemIcon>
+
+                <ListItemText primary="Clients Societe" />
+
+              </ListItem> 
+
+              <ListItem
+                button
+                component={Link}
+                to="/clientgrp"
+                className="sidBarSucomposantColore">
+                          
+                <ListItemIcon>
+                  <FaFileInvoiceDollar className="iconSedBar"/>
+                </ListItemIcon>
+
+                <ListItemText primary="Clients par groupe" />
+
+              </ListItem> 
+              
+
+            </Collapse>
           </List>
-        </Drawer>
-      </Box>
-    </ThemeProvider>
+
+          <List>
+            <ListItem
+              button
+              onClick={()=>toggleSubmenu('tarif')}
+              className="sidBarcomposantColore">
+              <ListItemIcon>
+                <BiSolidPurchaseTag className="iconSedBar"/>
+              </ListItemIcon>
+
+              <ListItemText primary="Tarifs" />
+              {tarif ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </ListItem>
+
+            <Collapse in={tarif} timeout="auto" unmountOnExit>
+              <ListItem
+                button
+                component={Link}
+                to="/tarifs_repas"
+                className="sidBarSucomposantColore">
+                <ListItemIcon>
+                  <FaFileCircleQuestion className="iconSedBar"/>
+                </ListItemIcon>
+                
+                <ListItemText primary="Tarifs de Repas" />
+              </ListItem>
+              <ListItem
+                button
+                component={Link}
+                to="/tarifs_chambre"
+                className="sidBarSucomposantColore">
+                
+                <ListItemIcon>
+                  <FaFileInvoiceDollar className="iconSedBar"/>
+                </ListItemIcon>
+
+                <ListItemText primary="Tarifs de Chambre" />
+              </ListItem>
+              <ListItem
+                button
+                component={Link}
+                to="/tarifs_reduction"
+                className="sidBarSucomposantColore">
+                <ListItemIcon>
+                  <FaFileCircleQuestion className="iconSedBar"/>
+                </ListItemIcon>
+                <ListItemText primary="Tarifs de Reduction" />
+              </ListItem>
+              <ListItem
+                button
+                component={Link}
+                to="/tarifs_actuel"
+                className="sidBarSucomposantColore">
+
+                <ListItemIcon>
+                  <FaFileInvoiceDollar className="iconSedBar"/>
+                </ListItemIcon>   
+
+                <ListItemText primary="Tarifs Actuel" />
+              </ListItem>
+            </Collapse>
+          </List>
+
+          <List>
+            <ListItem
+              button
+              component={Link}
+              to="/chambres"
+              className="sidBarSucomposantColore">
+
+            <ListItemIcon>
+              <FaFileInvoiceDollar className="iconSedBar"/>
+            </ListItemIcon>
+
+            <ListItemText primary="Chambres" />
+          </ListItem>
+        </List>
+        
+        <List>
+          <ListItem
+            button
+            component={Link}
+            to="/prestataires"
+            className="sidBarSucomposantColore">
+
+            <ListItemIcon>
+              <FaFileInvoiceDollar className="iconSedBar"/>
+                </ListItemIcon>   
+              <ListItemText primary="Prestataires" />
+          </ListItem>
+        </List>
+
+        <List>
+          <ListItem
+            button
+            component={Link}
+            to="/equipements"
+            className="sidBarSucomposantColore">
+
+            <ListItemIcon>
+              <FaFileInvoiceDollar className="iconSedBar"/>
+            </ListItemIcon>   
+
+            <ListItemText primary="Equipements" />
+          </ListItem>
+        </List>
+
+        <List>
+          <ListItem
+            button
+            component={Link}
+            to="/interventions"
+            className="sidBarSucomposantColore" >
+              <ListItemIcon>
+                <FaFileInvoiceDollar className="iconSedBar"/>
+              </ListItemIcon>   
+              <ListItemText primary="Interventions" />
+          </ListItem>
+        </List>
+        
+        <List>
+          <ListItem
+            button
+            component={Link}
+            to="/intervenants"
+            className="sidBarSucomposantColore">
+            
+            <ListItemIcon>
+              <FaFileInvoiceDollar className="iconSedBar"/>
+            </ListItemIcon>   
+            <ListItemText primary="Intervenants" />
+          </ListItem>
+        </List>
+          
+        <List>
+          <ListItem
+            button
+            component={Link}
+            to="/maintenances"
+            className="sidBarSucomposantColore">
+            <ListItemIcon>
+              <FaFileInvoiceDollar className="iconSedBar"/>
+            </ListItemIcon>   
+            <ListItemText primary="Fiche de Maintenance" />
+          </ListItem>
+        </List>
+        
+        <List>
+          <ListItem
+            button
+            component={Link}
+            to="/suivi_interventions"
+            className="sidBarSucomposantColore">
+            <ListItemIcon>
+              <FaFileInvoiceDollar className="iconSedBar"/>
+            </ListItemIcon>   
+            <ListItemText primary="Suivi des Interventions" />
+          </ListItem>
+        </List>
+        
+        <List>
+          <ListItem
+            button
+            onClick={() => {
+              handleLogoutClick();
+              logout();
+            }}
+            style={{ color: "red", background: "white" ,marginTop:"20px"}}>
+
+            <ListItemIcon>
+              <ExitToAppIcon style={{ color: "red" }} />
+            </ListItemIcon>
+            <ListItemText primary="Se déconnecter" />
+          </ListItem>
+        </List>
+  
+      </Drawer>
+    </Box>
+  </ThemeProvider>
   );
 };
 

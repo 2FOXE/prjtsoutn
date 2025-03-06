@@ -4269,8 +4269,7 @@ contact_site_clients
                 </tr>
               </thead>
               <tbody>
-                {siteClient.
-contact_site_clients?.map((contact_clients) => (
+                {siteClient.contact_site_clients?.map((contact_clients) => (
                   <tr key={contact_clients.id}>
                     <td>{contact_clients.name}</td>
                     <td>{contact_clients.prenom}</td>

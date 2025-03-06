@@ -39,11 +39,24 @@ use App\Http\Controllers\SecteurClientParticulierController;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ChambreController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\ClientGrpController;
+use App\Http\Controllers\GroupController;
 
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    return $request->user(); 
 })->middleware('auth:sanctum');
+
+//groups routes
+Route::get('/groups', [GroupController::class, 'index']);
+Route::get('/groups/{groupNumber}', [GroupController::class, 'getGroupByNumber']);
+Route::delete('/groups/{groupNumber}', [GroupController::class, 'destroy']);
+
+// client par groupe
+Route::get('/clientgrp', [ClientGrpController::class, 'index']);
+Route::post('/clientgrp', [ClientgrpController::class, 'store']);
+Route::get('/clientgrp', [ClientGrpController::class, 'getClients']);
+
 
 
 // Client Particulier routes: Tested
@@ -52,6 +65,7 @@ Route::post('/clients-particulier', [ClientParticulierController::class, 'ajoute
 Route::get('/clients-particulier/{code}', [ClientParticulierController::class, 'afficherClient']);
 Route::put('/clients-particulier/{code}', [ClientParticulierController::class, 'updateClient']);
 Route::delete('/clients-particulier/{code}', [ClientParticulierController::class, 'supprimerClient']);
+Route::get('/clientagence', [ClientParticulierController::class, 'getClients']);
 
 // Tarifs Chambre routes :Tested
 Route::get('/tarifs-chambre', [TarifChambreDetailController::class, 'getAll']);
