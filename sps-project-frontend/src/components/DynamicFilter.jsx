@@ -19,21 +19,30 @@ const DynamicFilter = ({
       style={{
         backgroundColor: "#fff",
         padding: "10px",
+        marginTop: '10px',
         borderRadius: "8px",
         boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
         marginBottom: "20px",
       }}
     >
-      {/* Single Row with Filters (Left) & Icon + Add Button (Right) */}
       <Row className="align-items-center justify-content-between">
-        {/* Left side: Filters (shown/hidden by showFilters) */}
         <Col>
           {showFilters && (
             <Row className="g-3 align-items-center">
               {filters.map((filter, index) => (
                 <Col key={index} md="auto">
-                  <Form.Group>
-                    <Form.Label>{filter.label}</Form.Label>
+                  <div className="d-flex align-items-center">
+                    <Form.Label 
+                      style={{
+                        marginRight: "10px", 
+                        marginBottom: "0",
+                        minWidth: "80px",
+                        fontWeight: "500",
+                        color: "#444",
+                      }}
+                    >
+                      {filter.label}
+                    </Form.Label>
                     {filter.key === "date" ? (
                       <Form.Control
                         type="date"
@@ -44,9 +53,15 @@ const DynamicFilter = ({
                         }
                         onChange={(e) => onDateFilterChange(e.target.value)}
                         style={{
-                          height: "38px",
-                          borderRadius: "4px",
-                          minWidth: "130px",
+                          height: "40px",
+                          borderRadius: "8px",
+                          minWidth: "140px",
+                          border: "1px solid #eaeaea",
+                          background: "#f9f9f9",
+                          boxShadow: "none",
+                          padding: "0 12px",
+                          transition: "all 0.2s ease",
+                          fontSize: "14px",
                         }}
                       />
                     ) : (
@@ -55,9 +70,16 @@ const DynamicFilter = ({
                           onFilterChange(filter.key, e.target.value)
                         }
                         style={{
-                          height: "38px",
-                          borderRadius: "4px",
-                          minWidth: "130px",
+                          height: "40px",
+                          borderRadius: "8px",
+                          minWidth: "140px",
+                          border: "1px solid #eaeaea",
+                          background: "#f9f9f9",
+                          boxShadow: "none",
+                          padding: "0 12px",
+                          appearance: "none",
+                          transition: "all 0.2s ease",
+                          fontSize: "14px",
                         }}
                       >
                         <option value="">Select {filter.label}</option>
@@ -68,14 +90,13 @@ const DynamicFilter = ({
                         ))}
                       </Form.Select>
                     )}
-                  </Form.Group>
+                  </div>
                 </Col>
               ))}
             </Row>
           )}
         </Col>
 
-        {/* Right side: Icon & "Add" button */}
         <Col xs="auto" className="d-flex align-items-center">
           <FontAwesomeIcon
             icon={showFilters ? faTimes : faFilter}
@@ -94,13 +115,15 @@ const DynamicFilter = ({
               display: "flex",
               alignItems: "center",
               cursor: "pointer",
-              backgroundColor: "#329982",
+              background: "linear-gradient(90deg, #329982 0%, #2a7d6c 100%)",
               color: "white",
               borderRadius: "10px",
               fontWeight: "bold",
               padding: "6px 15px",
               border: "none",
               height: "40px",
+              boxShadow: "0 4px 10px rgba(50,153,130,0.3)",
+              transition: "all 0.3s ease"
             }}
           >
             <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />

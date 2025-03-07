@@ -481,6 +481,13 @@ const Navigation = () => {
                       <ListItemText primary="Chambres" />
                     </ListItem>
           </List>
+          
+          <ListItem button component={Link} to="/chambres-disponibles" className="sidBarSucomposantColore">
+          <ListItemIcon>
+            <FaFileInvoiceDollar className="iconSedBar" />
+          </ListItemIcon>
+          <ListItemText primary="Chambres Disponibles" />
+        </ListItem>
         
 
                   <List>
@@ -491,11 +498,8 @@ const Navigation = () => {
                       <ListItemText primary="Réclamations" />
                     </ListItem>
                   </List>
-
-
-
-          <List>
-          <ListItem
+                  <List>
+                  <ListItem
                         button
                         component={Link}
                         to="/prestataires"
@@ -506,9 +510,9 @@ const Navigation = () => {
                       </ListItemIcon>   
                       <ListItemText primary="Prestataires" />
                     </ListItem>
-          </List>
-          <List>
-          <ListItem
+                    </List>
+                    <List>
+                    <ListItem
                         button
                         component={Link}
                         to="/equipements"

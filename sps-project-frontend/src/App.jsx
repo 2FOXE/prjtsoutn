@@ -12,6 +12,7 @@ const TarifChambre = lazy(() => import('./Tarifs/TarifChambre'));
 const TarifRepas = lazy(() => import('./Tarifs/TarifRepas'));
 const TarifReduction = lazy(() => import('./Tarifs/TarifReduction'));
 const Chambre = lazy(() => import('./Chambre/Chambre'));
+const ChambresDisponibles = lazy(() => import('./Chambre/ChambresDisponibles'));
 const ReclamationPage = lazy(() => import('./reclamation/ReclamationPage'));
 
 
@@ -40,6 +41,7 @@ const App = () => {
         <Route path="/tarifs_repas" element={<TarifRepas />} />
         <Route path="/tarifs_reduction" element={<TarifReduction />} />
         <Route path="/reclamations" element={<ReclamationPage />} />
+        <Route path="/chambres-disponibles" element={<ChambresDisponibles />} />
 
      
       </Routes>

@@ -67,6 +67,7 @@ const ExpandRTable = ({
     <div className="expand-table-container" style={{ 
       boxShadow: '0 0 15px rgba(0, 0, 0, 0.1)',
       backgroundColor: 'white',
+      marginTop: '3px',
       borderRadius: '8px',
       padding: '15px',
       margin: '10px 0',

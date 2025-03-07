@@ -39,6 +39,8 @@ use App\Http\Controllers\SecteurClientParticulierController;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ChambreController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\SuiviChambreController;
+
 
 
 Route::get('/user', function (Request $request) {
@@ -296,3 +298,5 @@ Route::prefix('reclamations')->group(function () {
     Route::put('/departements/{id}', [ReclamationController::class, 'updateDepartment']);
     Route::delete('/departements/{id}', [ReclamationController::class, 'deleteDepartment']);
 });
+
+Route::get('/chambres/available', [SuiviChambreController::class, 'getAvailableChambres']);
