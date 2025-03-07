@@ -13,7 +13,6 @@ class ClientGrp extends Model
 
 
     protected $fillable = [
-        'group_id',
         'id',
         'nom',
         'prenom',

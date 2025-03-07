@@ -18,6 +18,7 @@ export const fetchGroups = () => async (dispatch) => {
     try {
         const response = await axios.get("http://127.0.0.1:8000/api/groups");
         dispatch({ type: "FETCH_GROUPS_SUCCESS", payload: response.data });
+
     } catch (error) {
         console.error("Error fetching groups:", error);
         dispatch({ type: "FETCH_GROUPS_FAILURE", error });
@@ -39,7 +40,7 @@ export const fetchClientsByGroup = (groupId) => async (dispatch) => {
 // Submit New Clients to a Group
 export const submitClients = (payload) => async (dispatch) => {
     try {
-        await axios.post("http://127.0.0.1:8000/api/clientgrp", payload);
+        await axios.post("http://127.0.0.1:8000/api/clientgrp", {clients: payload});
         dispatch({ type: "SUBMIT_CLIENTS_SUCCESS", payload });
     } catch (error) {
         console.error("Error submitting clients:", error);

@@ -11,6 +11,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchClients, fetchGroups, fetchClientsByGroup} from "../redux/actions";
+
+
 //import { FETCH_CLIENTS } from '../redux/actions.js';
 
 
@@ -32,6 +34,8 @@ export const ClientsAndGroups = () => {
     const [selectedRowId, setSelectedRowId] = useState(null);
     const [inputValue, setInputValue] = useState(0);
     const [count, setCount] = useState(0);
+    const [selectedRow, setSelectedRow] = useState(null);
+    const [selectedCli, setSelectedCli] = useState(null);
 
     // Fetch clients and groups on component mount
     useEffect(() => {
@@ -43,6 +47,10 @@ export const ClientsAndGroups = () => {
         setFilteredGroups(groups);
     }, [groups]);
     
+    const handleRowClick = (id) => {
+        setSelectedRow(selectedRow === id ? null : id);
+      };
+    
 
     // Toggle group clients
     const toggleClients = (groupId) => {
@@ -53,6 +61,56 @@ export const ClientsAndGroups = () => {
             dispatch(fetchClientsByGroup(groupId));
         }
     };
+
+    const deleteGroup = (groupNumber) => async (dispatch) => {
+        try {
+            await axios.delete(`http://127.0.0.1:8000/api/groups/${groupNumber}`);
+            dispatch({ type: "DELETE_GROUP_SUCCESS", payload: groupNumber });
+        } catch (error) {
+            console.error("Error deleting group:", error);
+        }
+    };
+
+    const submitClients = (payload) => async (dispatch) => {
+        try {
+            await axios.post("http://127.0.0.1:8000/api/clientgrp", payload);
+            dispatch({ type: "SUBMIT_CLIENTS_SUCCESS", payload });
+        } catch (error) {
+            console.error("Error submitting clients:", error);
+            dispatch({ type: "SUBMIT_CLIENTS_FAILURE", error });
+        }
+    };
+
+    const handleCloseDeleteModal = () => setShowDeleteModal(false);
+
+    const handleSubmitCount = (value) => {
+        const numClients = parseInt(value, 10);
+        if (!isNaN(numClients) && numClients > 0) {
+            setCount(numClients);
+            setClientInputs(Array.from({ length: numClients }, () => ({ cin: "", nom: "", prenom: "", email: "" })));
+        } else {
+            alert("Please enter a valid number of clients.");
+        }
+    };
+
+    // Define the handleInputChange function
+    const handleInputChange = (e, index) => {
+        const { name, value } = e.target;
+        const updatedInputs = [...clientInputs];
+        updatedInputs[index][name] = value; // Update the specific input field
+        setClientInputs(updatedInputs); // Update the state with the new inputs
+    };
+
+    const handleSubmitClients = (e) => {
+        e.preventDefault(); // Prevent the default form submission
+        const payload = { clients: clientInputs }; // Use the current client inputs as the payload
+        dispatch(submitClients(payload)); // Dispatch the action to submit clients
+    };
+    
+    const setSelectedAdminId = (adminId) => ({
+        type: 'SET_SELECTED_ADMIN_ID',
+        payload: adminId,
+    });
 
     const isOpen = async (id) => {
         if (!id || id === 0) {
@@ -78,59 +136,6 @@ export const ClientsAndGroups = () => {
         setOpened(opened === "closed" ? "opened" : "closed");
     };
 
-    const deleteGroup = (groupNumber) => async (dispatch) => {
-        try {
-            await axios.delete(`http://127.0.0.1:8000/api/groups/${groupNumber}`);
-            dispatch({ type: "DELETE_GROUP_SUCCESS", payload: groupNumber });
-        } catch (error) {
-            console.error("Error deleting group:", error);
-        }
-    };
-
-    const submitClients = (payload) => async (dispatch) => {
-        try {
-            await axios.post("http://127.0.0.1:8000/api/clientgrp", payload);
-            dispatch({ type: "SUBMIT_CLIENTS_SUCCESS", payload });
-        } catch (error) {
-            console.error("Error submitting clients:", error);
-            dispatch({ type: "SUBMIT_CLIENTS_FAILURE", error });
-        }
-    };
-
-    const setSelectedAdminId = (adminId) => ({
-        type: 'SET_SELECTED_ADMIN_ID',
-        payload: adminId,
-    });
-
-    const handleCloseDeleteModal = () => setShowDeleteModal(false);
-
-    const toggleOpened = () => {
-        setOpened(opened === "closed" ? "opened" : "closed");
-    };
-
-    const handleSubmitCount = (value) => {
-        const numClients = parseInt(value, 10);
-        if (!isNaN(numClients) && numClients > 0) {
-            setCount(numClients);
-            setClientInputs(Array.from({ length: numClients }, () => ({ cin: "", nom: "", prenom: "", email: "" })));
-        } else {
-            alert("Please enter a valid number of clients.");
-        }
-    };
-
-    // Define the handleInputChange function
-    const handleInputChange = (e, index) => {
-        const { name, value } = e.target;
-        const updatedInputs = [...clientInputs];
-        updatedInputs[index][name] = value; // Update the specific input field
-        setClientInputs(updatedInputs); // Update the state with the new inputs
-    };
-
-    const handleSubmitClients = (e) => {
-        e.preventDefault(); // Prevent the default form submission
-        const payload = clientInputs; // Use the current client inputs as the payload
-        dispatch(submitClients(payload)); // Dispatch the action to submit clients
-    };
 
     return (
     <>
@@ -161,7 +166,9 @@ export const ClientsAndGroups = () => {
                                     <tbody>
                                         {clients.length > 0 ? (
                                             clients.map(client => (
-                                                <tr key={client.CodeClient}>
+                                                <tr key={client.CodeClient} onClick={() => handleRowClick(client.id)}
+                                                    className={selectedRow === client.id ? "table-primary" : ""}
+                                                    style={{ cursor: "pointer" }}>
                                                     <td className="border p-2">{client.CodeClient}</td>
                                                     <td className="border p-2">{client.name}</td>
                                                     <td className="border p-2">{client.prenom || "N/A"}</td>
@@ -195,67 +202,73 @@ export const ClientsAndGroups = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {groups.map(group => (
-                                            <React.Fragment key={group.id}>
-                                                <tr className="cursor-pointer hover:bg-gray-100">
-                                                    <td className="border p-2">
-                                                    <button
-                                                        type="button" 
-                                                        className="btn btn-outline-secondary"
-                                                        onClick={() => toggleClients(group.id)}  // Pass group ID from groups table 
-                                                        >
-                                                        {expandedGroup === group.id ? "-" : "+"}
-                                                    </button>
-                                                        {" "}{group.group_number}
-                                                    </td>
-                                                    <td className="border p-2">{group.dateReservation}</td>
-                                                    <td className="border p-2">{group.dateEntre}</td>
-                                                    <td className="border p-2">{group.dateSortie}</td>
-                                                    <td className="border border-gray-300 p-2">
-                                                        <button type="button" className="btn btn-primary" style={{ margin: "1%" }} onClick={() => isOpen(group.id)}>
-                                                            <FontAwesomeIcon icon={faPlus} />
+                                        {Array.isArray(groups) && groups.length > 0 ? (
+                                            groups.map(group => (
+                                                <React.Fragment key={group.id}>
+                                                    <tr className="cursor-pointer hover:bg-gray-100">
+                                                        <td className="border p-2">
+                                                        <button
+                                                            type="button" 
+                                                            className="btn btn-outline-secondary"
+                                                            onClick={() => toggleClients(group.id)}  // Pass group ID from groups table 
+                                                            >
+                                                            {expandedGroup === group.id ? "-" : "+"}
                                                         </button>
-                                                        <button type="button" className="btn btn-danger" style={{ margin: "1%" }} onClick={() => handleShowDeleteModal(group.groupNumber)}>
-                                                            <FontAwesomeIcon icon={faTrash} />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                {expandedGroup === group.id && (
-                                                    <tr>
-                                                        <td colSpan="5">
-                                                            {clientgrp.length > 0 ? (
-                                                                <table border="1" style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
-                                                                    <thead>
-                                                                        <tr className="bg-gray-100">
-                                                                            <th className="ColoretableForm">CIN</th>
-                                                                            <th className="ColoretableForm">Nom</th>
-                                                                            <th className="ColoretableForm">Prenom</th>
-                                                                            <th className="ColoretableForm">Email</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {clientgrp.map(client => (
-                                                                            <tr 
-                                                                                key={`${client.id}-${client.cin}`} 
-                                                                                onClick={() => setSelectedRowId(selectedRowId === client.id ? null : client.id)}
-                                                                                className={selectedRowId === client.id ? 'highlight' : ''}
-                                                                            >
-                                                                                <td className="border p-2">{client.cin}</td>
-                                                                                <td className="border p-2">{client.nom}</td>
-                                                                                <td className="border p-2">{client.prenom}</td>
-                                                                                <td className="border p-2">{client.email}</td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
-                                                            ) : (
-                                                                <div>No clients found</div>
-                                                            )}
+                                                            {" "}{group.group_number}
+                                                        </td>
+                                                        <td className="border p-2">{group.dateReservation}</td>
+                                                        <td className="border p-2">{group.dateEntre}</td>
+                                                        <td className="border p-2">{group.dateSortie}</td>
+                                                        <td className="border border-gray-300 p-2">
+                                                            <button type="button" className="btn btn-primary" style={{ margin: "1%" }} onClick={() => isOpen(group.id)}>
+                                                                <FontAwesomeIcon icon={faPlus} />
+                                                            </button>
+                                                            <button type="button" className="btn btn-danger" style={{ margin: "1%" }} onClick={() => handleShowDeleteModal(group.groupNumber)}>
+                                                                <FontAwesomeIcon icon={faTrash} />
+                                                            </button>
                                                         </td>
                                                     </tr>
-                                                )}
-                                            </React.Fragment>
-                                        ))}
+                                                    {expandedGroup === group.id && (
+                                                        <tr>
+                                                            <td colSpan="5">
+                                                                {clientgrp.length > 0 ? (
+                                                                    <table border="1" style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
+                                                                        <thead>
+                                                                            <tr className="bg-gray-100">
+                                                                                <th className="ColoretableForm">CIN</th>
+                                                                                <th className="ColoretableForm">Nom</th>
+                                                                                <th className="ColoretableForm">Prenom</th>
+                                                                                <th className="ColoretableForm">Email</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {clientgrp.map(client => (
+                                                                                <tr 
+                                                                                    key={`${client.id}-${client.cin}`} 
+                                                                                    onClick={() => setSelectedRowId(selectedRowId === client.id ? null : client.id)}
+                                                                                    className={selectedRowId === client.id ? 'highlight' : ''}
+                                                                                >
+                                                                                    <td className="border p-2">{client.cin}</td>
+                                                                                    <td className="border p-2">{client.nom}</td>
+                                                                                    <td className="border p-2">{client.prenom}</td>
+                                                                                    <td className="border p-2">{client.email}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                ) : (
+                                                                    <div>No clients found</div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </React.Fragment>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="5" className="text-center p-2">No groups found</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                                 <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
@@ -274,7 +287,10 @@ export const ClientsAndGroups = () => {
                                 </Modal>
                             </div>
                             {opened === "opened" && (
-                                <form onSubmit={handleSubmitClients} style={{ marginTop: '5%' }}>
+                                <form onSubmit={handleSubmitClients} 
+                                    style={{ marginTop: '5%',
+                                             width: "35%"
+                                    }}>
                                     <div className="input-group mb-3" style={{ marginBottom: "4%" }}>
                                         <input
                                             type="number"
@@ -295,7 +311,7 @@ export const ClientsAndGroups = () => {
                                         {count > 0 && (
                                             <nav>
                                                 {clientInputs.map((client, index) => (
-                                                    <div key={index} className="d-flex justify-content-around" style={{ marginTop: "2%" }}>
+                                                    <div key={index} className="d-flex justify-content-around" style={{ margin: "2%" }}>
                                                         <input
                                                             placeholder="CIN"
                                                             value={client.cin}
@@ -327,7 +343,7 @@ export const ClientsAndGroups = () => {
                                                         />
                                                     </div>
                                                 ))}
-                                                <button type="submit" className="btn btn-primary">Submit</button>
+                                                <button type="submit" className="btn btn-primary">Ajouter</button>
                                             </nav>
                                         )}
                                     </div>
