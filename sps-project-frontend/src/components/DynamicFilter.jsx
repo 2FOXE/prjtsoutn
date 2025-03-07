@@ -4,10 +4,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter, faTimes, faPlus } from "@fortawesome/free-solid-svg-icons";
 
 const DynamicFilter = ({
-  filters, // [{ label: "Choose Category", key: "category", options: [{ value, label }, ...] }]
-  onFilterChange, // function to handle dropdown changes
-  onAddClick, // callback for the "Add" button (optional)
-  addButtonLabel = "Add Product", // label for the add button
+  filters,
+  onFilterChange,
+  onDateFilterChange,
+  onAddClick,
+  addButtonLabel = "Add Product",
+  selectedDate,
 }) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -22,23 +24,70 @@ const DynamicFilter = ({
         marginBottom: "20px",
       }}
     >
-      <Row className="align-items-center justify-content-end">
-        {/* Filter Icon (Left of Add Button) */}
-        <Col md="auto" className="mb-2">
+      {/* Single Row with Filters (Left) & Icon + Add Button (Right) */}
+      <Row className="align-items-center justify-content-between">
+        {/* Left side: Filters (shown/hidden by showFilters) */}
+        <Col>
+          {showFilters && (
+            <Row className="g-3 align-items-center">
+              {filters.map((filter, index) => (
+                <Col key={index} md="auto">
+                  <Form.Group>
+                    <Form.Label>{filter.label}</Form.Label>
+                    {filter.key === "date" ? (
+                      <Form.Control
+                        type="date"
+                        value={
+                          selectedDate
+                            ? selectedDate.toISOString().split("T")[0]
+                            : ""
+                        }
+                        onChange={(e) => onDateFilterChange(e.target.value)}
+                        style={{
+                          height: "38px",
+                          borderRadius: "4px",
+                          minWidth: "130px",
+                        }}
+                      />
+                    ) : (
+                      <Form.Select
+                        onChange={(e) =>
+                          onFilterChange(filter.key, e.target.value)
+                        }
+                        style={{
+                          height: "38px",
+                          borderRadius: "4px",
+                          minWidth: "130px",
+                        }}
+                      >
+                        <option value="">Select {filter.label}</option>
+                        {filter.options.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    )}
+                  </Form.Group>
+                </Col>
+              ))}
+            </Row>
+          )}
+        </Col>
+
+        {/* Right side: Icon & "Add" button */}
+        <Col xs="auto" className="d-flex align-items-center">
           <FontAwesomeIcon
             icon={showFilters ? faTimes : faFilter}
             style={{
               fontSize: "20px",
               cursor: "pointer",
               color: "#007bff",
-              marginRight: "10px", // Ensure spacing before button
+              marginRight: "15px",
             }}
             onClick={() => setShowFilters(!showFilters)}
           />
-        </Col>
 
-        {/* Add Button (Right of Filter Icon) */}
-        <Col md="auto" className="mb-2">
           <button
             onClick={onAddClick}
             style={{
@@ -59,34 +108,6 @@ const DynamicFilter = ({
           </button>
         </Col>
       </Row>
-
-      {/* Filter Dropdowns (show/hide) */}
-      {showFilters && (
-        <Row
-          className="mt-3"
-          style={{
-            display: "flex",
-            flexDirection: "row-reverse", // Reverse the order of dropdowns
-            justifyContent: "flex-start", // Align dropdowns to the right
-            gap: "10px", // Add spacing between dropdowns
-          }}
-        >
-          {filters.map((filter, index) => (
-            <Col key={index} md={2} className="mb-2">
-              <Form.Select
-                onChange={(e) => onFilterChange(filter.key, e.target.value)}
-              >
-                <option value="">Select {filter.label}</option>
-                {filter.options.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-          ))}
-        </Row>
-      )}
     </div>
   );
 };
