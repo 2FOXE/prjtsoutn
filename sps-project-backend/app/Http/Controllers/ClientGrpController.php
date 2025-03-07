@@ -7,6 +7,8 @@ use App\Models\ClientGrp;
 
 class ClientGrpController extends Controller
 {
+
+    
     public function index()
     {
         try { 
@@ -19,16 +21,20 @@ class ClientGrpController extends Controller
 
     public function store(Request $request)
     {
-        // Validate the incoming request data
+        // Validate that clients is an array
         $request->validate([
+            'clients' => 'required|array',
             'clients.*.cin' => 'required|string',
             'clients.*.nom' => 'required|string',
             'clients.*.prenom' => 'required|string',
             'clients.*.email' => 'required|email',
         ]);
+    
+        // Ensure clients is an array to avoid null errors
+        $clients = $request->input('clients', []);
+        dd($request->all());
 
-        // Insert each client into the clientgrp table
-        foreach ($request->clients as $client) {
+        foreach ($clients as $client) {
             Clientgrp::create([
                 'cin' => $client['cin'],
                 'nom' => $client['nom'],
@@ -36,9 +42,10 @@ class ClientGrpController extends Controller
                 'email' => $client['email'],
             ]);
         }
-
+    
         return response()->json(['message' => 'Clients added successfully'], 201);
     }
+    
     
     public function getClients(Request $request) {
         try {
