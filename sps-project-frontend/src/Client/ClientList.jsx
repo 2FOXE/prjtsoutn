@@ -51,6 +51,7 @@ const ClientList = () => {
   const [secteurClient, setSecteurClient] = useState([]);
 
   const [siteClients, setSiteClients] = useState([]);
+  
   //---------------form-------------------//
   const [newCategory, setNewCategory] = useState({ categorie: "" });
   const [showEditModal, setShowEditModal] = useState(false);

@@ -24,6 +24,13 @@ class ClientParticulierController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function getClients()
+    {
+        // Fetch all data from the clirnt_particulier table
+        $clients = ClientParticulier::all();
+        return response()->json($clients);
+    }
+
     public function index()
     {
         // if (Gate::allows('view_all_clients')) {

@@ -11,6 +11,10 @@ class ClientParticulier extends Model
     protected $guarded=[];
     protected $table = "clients_particulier";
 
+    public function group()
+    {
+        return $this->hasMany(Group::class);
+    }
 
     public function user() {
         return $this->belongsTo(User::class, 'user_id');

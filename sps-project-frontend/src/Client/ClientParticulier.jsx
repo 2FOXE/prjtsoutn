@@ -159,9 +159,7 @@ const [villeFilter, setVilleFilter] = useState('');
     date_plafond:"",
 
   });
-  const [formContainerStyleSC, setFormContainerStyleSC] = useState({
-    right: "-100%",
-  });
+  const [formContainerStyleSC, setFormContainerStyleSC] = useState({right: "-100%",});
   const [expandedRows, setExpandedRows] = useState([]);
   const [expandedRowsContact, setExpandedRowsContact] = useState([]);
   const [expandedRowsContactSite, setExpandedRowsContactsite] = useState([]);
@@ -247,6 +245,7 @@ const [villeFilter, setVilleFilter] = useState('');
     );
   };
 
+  //----------------------------------------------------------------------------------------------------------------------------------------
   // const toggleRow = async (clientId) => {
   //   if (expandedRows.includes(clientId)) {
   //     setExpandedRows(expandedRows?.filter((id) => id !== clientId));
@@ -306,7 +305,8 @@ const [villeFilter, setVilleFilter] = useState('');
   //   });
   // }, [clients]); // Exécuter lorsqu'il y a un changement dans la liste des clients
 
-  //---------------------------------------------
+  //---------------------------------------------------------------------------------------------------------------------------------
+  
   useEffect(() => {
     const filtered = clients?.filter((client) =>
       Object.values(client)?.some((value) => {
@@ -671,7 +671,8 @@ const [villeFilter, setVilleFilter] = useState('');
     } else {
       closeFormSC();
     }
-  };
+  };0
+  
   console.log('formDataSC',formDataSC,selectedProductsDataRep)
   const handleSubmitSC = async (e) => {
     e.preventDefault();
@@ -1817,6 +1818,9 @@ const handleCategoryFilterChange = (catId) => {
  
   setSelectedCategory(catId);
 };
+
+
+
   return (
     <ThemeProvider theme={createTheme()}>
       <Box sx={{...dynamicStyles}}>
@@ -1825,8 +1829,7 @@ const handleCategoryFilterChange = (catId) => {
        
           <div
             className="d-flex justify-content-between align-items-center"
-            style={{ marginTop: "15px" }}
-          >
+            style={{ marginTop: "15px" }}>
             <h3 className="titreColore">
               {/* <PeopleIcon style={{ fontSize: "24px", marginRight: "8px" }} /> */}
               Liste des Clients Societe
@@ -1839,27 +1842,28 @@ const handleCategoryFilterChange = (catId) => {
 
               <div>
               <FontAwesomeIcon
-    style={{
-      cursor: "pointer",
-      color: "grey",
-      fontSize: "2rem",
-    }}
-    onClick={printTable}  
-    icon={faPrint}
-    className="me-2"
-  />
-                  <FontAwesomeIcon
-      style={{
-        cursor: "pointer",
-        color: "red",
-        fontSize: "2rem",
-        marginLeft: "15px",
-      }}
-      onClick={exportToPDF}
-            icon={faFilePdf}
-    />
+                style={{
+                  cursor: "pointer",
+                  color: "grey",
+                  fontSize: "2rem",
+                }}
+                onClick={printTable}  
+                icon={faPrint}
+                className="me-2"
+              />
+              
+              <FontAwesomeIcon
+                style={{
+                  cursor: "pointer",
+                  color: "red",
+                  fontSize: "2rem",
+                  marginLeft: "15px",
+                }}
+                onClick={exportToPDF}
+                      icon={faFilePdf}
+              />
 
-                <FontAwesomeIcon
+              <FontAwesomeIcon
                   icon={faFileExcel}
                   onClick={exportToExcel}
                   style={{
@@ -1868,66 +1872,66 @@ const handleCategoryFilterChange = (catId) => {
                     fontSize: "2rem",
                     marginLeft: "15px",
                   }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {
-          
-            <div style={{height:'125px',marginTop:'-15px'}}>
-                                        <h5 className="container-d-flex justify-content-start AjouteBotton"style={{marginBottom:'-3px'}} >Secteur d'activité</h5>
-                                        <div className=" bgSecteur" >
-
-<Carousel activeIndex={activeIndex} onSelect={handleSelect} interval={null}
- nextIcon={<FaArrowRight size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%' ,marginTop:'-50px',marginRight:"5px",marginLeft:"-5px"}} />}
- prevIcon={<FaArrowLeft size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%',marginTop:'-50px',marginRight:"-5px",marginLeft:"5px"}} />}>
-
-  {chunks?.map((chunk, chunkIndex) => (
-    <Carousel.Item key={chunkIndex}>
-      <div className="d-flex justify-content-start">
-        <a href="#" style={{marginLeft:'60px'}}>
-          <div
-            className={`category-item ${selectedCategory === '' ? 'active' : ''}`} 
-            onClick={() => handleCategoryFilterChange("")}
-          >
-            <img
-              src={'../../public/images/bayd.jpg'}
-              alt={'tout'}
-              className={`rounded-circle category-img ${selectedCategory === '' ? 'selected' : ''}`}
-            />
-            <p className="category-text">Tout</p>
-          </div>
-        </a>
-
-        {chunk?.map((category, index) => (
-          <a href="#" className="mx-5" key={index}>
-            <div 
-              className={`category-item ${selectedCategory === category.id ? 'active' : ''}`} 
-              onClick={() => handleCategoryFilterChange(category.id)}
-            >
-              <img
-                src={category.logo}
-                alt={category.secteur}
-                className={`rounded-circle category-img ${selectedCategory === category.id ? 'selected' : ''}`}
               />
-              <p className="category-text">{category.secteur}</p>
             </div>
-          </a>
-        ))}
-      </div>
-    </Carousel.Item>
-  ))}
-</Carousel>
-</div>
-                                        </div>
+          </div>
+        </div>
 
-          }
+        {
+          
+        <div style={{height:'125px',marginTop:'-15px'}}>
+          <h5 className="container-d-flex justify-content-start AjouteBotton"style={{marginBottom:'-3px'}} >Secteur d'activité</h5>
+          <div className=" bgSecteur" >
 
-          <div className="container-d-flex justify-content-start">
-            <div style={{ display: "flex", alignItems: "center" ,marginTop:'15px' ,padding:'0'}}>
+            <Carousel activeIndex={activeIndex} onSelect={handleSelect} interval={null}
+            nextIcon={<FaArrowRight size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%' ,marginTop:'-50px',marginRight:"5px",marginLeft:"-5px"}} />}
+            prevIcon={<FaArrowLeft size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%',marginTop:'-50px',marginRight:"-5px",marginLeft:"5px"}} />}>
+
+              {chunks?.map((chunk, chunkIndex) => (
+                <Carousel.Item key={chunkIndex}>
+                  <div className="d-flex justify-content-start">
+                    <a href="#" style={{marginLeft:'60px'}}>
+                      <div
+                        className={`category-item ${selectedCategory === '' ? 'active' : ''}`} 
+                        onClick={() => handleCategoryFilterChange("")}
+                      >
+                        <img
+                          src={'../../public/images/bayd.jpg'}
+                          alt={'tout'}
+                          className={`rounded-circle category-img ${selectedCategory === '' ? 'selected' : ''}`}
+                        />
+                        <p className="category-text">Tout</p>
+                      </div>
+                    </a>
+
+                    {chunk?.map((category, index) => (
+                      <a href="#" className="mx-5" key={index}>
+                        <div 
+                          className={`category-item ${selectedCategory === category.id ? 'active' : ''}`} 
+                          onClick={() => handleCategoryFilterChange(category.id)}
+                        >
+                          <img
+                            src={category.logo}
+                            alt={category.secteur}
+                            className={`rounded-circle category-img ${selectedCategory === category.id ? 'selected' : ''}`}
+                          />
+                          <p className="category-text">{category.secteur}</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </Carousel.Item>
+              ))}
+            </Carousel>
+          </div>
+        </div>
+
+        }
+
+        <div className="container-d-flex justify-content-start">
+          <div style={{ display: "flex", alignItems: "center" ,marginTop:'15px' ,padding:'0'}}>
              
-              <a
+            <a
                 onClick={handleShowFormButtonClick}
                 style={{
                   display: "flex",
@@ -1935,248 +1939,236 @@ const handleCategoryFilterChange = (catId) => {
                   cursor: "pointer",
                 }}
                 className="AjouteBotton"
-              >
- <FontAwesomeIcon
+            >
+            <FontAwesomeIcon
                     icon={faPlus}
                     className=" AjouteBotton"
                     style={{ cursor: "pointer" }}
                   />Ajouter Client
               </a>
 
-            </div>
+          </div>
 
-            <div className="filters" 
-            >
+          <div className="filters">
             <Form.Select aria-label="Default select example"
              value={regionFilter} onChange={handleRegionFilterChange}
              style={{width:'10%',height:"35px",position:'absolute', left: '66%', top: '233px'}}>
             <option value="">Sélectionner Region</option>
-    {
-      regions?.map((region)=>(
-        <option value={region.region}>{region.region}</option>
-      ))
-    }
-    </Form.Select>
+            {
+              regions?.map((region)=>(
+                <option value={region.region}>{region.region}</option>
+              ))
+            }
+            </Form.Select>
 
-    <Form.Select aria-label="Default select example"
-    value={zoneFilter} onChange={handleZoneFilterChange}
-    style={{width:'10%' ,height:"35px",position:'absolute', left: '77%',  top: '233px'}}>
-    <option value="">Sélectionner Zone</option>
-    {
-      zones?.map((zone)=>(
-        <option value={zone.zone}>{zone.zone}</option>
-      ))
-    }
-    </Form.Select>
+            <Form.Select aria-label="Default select example"
+            value={zoneFilter} onChange={handleZoneFilterChange}
+            style={{width:'10%' ,height:"35px",position:'absolute', left: '77%',  top: '233px'}}>
+            <option value="">Sélectionner Zone</option>
+            {
+              zones?.map((zone)=>(
+                <option value={zone.zone}>{zone.zone}</option>
+              ))
+            }
+            </Form.Select>
 
-    <Form.Select 
-  aria-label="Default select example"
-  value={villeFilter} 
-  onChange={handleVilleFilterChange}
-  style={{ width: '10%', height: "35px", position:'absolute', left: '88%',  top: '233px' }}
->
-  <option value="">Sélectionner Ville</option>
-  {
-    [...new Set(clients?.map(zone => zone.ville))] // Filtre les villes uniques
-      ?.map((ville, index) => (
-        <option key={index} value={ville}>{ville}</option>
-      ))
-  }
-</Form.Select>
+            <Form.Select 
+              aria-label="Default select example"
+              value={villeFilter} 
+              onChange={handleVilleFilterChange}
+              style={{ width: '10%', height: "35px", position:'absolute', left: '88%',  top: '233px' }}>
+              <option value="">Sélectionner Ville</option>
+                {
+                  [...new Set(clients?.map(zone => zone.ville))] // Filtre les villes uniques
+                    ?.map((ville, index) => (
+                      <option key={index} value={ville}>{ville}</option>
+                    ))
+                }
+            </Form.Select>
 
+          </div>
 
-
-</div>
-
-        <div style={{ marginTop:"0px",}}>
-        <div id="formContainer" className="" style={{...formContainerStyle,marginTop:'0px',maxHeight:'700px',overflow:'auto',padding:'0'}}>
+          <div style={{ marginTop:"0px",}}>
+            <div id="formContainer" className="" style={{...formContainerStyle,marginTop:'0px',maxHeight:'700px',overflow:'auto',padding:'0'}}>
               <Form className="col row" onSubmit={handleSubmit}>
                 <Form.Label className="text-center ">
-                <h4
-                     style={{
-                      fontSize: "25px", 
-                      fontFamily: "Arial, sans-serif", 
-                      fontWeight: "bold", 
-                      color: "black",
-                      borderBottom: "2px solid black", 
-                      paddingBottom: "5px",
-                    }}
-                    >
-                      {editingClient ? "Modifier" : "Ajouter"} un Client</h4>
+                  <h4
+                      style={{
+                        fontSize: "25px", 
+                        fontFamily: "Arial, sans-serif", 
+                        fontWeight: "bold", 
+                        color: "black",
+                        borderBottom: "2px solid black", 
+                        paddingBottom: "5px",
+                      }}
+                      >
+                      {editingClient ? "Modifier" : "Ajouter"} un Client
+                  </h4>
                 </Form.Label>
                 <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className=" text-primary"
-                    style={{ cursor: "pointer",marginTop:'-10px' }}
-                    onClick={() => setShowAddCategory(true)} // Affiche le formulaire
-                  />
-                  <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px'}}>Zone</Form.Label>
-                  <Form.Select
-                  style={{ flex: '2' }}
-                    as="select"
-                    name="zone_id"
-                    value={formData.zone_id}
-                    onChange={handleChange}
-                  >
-                    <option value="">Sélectionner Zone</option>
-                    {zones?.map((zone) => (
-                      <option key={zone.id} value={zone.id}>
-                        {zone.zone}
-                      </option>
-                    ))}
-                    <Form.Text className="text-danger">
-                      {errors.zone_id}
-                    </Form.Text>
-                  </Form.Select>
+                  <FontAwesomeIcon
+                      icon={faPlus}
+                      className=" text-primary"
+                      style={{ cursor: "pointer",marginTop:'-10px' }}
+                      onClick={() => setShowAddCategory(true)} // Affiche le formulaire
+                    />
+                    <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px'}}>Zone</Form.Label>
+                    <Form.Select
+                      style={{ flex: '2' }}
+                      as="select"
+                      name="zone_id"
+                      value={formData.zone_id}
+                      onChange={handleChange}>
+
+                      <option value="">Sélectionner Zone</option>
+                      {zones?.map((zone) => (
+                        <option key={zone.id} value={zone.id}>
+                          {zone.zone}
+                        </option>
+                      ))}
+                      <Form.Text className="text-danger">
+                        {errors.zone_id}
+                      </Form.Text>
+                    </Form.Select>
                 </Form.Group>
 
-                  <Modal show={showAddCategory} onHide={() => setShowAddCategory(false)}>
+                <Modal show={showAddCategory} onHide={() => setShowAddCategory(false)}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Ajouter une Zone</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <Form>
+                      <Form.Group>
+                        <Form.Label>Zone</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Nom de la Zone"
+                          value={newCategory.categorie}
+                          onChange={(e) => setNewCategory({ ...newCategory, categorie: e.target.value })}
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group className="mt-3">
+                        <div className="form-group mt-3"  style={{maxHeight:'500px',overflowY:'auto'}}>
+                          <table className="table">
+                            <thead>
+                              <tr>
+                                <th>Id</th>
+                                <th>Zone</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {zones?.map(categ => (
+                                <tr key={categ.id}>
+                                  <td>{categ.id}</td>
+                                  <td>{categ.zone}</td>
+                                  <td>
+                                  
+                                    <FontAwesomeIcon
+                                      onClick={() => handleEditZone(categ)}
+                                      icon={faEdit}
+                                      style={{
+                                        color: "#007bff",
+                                        cursor: "pointer",
+                                      }}
+                                    />
+                                    <span style={{ margin: "0 8px" }}></span>
+                                    <FontAwesomeIcon
+                                      onClick={() => handleDeleteZone(categ.id)}
+                                      icon={faTrash}
+                                      style={{
+                                        color: "#ff0000",
+                                        cursor: "pointer",
+                                      }}
+                                    />
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </Form.Group>
+                    </Form>
+                  </Modal.Body>
+
+                  <Form.Group className=" d-flex justify-content-center">
+        
+                    <Fab
+                      variant="extended"
+                      className="btn-sm Fab mb-2 mx-2"
+                      type="submit"
+                      onClick={handleAddZone}>
+                      Valider
+                    </Fab>
+                    <Fab
+                      variant="extended"
+                      className="btn-sm FabAnnule mb-2 mx-2"
+                      onClick={() => setShowAddCategory(false)}>
+                      Annuler
+                    </Fab>
+                  </Form.Group>
+        
+                </Modal>
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Ajouter une Zone</Modal.Title>
+          <Modal.Title>Modifier une Zone</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group>
-              <Form.Label>Zone</Form.Label>
+              <Form.Label>Nom de la Zone</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Nom de la Zone"
-                value={newCategory.categorie}
-                onChange={(e) => setNewCategory({ ...newCategory, categorie: e.target.value })}
-              />
-            </Form.Group>
-            
-            <Form.Group className="mt-3">
-            <div className="form-group mt-3"  style={{maxHeight:'500px',overflowY:'auto'}}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Id</th>
-                  <th>Zone</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {zones?.map(categ => (
-                  <tr key={categ.id}>
-                    <td>{categ.id}</td>
-                    <td>{categ.zone}</td>
-                    <td>
-                   
-    <FontAwesomeIcon
-                                  onClick={() => handleEditZone(categ)}
-                                  icon={faEdit}
-                                  style={{
-                                    color: "#007bff",
-                                    cursor: "pointer",
-                                  }}
-                                />
-                                <span style={{ margin: "0 8px" }}></span>
-                                <FontAwesomeIcon
-                                  onClick={() => handleDeleteZone(categ.id)}
-                                  icon={faTrash}
-                                  style={{
-                                    color: "#ff0000",
-                                    cursor: "pointer",
-                                  }}
-                                />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                value={selectedCategoryId.zone
+                }
+                onChange={(e) => setSelectedCategoryId(e.target.value)}/>
             </Form.Group>
           </Form>
         </Modal.Body>
-        
-          
-          
-          <Form.Group className=" d-flex justify-content-center">
-        
-        <Fab
-    variant="extended"
-    className="btn-sm Fab mb-2 mx-2"
-    type="submit"
-    onClick={handleAddZone}
-  >
-    Valider
-  </Fab>
-  <Fab
-    variant="extended"
-    className="btn-sm FabAnnule mb-2 mx-2"
-    onClick={() => setShowAddCategory(false)}
-  >
-    Annuler
-  </Fab>
-      </Form.Group>
-        
-      </Modal>
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-      <Modal.Header closeButton>
-        <Modal.Title>Modifier une Zone</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group>
-            <Form.Label>Nom de la Zone</Form.Label>
-            <Form.Control
-              type="text"
-              value={selectedCategoryId.zone
-              }
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-            />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
       
-      <Form.Group className=" d-flex justify-content-center">
-        
-        <Fab
-    variant="extended"
-    className="btn-sm Fab mb-2 mx-2"
-    type="submit"
-    onClick={handleSave}
-  >
-    Valider
-  </Fab>
-  <Fab
-    variant="extended"
-    className="btn-sm FabAnnule mb-2 mx-2"
-    onClick={() => setShowEditModal(false)}  >
-    Annuler
-  </Fab>
+        <Form.Group className=" d-flex justify-content-center">
+          
+          <Fab
+            variant="extended"
+            className="btn-sm Fab mb-2 mx-2"
+            type="submit"
+            onClick={handleSave}>
+            Valider
+          </Fab>
+          <Fab
+            variant="extended"
+            className="btn-sm FabAnnule mb-2 mx-2"
+            onClick={() => setShowEditModal(false)}>
+            Annuler
+          </Fab>
+        </Form.Group>
+      </Modal>  
+      <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+        <FontAwesomeIcon
+          icon={faPlus}
+          className="ml-2 text-primary"
+          style={{ cursor: "pointer",marginTop:'-10px' }}
+          onClicwq={() => setShowAddRegion(true)}/>
+        <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px'}}>Région</Form.Label>
+        <Form.Select
+          style={{ flex: '2' }}
+          as="select"
+          name="region_id"
+          value={formData.region_id}
+          onChange={handleChange}>
+          <option value="">Sélectionner Region</option>
+          {regions?.map((region) => (
+            <option key={region.id} value={region.id}>
+              {region.region}
+            </option>
+          ))}
+          <Form.Text className="text-danger">
+            {errors.region_id}
+          </Form.Text>
+        </Form.Select>
       </Form.Group>
-    </Modal>
-                <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className="ml-2 text-primary"
-                    style={{ cursor: "pointer",marginTop:'-10px' }}
-                    onClick={() => setShowAddRegion(true)}
-                  />
-                  <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px'}}>Région</Form.Label>
-                  <Form.Select
-                  style={{ flex: '2' }}
-                    as="select"
-                    name="region_id"
-                    value={formData.region_id}
-                    onChange={handleChange}
-                  >
-                    <option value="">Sélectionner Region</option>
-                    {regions?.map((region) => (
-                      <option key={region.id} value={region.id}>
-                        {region.region
-                        }
-                      </option>
-                    ))}
-                    <Form.Text className="text-danger">
-                      {errors.region_id}
-                    </Form.Text>
-                  </Form.Select>
-                </Form.Group>
-                <Modal show={showAddRegion} onHide={() => setShowAddRegion(false)}>
+      <Modal show={showAddRegion} onHide={() => setShowAddRegion(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Ajouter une Region</Modal.Title>
         </Modal.Header>
@@ -2193,139 +2185,130 @@ const handleCategoryFilterChange = (catId) => {
             </Form.Group>
             
             <Form.Group className="mt-3">
-            <div className="form-group mt-3"  style={{maxHeight:'500px',overflowY:'auto'}}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Id</th>
-                  <th>Region</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {regions?.map(categ => (
-                  <tr key={categ.id}>
-                    <td>{categ.id}</td>
-                    <td>{categ.region}</td>
-                    <td>
-                   
-    <FontAwesomeIcon
-                                  onClick={() => handleEditRegion(categ)}
-                                  icon={faEdit}
-                                  style={{
-                                    color: "#007bff",
-                                    cursor: "pointer",
-                                  }}
-                                />
-                                <span style={{ margin: "0 8px" }}></span>
-                                <FontAwesomeIcon
-                                  onClick={() => handleDeleteRegion(categ.id)}
-                                  icon={faTrash}
-                                  style={{
-                                    color: "#ff0000",
-                                    cursor: "pointer",
-                                  }}
-                                />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              <div className="form-group mt-3"  style={{maxHeight:'500px',overflowY:'auto'}}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Id</th>
+                      <th>Region</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {regions?.map(categ => (
+                      <tr key={categ.id}>
+                        <td>{categ.id}</td>
+                        <td>{categ.region}</td>
+                        <td>
+                          <FontAwesomeIcon
+                                      onClick={() => handleEditRegion(categ)}
+                                      icon={faEdit}
+                                      style={{
+                                        color: "#007bff",
+                                        cursor: "pointer",
+                                      }}/>
+                          <span style={{ margin: "0 8px" }}></span>
+                          <FontAwesomeIcon
+                                      onClick={() => handleDeleteRegion(categ.id)}
+                                      icon={faTrash}
+                                      style={{
+                                        color: "#ff0000",
+                                        cursor: "pointer",
+                                      }}/>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Form.Group>
           </Form>
         </Modal.Body>
+           
+        <Form.Group className=" d-flex justify-content-center">
         
-          
-          
-          <Form.Group className=" d-flex justify-content-center">
-        
-        <Fab
-    variant="extended"
-    className="btn-sm Fab mb-2 mx-2"
-    type="submit"
-    onClick={handleAddRegine}
-  >
-    Valider
-  </Fab>
-  <Fab
-    variant="extended"
-    className="btn-sm FabAnnule mb-2 mx-2"
-    onClick={() => setShowAddRegion(false)}
-  >
-    Annuler
-  </Fab>
-      </Form.Group>
+          <Fab
+            variant="extended"
+            className="btn-sm Fab mb-2 mx-2"
+            type="submit"
+            onClick={handleAddRegine}
+            >
+            Valider
+          </Fab>
+          <Fab
+            variant="extended"
+            className="btn-sm FabAnnule mb-2 mx-2"
+            onClick={() => setShowAddRegion(false)}
+            >
+            Annuler
+          </Fab>
+        </Form.Group>
         
       </Modal>
       <Modal show={showEditModalregions} onHide={() => setShowEditModalregions(false)}>
-      <Modal.Header closeButton>
-        <Modal.Title>Modifier une 
-Region
-</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group>
-            <Form.Label>Nom de la Region</Form.Label>
-            <Form.Control
-              type="text"
-              value={selectedCategoryId 
-                
-              }
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-            />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      
-      <Form.Group className=" d-flex justify-content-center">
-        
-        <Fab
-    variant="extended"
-    className="btn-sm Fab mb-2 mx-2"
-    type="submit"
-    onClick={handleSaveRegine}
-  >
-    Valider
-  </Fab>
-  <Fab
-    variant="extended"
-    className="btn-sm FabAnnule mb-2 mx-2"
-    onClick={() => setShowEditModalregions(false)}  >
-    Annuler
-  </Fab>
-      </Form.Group>
-    </Modal>
-    <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className="ml-2 text-primary"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setShowAddSecteur(true)}
+        <Modal.Header closeButton>
+          <Modal.Title>Modifier une Region</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Nom de la Region</Form.Label>
+              <Form.Control
+                type="text"
+                value={selectedCategoryId}
+                onChange={(e) => setSelectedCategoryId(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+          
+        <Form.Group className=" d-flex justify-content-center">
+            
+          <Fab
+            variant="extended"
+            className="btn-sm Fab mb-2 mx-2"
+            type="submit"
+            onClick={handleSaveRegine}
+          >
+          Valider
+          </Fab>
+          <Fab
+            variant="extended"
+            className="btn-sm FabAnnule mb-2 mx-2"
+            onClick={() => setShowEditModalregions(false)}
+          >
+          Annuler
+          </Fab>
+        </Form.Group>
+      </Modal>
+      <Form.Group className="col-sm-6 mt-2" style={{ display: 'flex', alignItems: 'center' }} controlId="calibre_id">
+        <FontAwesomeIcon
+                      icon={faPlus}
+                      className="ml-2 text-primary"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setShowAddSecteur(true)}
 
-                  />
-                  <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px',marginTop:'7px' }}>Secteur d'activité</Form.Label>
-                  <Form.Select
-                  style={{ flex: '2' }}
-                    as="select"
-                    name="secteur_id"
-                    value={formData.secteur_id}
-                    onChange={handleChange}
-                  >
-                    <option value="">Sélectionner Secteur</option>
-                    {secteurClient?.map((region) => (
-                      <option key={region.id} value={region.id}>
-                        {region.secteur
-                        }
-                      </option>
-                    ))}
-                    <Form.Text className="text-danger">
-                      {errors.secteur_id}
-                    </Form.Text>
-                  </Form.Select>
-                </Form.Group>
-                <Modal show={showAddSecteur} onHide={() => setShowAddSecteur(false)}>
+          />
+          <Form.Label style={{ flex: '1', marginRight: '5px', marginLeft: '20px',marginTop:'7px' }}>Secteur d'activité</Form.Label>
+          <Form.Select
+            style={{ flex: '2' }}
+            as="select"
+            name="secteur_id"
+            value={formData.secteur_id}
+            onChange={handleChange}>
+            <option value="">Sélectionner Secteur</option>
+            {secteurClient?.map((region) => (
+              <option key={region.id} value={region.id}>
+                {region.secteur}
+              </option>
+            ))}
+            <Form.Text className="text-danger">
+              {errors.secteur_id}
+            </Form.Text>
+          </Form.Select>
+      </Form.Group>
+
+      <Modal show={showAddSecteur} onHide={() => setShowAddSecteur(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Ajouter une Secteur</Modal.Title>
         </Modal.Header>
