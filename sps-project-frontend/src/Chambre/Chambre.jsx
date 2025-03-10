@@ -13,7 +13,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { storeDataInIndexedDB } from "../indexDB";
-
+import ExpandRTable from "../components/ExpandRTable";
 
 import {
   faTrash,
@@ -265,66 +265,96 @@ const [typeFilter, setTypeFilter] = useState('');
   
 
   useEffect(() => {
-    const validateData = () => {
-      const newErrors = { ...errors };
-      const newVueErrors = { ...vueErrors };
-      const newEtageErrors = { ...etageErrors };
-      const newTypeErrors = { ...typeErrors };
-      // Chambre Validation
-      const num_chambres = chambres.filter((chambre) => chambre.num_chambre);
-      newErrors.vue = (selectedVue || formData.vue) === "";
-      newErrors.etage = (selectedEtage || formData.etage) === "";
-      newErrors.num_chambre = formData.num_chambre === "" 
-      || num_chambres.some((chambre) => sanitizeInput(chambre.num_chambre) === sanitizeInput(formData.num_chambre))
-      && sanitizeInput(formData.num_chambre) != sanitizeInput(editingChambre?.num_chambre);
-      newErrors.type_chambre = formData.type_chambre === "";
-      newErrors.nb_salle = formData.nb_salle === "";
-      newErrors.nb_lit = formData.nb_lit === "";
-      newErrors.wifi = formData.wifi === "";
-      newErrors.climat = formData.climat === "";
-      // Vue Validation
-      newVueErrors.vue = newVue.vue === "",
-      newVueErrors.vueAdd = newVue.vueAdd ? false : true;
-      // Etage Validtion
-      const etagesData = etages.filter((etage) => etage?.etage);
-      if (editingEtage.length > 0) {
-      newEtageErrors.etage = newEtage.etage === ""
-      || etagesData.some((etage) => sanitizeInput(etage?.etage) === sanitizeInput(newEtage.etage))
-      && sanitizeInput(newEtage.etage) != sanitizeInput(editingEtage?.etage);
-      }
-      newEtageErrors.etageAdd = newEtage.etageAdd === ""
-      || etagesData.some((etage) => sanitizeInput(etage?.etage) === sanitizeInput(newEtage.etageAdd));
-      // Type Chambre Validtion
-      const types_chambre = types.filter((type) => type?.code);
-      newTypeErrors.codeAdd = newTypeChambre.codeAdd === "" 
-      || types_chambre.some((type) => sanitizeInput(type?.code) === sanitizeInput(newTypeChambre.codeAdd));
-      newTypeErrors.nb_litAdd = newTypeChambre.nb_litAdd === "";
-      newTypeErrors.nb_salleAdd = newTypeChambre.nb_salleAdd === "";
-      newTypeErrors.commentaireAdd = newTypeChambre.commentaireAdd === "";
-
-      if (editingType) {
-      newTypeErrors.code = newTypeChambre.code === ""
-      || types_chambre.some((type) => sanitizeInput(type?.code) === sanitizeInput(newTypeChambre.code))
-      && sanitizeInput(newTypeChambre.code) != sanitizeInput(editingType?.code);
-      newTypeErrors.nb_salle = newTypeChambre.nb_salle === "";
-      newTypeErrors.nb_lit = newTypeChambre.nb_lit === "";
-      newTypeErrors.commentaire = newTypeChambre.commentaire === "";
-      newTypeErrors.type_chambre = newTypeChambre.type_chambre === ""
-      || types_chambre.some((type) => sanitizeInput(type?.type_chambre) === sanitizeInput(newTypeChambre.type_chambre))
-      && sanitizeInput(newTypeChambre.type_chambre) != sanitizeInput(editingType?.type_chambre);
-      }
-      newTypeErrors.type_chambreAdd = newTypeChambre.type_chambreAdd === ""
-      || types_chambre.some((type) => sanitizeInput(type?.type_chambre) === sanitizeInput(newTypeChambre.type_chambreAdd));
-
-
-      setErrors(newErrors);
-      setVueErrors(newVueErrors);
-      setEtageErrors(newEtageErrors);
-      setTypeErrors(newTypeErrors);
-      return true;
+    if (!submitted) {
+      // Clear all errors if the form has not been submitted yet.
+      setErrors({
+        type_chambre: "",
+        etage: "",
+        nb_lit: "",
+        nb_salle: "",
+        climat: "",
+        wifi: "",
+        vue: "",
+      });
+      setVueErrors({ vue: "", photo: "", vueAdd: "" });
+      setEtageErrors({ photo: "", etageAdd: "" });
+      setTypeErrors({
+        codeAdd: "",
+        nb_litAdd: "",
+        nb_salleAdd: "",
+        type_chambreAdd: "",
+        commentaireAdd: ""
+      });
+    } else {
+      const validateData = () => {
+        const newErrors = { ...errors };
+        const newVueErrors = { ...vueErrors };
+        const newEtageErrors = { ...etageErrors };
+        const newTypeErrors = { ...typeErrors };
+        // Chambre Validation
+        const num_chambres = chambres.filter((chambre) => chambre.num_chambre);
+        newErrors.vue = (selectedVue || formData.vue) === "";
+        newErrors.etage = (selectedEtage || formData.etage) === "";
+        newErrors.num_chambre =
+          formData.num_chambre === "" ||
+          (num_chambres.some(
+            (chambre) =>
+              sanitizeInput(chambre.num_chambre) === sanitizeInput(formData.num_chambre)
+          ) &&
+            sanitizeInput(formData.num_chambre) !== sanitizeInput(editingChambre?.num_chambre));
+        newErrors.type_chambre = formData.type_chambre === "";
+        newErrors.nb_salle = formData.nb_salle === "";
+        newErrors.nb_lit = formData.nb_lit === "";
+        newErrors.wifi = formData.wifi === "";
+        newErrors.climat = formData.climat === "";
+        // Vue Validation
+        newVueErrors.vue = newVue.vue === "";
+        newVueErrors.vueAdd = newVue.vueAdd ? false : true;
+        // Etage Validation
+        const etagesData = etages.filter((etage) => etage?.etage);
+        if (editingEtage.length > 0) {
+          newEtageErrors.etage =
+            newEtage.etage === "" ||
+            (etagesData.some((etage) => sanitizeInput(etage?.etage) === sanitizeInput(newEtage.etage)) &&
+              sanitizeInput(newEtage.etage) !== sanitizeInput(editingEtage?.etage));
+        }
+        newEtageErrors.etageAdd =
+          newEtage.etageAdd === "" ||
+          etagesData.some((etage) => sanitizeInput(etage?.etage) === sanitizeInput(newEtage.etageAdd));
+        // Type Chambre Validation
+        const types_chambre = types.filter((type) => type?.code);
+        newTypeErrors.codeAdd =
+          newTypeChambre.codeAdd === "" ||
+          types_chambre.some((type) => sanitizeInput(type?.code) === sanitizeInput(newTypeChambre.codeAdd));
+        newTypeErrors.nb_litAdd = newTypeChambre.nb_litAdd === "";
+        newTypeErrors.nb_salleAdd = newTypeChambre.nb_salleAdd === "";
+        newTypeErrors.commentaireAdd = newTypeChambre.commentaireAdd === "";
+        if (editingType) {
+          newTypeErrors.code =
+            newTypeChambre.code === "" ||
+            (types_chambre.some((type) => sanitizeInput(type?.code) === sanitizeInput(newTypeChambre.code)) &&
+              sanitizeInput(newTypeChambre.code) !== sanitizeInput(editingType?.code));
+          newTypeErrors.nb_salle = newTypeChambre.nb_salle === "";
+          newTypeErrors.nb_lit = newTypeChambre.nb_lit === "";
+          newTypeErrors.commentaire = newTypeChambre.commentaire === "";
+          newTypeErrors.type_chambre =
+            newTypeChambre.type_chambre === "" ||
+            (types_chambre.some((type) => sanitizeInput(type?.type_chambre) === sanitizeInput(newTypeChambre.type_chambre)) &&
+              sanitizeInput(newTypeChambre.type_chambre) !== sanitizeInput(editingType?.type_chambre));
+        }
+        newTypeErrors.type_chambreAdd =
+          newTypeChambre.type_chambreAdd === "" ||
+          types_chambre.some((type) => sanitizeInput(type?.type_chambre) === sanitizeInput(newTypeChambre.type_chambreAdd));
+    
+        setErrors(newErrors);
+        setVueErrors(newVueErrors);
+        setEtageErrors(newEtageErrors);
+        setTypeErrors(newTypeErrors);
+      };
+      validateData();
     }
-    validateData();
-}, [formData, newVue, newTypeChambre, newEtage]);
+  }, [formData, newVue, newTypeChambre, newEtage, submitted]);
+
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -420,6 +450,75 @@ const handleSubmit = async (e) => {
 };
 
 
+// Update deletion handler to use chambre.id instead of num_chambre
+
+const handleDelete = (num_chambre) => {
+  Swal.fire({
+    title: "Êtes-vous sûr de vouloir supprimer cette chambre ?",
+    showDenyButton: true,
+    showCancelButton: false,
+    confirmButtonText: "Oui",
+    denyButtonText: "Non",
+    customClass: {
+      actions: "my-actions",
+      cancelButton: "order-1 right-gap",
+      confirmButton: "order-2",
+      denyButton: "order-3",
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      axios
+        .delete(`http://localhost:8000/api/chambres/${num_chambre}`)
+        .then(() => {
+          fetchChambres();
+          Swal.fire({
+            icon: "success",
+            title: "Succès!",
+            text: "Chambre supprimée avec succès.",
+          });
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 400) {
+            Swal.fire({
+              icon: "error",
+              title: "Erreur",
+              text: error.response.data.error,
+            });
+          } else {
+            console.error("Une erreur s'est produite :", error);
+          }
+        });
+    }
+  });
+};
+
+const handleDeleteSelected = () => {
+  Swal.fire({
+    title: "Êtes-vous sûr de vouloir supprimer?",
+    showDenyButton: true,
+    confirmButtonText: "Oui",
+    denyButtonText: "Non",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Promise.all(
+        selectedItems.map((num_chambre) =>
+          axios.delete(`http://localhost:8000/api/chambres/${num_chambre}`)
+        )
+      )
+        .then(() => {
+          Swal.fire("Succès!", "Chambres supprimées avec succès.", "success");
+          setSelectedItems([]);
+          fetchChambres();
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la suppression de la chambre:", error);
+          Swal.fire("Erreur!", "Échec de la suppression.", "error");
+        });
+    }
+  });
+};
+
+
   //------------------------- CLIENT PAGINATION---------------------//
 
   const handleChangePage = (event, newPage) => {
@@ -442,103 +541,28 @@ const handleSubmit = async (e) => {
 
   //------------------------- CLIENT DELETE---------------------//
 
-  const handleDelete = (num_chambre) => {
-    Swal.fire({
-      title: "Êtes-vous sûr de vouloir supprimer ce client ?",
-      showDenyButton: true,
-      showCancelButton: false,
-      confirmButtonText: "Oui",
-      denyButtonText: "Non",
-      customClass: {
-        actions: "my-actions",
-        cancelButton: "order-1 right-gap",
-        confirmButton: "order-2",
-        denyButton: "order-3",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:8000/api/chambres/${num_chambre}`)
-          .then(() => {
-            fetchChambres();
-            Swal.fire({
-              icon: "success",
-              title: "Succès!",
-              text: "Chambre supprimé avec succès.",
-            });
-          })
-          .catch((error) => {
-            if (error.response && error.response.status === 400) {
-              Swal.fire({
-                icon: "error",
-                title: "Erreur",
-                text: error.response.data.error,
-              });
-            } else {
-              console.error("Une erreur s'est produite :", error);
-            }
-          });
-      } else {
-      }
-    });
-  };
   
   //-------------------------Select Delete --------------------//
-  const handleDeleteSelected = () => {
-    Swal.fire({
-      title: "Êtes-vous sûr de vouloir supprimer?",
-      showDenyButton: true,
-      showCancelButton: false,
-      confirmButtonText: "Oui",
-      denyButtonText: "Non",
-      customClass: {
-        actions: "my-actions",
-        cancelButton: "order-1 right-gap",
-        confirmButton: "order-2",
-        denyButton: "order-3",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        selectedItems.forEach((id) => {
-          axios
-            .delete(`http://localhost:8000/api/all-chambres`)
-            .then(() => {
-              Swal.fire({
-                icon: "success",
-                title: "Succès!",
-                text: "Chambres supprimé avec succès.",
-              });
-            })
-            .catch((error) => {
-              console.error("Erreur lors de la suppression du chambre:", error);
-              Swal.fire({
-                icon: "error",
-                title: "Erreur!",
-                text: "Échec de la suppression du chambre.",
-              });
-            });
-        });
-      
-    setSelectedItems([]);
-    fetchChambres();
-  }})
-}
+
 
   const handleSelectAllChange = () => {
     setSelectAll(!selectAll);
     if (selectAll) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(chambres?.map((chambre) => chambre.id));
+      // Use num_chambre so that deletion endpoint receives the proper identifier
+      setSelectedItems(chambres?.map((chambre) => chambre.num_chambre));
     }
   };
-  const handleCheckboxChange = (itemId) => {
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems?.filter((id) => id !== itemId));
+  
+  const handleCheckboxChange = (num_chambre) => {
+    if (selectedItems.includes(num_chambre)) {
+      setSelectedItems(selectedItems.filter((value) => value !== num_chambre));
     } else {
-      setSelectedItems([...selectedItems, itemId]);
+      setSelectedItems([...selectedItems, num_chambre]);
     }
   };
+  
 
   const exportToExcel = () => {
     const table = document.getElementById('chambresTable');
@@ -1275,6 +1299,17 @@ useEffect(() => {
     });
 },[showEditModalEtage])
 
+// Define table columns (customize render as needed)
+const columns = [
+  { key: "num_chambre", label: "Num Chambre" },
+  { key: "type_chambre", label: "Type", render: (item, term) => item.type_chambre?.type_chambre || '' },
+  { key: "etage", label: "Etage", render: (item) => item.etage?.etage || '' },
+  { key: "vue", label: "Vue", render: (item) => item.vue?.vue || '' },
+  { key: "nb_lit", label: "Nombre de lit" },
+  { key: "nb_salle", label: "Nombre de Salle" },
+  { key: "climat", label: "Climat", render: (item) => item.climat ? "Oui" : "Non" },
+  { key: "wifi", label: "Wifi", render: (item) => item.wifi ? "Oui" : "Non" },
+];
 
   return (
     <ThemeProvider theme={createTheme()}>
@@ -1286,9 +1321,14 @@ useEffect(() => {
             className="d-flex justify-content-between align-items-center"
             style={{ marginTop: "15px" }}
           >
-            <h3 className="titreColore">
-              {/* <PeopleIcon style={{ fontSize: "24px", marginRight: "8px" }} /> */}
+            <h3 className="titreColore" style={{
+              
+                color: "#333",
+                padding: "10px 20px",
+                
+              }}>
               Liste des Chambres
+                
             </h3>
             <div className="d-flex">
               <div style={{ width: "500px", marginRight: "20px" }}>
@@ -1465,7 +1505,7 @@ useEffect(() => {
           
 
         <div style={{ marginTop:"0px",}}>
-        <div id="formContainer" style={{...formContainerStyle, marginTop:'0px', maxHeight:'700px', overflow:'auto', padding:'0'}}>
+        <div id="formContainer" style={{...formContainerStyle, marginTop:'0px', maxHeight:'700px', overflow:'auto', padding:'20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', background: "#fff"}}>
             <Form className="col row" onSubmit={handleSubmit}>
               <Form.Label className="text-center">
                 <h4 style={{ 
@@ -2204,69 +2244,34 @@ useEffect(() => {
             id="tableContainer"
             className="table-responsive"
             style={{...tableContainerStyle, overflowX: 'auto', minWidth: '650px', overflow: 'auto',
-              marginTop:'0px',
+              marginTop:'20px',
+              background: "#f9f9f9",
+              borderRadius: "8px",
+              boxShadow: "0px 2px 8px rgba(0,0,0,0.1)"
             }}
           >
-            <Table  bordered hover responsive className="table table-bordered">
-        <thead>
-          <tr>
-            <th>
-              <input
-                type="checkbox"
-                checked={selectedItems.length === filteredChambres.length}
-                onChange={handleSelectAllChange}
-              />
-            </th>
-            <th>Num Chambre</th>
-            <th>Type</th>
-            <th>Etage</th>
-            <th>Vue</th>
-            <th>Nombre de lit</th>
-            <th>Nombre de Salle</th>
-            <th>Climat</th>
-            <th>Wifi</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredChambres.map(record => (
-            <tr key={record.id}>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(record.id)}
-                  onChange={() => handleCheckboxChange(record.id)}
-                />
-              </td>
-              <td>{record.num_chambre}</td>
-              <td>{record.type_chambre?.type_chambre}</td>
-              <td>{record.etage?.etage}</td>
-              <td>{record.vue?.vue}</td>
-              <td>{record.nb_lit}</td>
-              <td>{record.nb_salle}</td>
-              <td>{record.climat ? 'Oui' : 'Non'}</td>
-              <td>{record.wifi ? 'Oui' : 'Non'}</td>
-              <td>
-                <Button variant="link" onClick={() => handleEdit(record)} className="text-primary me-2">
-                  <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                <Button variant="link" onClick={() => handleDelete(record.id)} className="text-danger">
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-      <Button
-        type="danger"
-        onClick={handleDeleteSelected}
-        disabled={selectedItems.length === 0}
-        className="btn btn-danger"
-      >
-        <FontAwesomeIcon icon={faTrash} style={{ marginRight: '8px' }} />
-        Supprimer sélectionnées
-      </Button>
+            <ExpandRTable
+            columns={columns}
+            data={chambres}
+            filteredData={filteredChambres}
+            searchTerm={searchTerm}
+            highlightText={highlightText}
+            selectAll={selectedItems.length === filteredChambres.length}
+            selectedItems={selectedItems}
+            handleSelectAllChange={handleSelectAllChange}
+            handleCheckboxChange={handleCheckboxChange}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+            handleDeleteSelected={handleDeleteSelected}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            handleChangePage={handleChangePage}
+            handleChangeRowsPerPage={handleChangeRowsPerPage}
+            expandedRows={expandedRows}
+            toggleRowExpansion={toggleRow}
+            renderExpandedRow={(item) => <></>}
+            renderCustomActions={null}
+          />
     </div>
  
               

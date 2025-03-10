@@ -13,15 +13,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchClients, fetchGroups, fetchClientsByGroup} from "../redux/actions";
 
 
-//import { FETCH_CLIENTS } from '../redux/actions.js';
+// import { FETCH_CLIENTS } from '../redux/actions.js';
 
 
 
 export const ClientsAndGroups = () => {
     const dispatch = useDispatch();
-    const clients = useSelector(state => state.clients);
-    const groups = useSelector(state => state.groups);
-    const clientgrp = useSelector(state => state.clientgrp);
+    const clients = useSelector(state => state.clients || []);
+    const groups = useSelector(state => state.groups || []);
+    const clientgrp = useSelector(state => state.clientgrp || []);
+    
+
+
     const selectedAdminId = useSelector(state => state.selectedAdminId);
     const [selectedClient, setSelectedClient] = useState(null);
     const [filteredGroups, setFilteredGroups] = useState(groups);

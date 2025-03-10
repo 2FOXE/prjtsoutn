@@ -34,7 +34,7 @@ class ClientParticulierController extends Controller
     public function index()
     {
         // if (Gate::allows('view_all_clients')) {
-                $client = ClientParticulier::with(
+                $clients = ClientParticulier::with(
                     'user',
                     'site_clients',
                     'zone',
@@ -47,11 +47,12 @@ class ClientParticulierController extends Controller
                     'agent')->get();
                 $count = ClientParticulier::count();
                 return response()->json([
-                    'message' => 'Liste des client récupérée avec succès', 'client' =>  $client,
+                    'message' => 'Liste des client récupérée avec succès', 'client' =>  $clients,
                     'count' => $count
                 ], 200);
 
-        // } else {
+    // Return all rows from `clients_particulier` (plus any relationships)
+    return ClientParticulier::all();        // } else {
         //     abort(403, 'Vous n\'avez pas l\'autorisation de voir la liste des Clients.');
         // }
     }

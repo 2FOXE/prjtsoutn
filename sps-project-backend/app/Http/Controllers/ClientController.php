@@ -202,4 +202,11 @@ class ClientController extends Controller
         // }
     }
 
+    public function getSocieteClients()
+    {
+        // Return all rows from the `clients` table
+        return Client::all();
+    }
+
+
 }

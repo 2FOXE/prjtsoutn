@@ -33,12 +33,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { useOpen } from "./OpenProvider";
 
-
-
-
-
+// Drawer width when opened
 const drawerWidth = 290;
 
+// Custom AppBar component
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
@@ -58,211 +56,108 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
+// Custom Drawer component
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
   "& .MuiDrawer-paper": {
-    position: "relative",
+    position: "fixed",
     whiteSpace: "nowrap",
     width: drawerWidth,
+    height: "100vh",
     transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     boxSizing: "border-box",
-    backgroundColor:'#2c767c',
+    backgroundColor: '#0b4d54', // Matched the darker teal from your images
+    color: '#ffffff',
     ...(!open && {
       overflowX: "hidden",
       transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
-      
       width: theme.spacing(7),
       [theme.breakpoints.up("sm")]: {
-        width: theme.spacing(9),
+        width: theme.spacing(7),
       },
     }),
   },
 }));
 
+// Default theme
 const defaultTheme = createTheme();
 
+// Styled menu item component
+const StyledMenuItem = styled(ListItem)(({ theme }) => ({
+  padding: "8px 16px",
+  marginBottom: "2px",
+  borderLeft: "4px solid transparent",
+  transition: "all 0.2s ease",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderLeft: "4px solid #ffffff",
+  },
+  "&.submenu-item": {
+    paddingLeft: "32px",
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    borderLeft: "2px solid transparent",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.08)",
+      borderLeft: "2px solid #ffffff",
+    },
+  },
+}));
+
+// Styled logout button
+const LogoutButton = styled(ListItem)(({ theme }) => ({
+  backgroundColor: 'white',
+  color: 'red',
+  borderRadius: '4px',
+  margin: '10px 16px',
+  transition: 'all 0.2s ease',
+  "&:hover": {
+    backgroundColor: '#f5f5f5',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+  }
+}));
+
+// Main Navigation component
 const Navigation = () => {
-  const [selectedOption, setSelectedOption] = useState("");
-  const [isNavOpen, setIsNavOpen] = useState(false);
-  // const [open, setOpen] = React.useState(true);
-  const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const navigate = useNavigate();
-  const [permissions, setPermissions] = useState([]);
-  const [isCommandsOpen, setIsCommandsOpen] = useState(false);
-  const [submenuOpen, setSubmenuOpen] = useState(false);
-  const [submenuOpenvente, setSubmenuOpenvente] = useState(false);
-  const [submenuOpenachat, setSubmenuOpenachat] = useState(false);
-  const [stockMag, setStockMag] = useState(false);
-  const [stockProd, setStockProd] = useState(false);
-  const [stock, setStock] = useState(false);
+  // State variables
   const [client, setClient] = useState(false);
   const [tarif, setTarif] = useState(false);
-  const [chambre, setChambre] = useState(false);
-
-
-
-  const [production, setProduction] = useState(false);
-  const [logistic, setLogistic] = useState(false);
-
-
-  const { open, toggleOpen } = useOpen(); // Accéder à l'état "open" et la fonction "toggleOpen"
-
-  const handleToggle = () => {
-    toggleOpen(); // Changer l'état "open" lorsque l'utilisateur interagit avec la navigation
-  };
-
-  const toggleSubmenu = (opt) => {
-    
-    if(opt==='finance'){
-      setSubmenuOpen(!submenuOpen);
-    }
-    if(opt==='vente'){
-      setSubmenuOpenvente(!submenuOpenvente);
-
-    }
-    if(opt==='achat'){
-      setSubmenuOpenachat(!submenuOpenachat);
-    }
-    if(opt==='stockmag'){
-      setStockMag(!stockMag);
-    }
-    if(opt==='stockprod'){
-      setStockProd(!stockProd);
-    }
-    if(opt==='production'){
-      setProduction(!production);
-    }
-    if(opt==='Logistic'){
-      setLogistic(!logistic);
-    }
-    if(opt==='stock'){
-      setStock(!stock);
-    }
-    if(opt==='client'){
-      setClient(!client);
-    }
-    if(opt==='chambre'){
-      setChambre(!chambre);
-    }
-    if(opt==='tarif'){
-      setTarif(!tarif);
-    }
-  };
-  const handleCommandsClick = () => {
-    
-    setIsCommandsOpen(!isCommandsOpen);
-  };
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
-  const token = localStorage.getItem("API_TOKEN");
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  const [chambres, setChambres] = useState(false); // New state for chambres submenu
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
   const { logout } = useAuth();
-  const [openDrawer, setOpenDrawer] = useState(false);
-  const handleOptionChange = (event) => {
-    const selectedValue = event.target.value;
-    setSelectedOption(selectedValue);
+  const { open, toggleOpen } = useOpen();
 
-    if (selectedValue === "charging") {
-      navigate("/chargingCommand");
-    } else if (selectedValue === "preparing") {
-      navigate("/preparingCommand");
-    } else if (selectedValue === "list") {
-      navigate("/commandes"); //
-    } else if (selectedValue === "details") {
-      navigate("/details");
-    } else if (selectedValue === "detailpreparations") {
-      navigate("/detailpreparations");
-    }
-     else if (selectedValue === "preparationlogo") {
-      navigate("/preparationlogo");
+  // Toggle drawer
+  const handleToggle = () => {
+    toggleOpen();
+  };
+
+  // Toggle submenu state
+  const toggleSubmenu = (menu) => {
+    if (menu === 'client') {
+      setClient(!client);
+    } else if (menu === 'tarif') {
+      setTarif(!tarif);
+    } else if (menu === 'chambres') {
+      setChambres(!chambres);
     }
   };
-  useEffect(() => {
-    if (!isAuthenticated) {
-      // navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
-  
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const response = await axios.get("http://localhost:8000/api/user", {
-  //         withCredentials: true,
-  //       });
-  //       setUser(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     }
-  //   };
-
-  //   fetchUserData();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchUsersData = async () => {
-  //     try {
-  //       const response = await axios.get("http://localhost:8000/api/users", {
-  //         withCredentials: true,
-  //       });
-  //       setUsers(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     }
-  //   };
-
-  //   fetchUsersData();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const response = await axios.get("http://localhost:8000/api/user", {
-  //         withCredentials: true,
-  //       });
-  //       if (response.data && response.data.length > 0) {
-  //         setUser(response.data);
-  //         const permissionsData = response.data[0].roles[0].permissions;
-  
-  //         // Récupérer les noms des permissions
-  //         const permissionNames = permissionsData.map(
-  //           (permission) => permission.name
-  //         );
-  
-  //         // Mettre à jour l'état des permissions
-  //         setPermissions(permissionNames);
-  //       } else {
-  //         console.error("Empty user data in response:", response.data);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     }
-  //   };
-  
-  //   fetchUserData();
-  // }, []); // Dépendance vide pour que ce useEffect s'exécute une seule fois après le montage initial
-  
-
-  const MyListItemButton = styled(ListItemButton)(({ theme }) => ({
-    minHeight: 48,
-    justifyContent: "center",
-    px: 2.5,
-  }));
- 
+  // Handle logout
   const handleLogoutClick = async () => {
     try {
-      // Logout logic
       navigate("/login");
+      logout();
     } catch (error) {
       console.error("Error during logout:", error);
-
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -271,34 +166,14 @@ const Navigation = () => {
     }
   };
 
-  // const toggleDrawer = () => {
-  //   setOpen(!open);
-  // };
-return (
-  <ThemeProvider theme={defaultTheme}>
-    <Box sx={{
-        marginLeft:'-20px',
-        marginTop:'-20px',
-        position: 'fixed',
-        maxHeight: '1010px',
-        overflowY: 'auto',
-        scrollbarWidth: 'thin', /* For Firefox */
-        scrollbarColor: '#2c767c #e0e0e0', /* Scrollbar colors for Firefox */
-        '&::-webkit-scrollbar': {
-          width: '8px', /* Adjust width as needed */
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: '#2c767c',
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: '#2c767c',
-        },}}>
+  return (
+    <ThemeProvider theme={defaultTheme}>
+      <Box sx={{ display: 'flex', height: '100vh' }}>
         <CssBaseline />
-        <AppBar position="fixed" open={open} className="beige-appbar">
-          <Toolbar
-            sx={{
-              pr: "24px",
-            }}>
+        
+        {/* App Bar */}
+        <AppBar position="fixed" open={open}>
+          <Toolbar sx={{ pr: "24px" }}>
             <IconButton
               edge="start"
               color="inherit"
@@ -317,297 +192,446 @@ return (
               color="inherit"
               noWrap
               sx={{ flexGrow: 1 }}
-            ></Typography>
-            <IconButton color="inherit">
-              <Badge color="secondary">
-                {user && (
-                  <ListItem button style={{ color: "white" }}>
+            />
+            
+            {user && (
+              <IconButton color="inherit">
+                <Badge color="secondary">
+                  <ListItem button sx={{ color: "white" }}>
                     <ListItemIcon>
                       <Avatar
-                        alt={user[0].name}
-                        src={user[0].photo}
-                        style={{ width: "40px", height: "40px" }}
+                        alt={user[0]?.name || "User"}
+                        src={user[0]?.photo}
+                        sx={{ width: 40, height: 40 }}
                       />
                     </ListItemIcon>
-                    <ListItemText primary={`${user[0].name}`} />{" "}
-                    {/* Accédez au nom du premier utilisateur dans le tableau */}
+                    <ListItemText primary={user[0]?.name || "User"} />
                   </ListItem>
-                )}
-              </Badge>
-            </IconButton>
+                </Badge>
+              </IconButton>
+            )}
           </Toolbar>
         </AppBar>
-      <Drawer variant="permanent"
-        position="fixed"  open={open}>
-        <Box sx={{  
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom:'-60px'
+        
+        {/* Navigation Drawer */}
+        <Drawer 
+          variant="permanent" 
+          open={open}
+          sx={{
+            '& .MuiDrawer-paper': {
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#ffffff40 transparent',
+              '&::-webkit-scrollbar': {
+                width: '4px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: '#ffffff40',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: 'transparent',
+              },
+            },
+          }}
+        >
+          {/* Logo Area */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px 16px',
+            height: '64px',
           }}>
-          <img src={'../../images/SPS2.png'} loading="lazy" alt="Logo" style={{ width: "52%", height: "auto" }} />
-        </Box>
-        <Toolbar sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          px: [1],}}>
-          <IconButton onClick={handleToggle}>
-            <ChevronLeftIcon />
-          </IconButton>
-        </Toolbar>
-        <Divider />
-          <List>
-            <ListItem
+            {open ? (
+              <Typography
+                variant="h4"
+                component="div"
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  letterSpacing: '2px',
+                }}
+              >
+                SPS
+              </Typography>
+            ) : (
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                }}
+              >
+                S
+              </Typography>
+            )}
+          </Box>
+          
+          {/* Toggle button */}
+          {open && (
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              padding: '0 16px',
+            }}>
+              <IconButton onClick={handleToggle} sx={{ color: '#ffffff' }}>
+                <ChevronLeftIcon />
+              </IconButton>
+            </Box>
+          )}
+          
+          <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', margin: '4px 0' }} />
+
+          {/* Main Navigation Menu */}
+          <List component="nav" sx={{ padding: '8px 0' }}>
+            {/* Clients Menu */}
+            <StyledMenuItem
               button
-              onClick={()=>toggleSubmenu('client')}
-              className="sidBarcomposantColore">
-
-              <ListItemIcon>
-                <BiSolidPurchaseTag className="iconSedBar"/>
+              onClick={() => toggleSubmenu('client')}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <BiSolidPurchaseTag style={{ color: 'white', fontSize: '20px' }} />
               </ListItemIcon>
+              {open && (
+                <>
+                  <ListItemText 
+                    primary="Clients" 
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontWeight: client ? 'bold' : 'normal',
+                        fontSize: '15px'
+                      } 
+                    }}
+                  />
+                  {client ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
+                </>
+              )}
+            </StyledMenuItem>
 
-              <ListItemText primary="Clients" />
-                {client ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-            </ListItem>
+            {/* Clients Submenu */}
+            <Collapse in={client && open} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/clients_particulier"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileCircleQuestion style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Clients Particulier" 
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
 
-            <Collapse in={client} timeout="auto" unmountOnExit>
-              <ListItem
-                button
-                component={Link}
-                to="/clients_particulier"
-                className="sidBarSucomposantColore">
-                    
-                <ListItemIcon>
-                  <FaFileCircleQuestion className="iconSedBar"/>
-                </ListItemIcon>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/clients_societe"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Clients Societe"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
 
-                <ListItemText primary="Clients Particulier" />
-              </ListItem>
-              
-              <ListItem
-                button
-                component={Link}
-                to="/clients_societe"
-                className="sidBarSucomposantColore">
-                          
-                <ListItemIcon>
-                  <FaFileInvoiceDollar className="iconSedBar"/>
-                </ListItemIcon>
-
-                <ListItemText primary="Clients Societe" />
-
-              </ListItem> 
-
-              <ListItem
-                button
-                component={Link}
-                to="/clientgrp"
-                className="sidBarSucomposantColore">
-                          
-                <ListItemIcon>
-                  <FaFileInvoiceDollar className="iconSedBar"/>
-                </ListItemIcon>
-
-                <ListItemText primary="Clients par groupe" />
-
-              </ListItem> 
-              
-
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/clientgrp"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Clients par groupe"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+              </List>
             </Collapse>
-          </List>
 
-          <List>
-            <ListItem
+            {/* Tarifs Menu */}
+            <StyledMenuItem
               button
-              onClick={()=>toggleSubmenu('tarif')}
-              className="sidBarcomposantColore">
-              <ListItemIcon>
-                <BiSolidPurchaseTag className="iconSedBar"/>
+              onClick={() => toggleSubmenu('tarif')}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <BiSolidPurchaseTag style={{ color: 'white', fontSize: '20px' }} />
               </ListItemIcon>
+              {open && (
+                <>
+                  <ListItemText 
+                    primary="Tarifs"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontWeight: tarif ? 'bold' : 'normal',
+                        fontSize: '15px'
+                      } 
+                    }}
+                  />
+                  {tarif ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
+                </>
+              )}
+            </StyledMenuItem>
 
-              <ListItemText primary="Tarifs" />
-              {tarif ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-            </ListItem>
+            {/* Tarifs Submenu */}
+            <Collapse in={tarif && open} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/tarifs_repas"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileCircleQuestion style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Tarifs de Repas"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
 
-            <Collapse in={tarif} timeout="auto" unmountOnExit>
-              <ListItem
-                button
-                component={Link}
-                to="/tarifs_repas"
-                className="sidBarSucomposantColore">
-                <ListItemIcon>
-                  <FaFileCircleQuestion className="iconSedBar"/>
-                </ListItemIcon>
-                
-                <ListItemText primary="Tarifs de Repas" />
-              </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to="/tarifs_chambre"
-                className="sidBarSucomposantColore">
-                
-                <ListItemIcon>
-                  <FaFileInvoiceDollar className="iconSedBar"/>
-                </ListItemIcon>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/tarifs_chambre"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Tarifs de Chambre"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
 
-                <ListItemText primary="Tarifs de Chambre" />
-              </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to="/tarifs_reduction"
-                className="sidBarSucomposantColore">
-                <ListItemIcon>
-                  <FaFileCircleQuestion className="iconSedBar"/>
-                </ListItemIcon>
-                <ListItemText primary="Tarifs de Reduction" />
-              </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to="/tarifs_actuel"
-                className="sidBarSucomposantColore">
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/tarifs_reduction"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileCircleQuestion style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Tarifs de Reduction"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
 
-                <ListItemIcon>
-                  <FaFileInvoiceDollar className="iconSedBar"/>
-                </ListItemIcon>   
-
-                <ListItemText primary="Tarifs Actuel" />
-              </ListItem>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/tarifs_actuel"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Tarifs Actuel"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+              </List>
             </Collapse>
-          </List>
 
-          <List>
-            <ListItem
+            {/* Chambres Menu - Modified to be a dropdown */}
+            <StyledMenuItem
+              button
+              onClick={() => toggleSubmenu('chambres')}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <FaFileInvoiceDollar style={{ color: 'white', fontSize: '20px' }} />
+              </ListItemIcon>
+              {open && (
+                <>
+                  <ListItemText 
+                    primary="Chambres"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontWeight: chambres ? 'bold' : 'normal',
+                        fontSize: '15px'
+                      } 
+                    }}
+                  />
+                  {chambres ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
+                </>
+              )}
+            </StyledMenuItem>
+
+            {/* Chambres Submenu */}
+            <Collapse in={chambres && open} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+              <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/chambres"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Liste des Chambres"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/chambres-disponibles"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Chambres Disponibles"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/etat-chambre"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Etat Chambre"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+
+              </List>
+            </Collapse>
+
+            {/* Réclamations Menu */}
+            <StyledMenuItem
               button
               component={Link}
-              to="/chambres"
-              className="sidBarSucomposantColore">
+              to="/reclamations"
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <FaFileInvoiceDollar style={{ color: 'white', fontSize: '20px' }} />
+              </ListItemIcon>
+              {open && (
+                <ListItemText 
+                  primary="Réclamations"
+                  primaryTypographyProps={{ 
+                    style: { 
+                      fontSize: '15px' 
+                    } 
+                  }}
+                />
+              )}
+            </StyledMenuItem>
+            <StyledMenuItem
+              button
+              component={Link}
+              to="/reservations"
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <FaFileInvoiceDollar style={{ color: 'white', fontSize: '20px' }} />
+              </ListItemIcon>
+              {open && (
+                <ListItemText 
+                  primary="Réservations"
+                  primaryTypographyProps={{ 
+                    style: { 
+                      fontSize: '15px' 
+                    } 
+                  }}
+                />
+              )}
+            </StyledMenuItem>
 
-            <ListItemIcon>
-              <FaFileInvoiceDollar className="iconSedBar"/>
-            </ListItemIcon>
-
-            <ListItemText primary="Chambres" />
-          </ListItem>
-        </List>
-        <ListItem button component={Link} to="/chambres-disponibles" className="sidBarSucomposantColore">
-          <ListItemIcon>
-            <FaFileInvoiceDollar className="iconSedBar" />
-          </ListItemIcon>
-          <ListItemText primary="Chambres Disponibles" />
-        </ListItem>
-        <List>
-
-        <List>
-                  <ListItem button component={Link} to="/reclamations" className="sidBarSucomposantColore">
-                      <ListItemIcon>
-                        <FaFileInvoiceDollar className="iconSedBar" />
-                      </ListItemIcon>
-                      <ListItemText primary="Réclamations" />
-                    </ListItem>
-                  </List>
-          <ListItem
-            button
-            component={Link}
-            to="/prestataires"
-            className="sidBarSucomposantColore">
-
-            <ListItemIcon>
-              <FaFileInvoiceDollar className="iconSedBar"/>
-                </ListItemIcon>   
-              <ListItemText primary="Prestataires" />
-          </ListItem>
-        </List>
-
-        <List>
-          <ListItem
-            button
-            component={Link}
-            to="/equipements"
-            className="sidBarSucomposantColore">
-
-            <ListItemIcon>
-              <FaFileInvoiceDollar className="iconSedBar"/>
-            </ListItemIcon>   
-
-            <ListItemText primary="Equipements" />
-          </ListItem>
-        </List>
-
-        <List>
-          <ListItem
-            button
-            component={Link}
-            to="/interventions"
-            className="sidBarSucomposantColore" >
-              <ListItemIcon>
-                <FaFileInvoiceDollar className="iconSedBar"/>
-              </ListItemIcon>   
-              <ListItemText primary="Interventions" />
-          </ListItem>
-        </List>
-        
-        <List>
-          <ListItem
-            button
-            component={Link}
-            to="/intervenants"
-            className="sidBarSucomposantColore">
-            
-            <ListItemIcon>
-              <FaFileInvoiceDollar className="iconSedBar"/>
-            </ListItemIcon>   
-            <ListItemText primary="Intervenants" />
-          </ListItem>
-        </List>
+          </List>
           
-        <List>
-          <ListItem
+          {/* Spacer to push logout to bottom */}
+          <Box sx={{ flexGrow: 1 }} />
+          
+          {/* Logout Button */}
+          <LogoutButton
             button
-            component={Link}
-            to="/maintenances"
-            className="sidBarSucomposantColore">
-            <ListItemIcon>
-              <FaFileInvoiceDollar className="iconSedBar"/>
-            </ListItemIcon>   
-            <ListItemText primary="Fiche de Maintenance" />
-          </ListItem>
-        </List>
-        
-        <List>
-          <ListItem
-            button
-            component={Link}
-            to="/suivi_interventions"
-            className="sidBarSucomposantColore">
-            <ListItemIcon>
-              <FaFileInvoiceDollar className="iconSedBar"/>
-            </ListItemIcon>   
-            <ListItemText primary="Suivi des Interventions" />
-          </ListItem>
-        </List>
-        
-        <List>
-          <ListItem
-            button
-            onClick={() => {
-              handleLogoutClick();
-              logout();
-            }}
-            style={{ color: "red", background: "white" ,marginTop:"20px"}}>
-
+            onClick={handleLogoutClick}
+          >
             <ListItemIcon>
               <ExitToAppIcon style={{ color: "red" }} />
             </ListItemIcon>
-            <ListItemText primary="Se déconnecter" />
-          </ListItem>
-        </List>
-  
-      </Drawer>
-    </Box>
-  </ThemeProvider>
+            {open && (
+              <ListItemText 
+                primary="Se déconnecter" 
+                primaryTypographyProps={{ 
+                  style: { 
+                    color: 'red',
+                    fontWeight: 'medium'
+                  } 
+                }}
+              />
+            )}
+          </LogoutButton>
+        </Drawer>
+      </Box>
+    </ThemeProvider>
   );
 };
 

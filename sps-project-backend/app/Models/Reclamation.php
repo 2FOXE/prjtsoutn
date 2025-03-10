@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Log;
 
 
-class Reclamation extends Model
+class  Reclamation extends Model
 {
     protected $table = 'reclamations';  // Table name
     protected $fillable = ['type_reclamation', 'reclamer_a_travers', 'departement_id', 'suivi', 'reponse','date'];

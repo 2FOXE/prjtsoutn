@@ -11,10 +11,12 @@ import TablePagination from "@mui/material/TablePagination";
 import "jspdf-autotable";
 import Search from "../Acceuil/Search";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import SearchWithExport from "../components/SearchWithExport";
+// import CarouselSelector from "../components/CarouselSelector";
+import SearchWithExportCarousel from "../components/SearchWithExportCarousel";
 import PeopleIcon from "@mui/icons-material/People";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import SearchWithExportCarousel from "../components/SearchWithExportCarousel";
 import {
   faTrash,
   faFileExcel,
@@ -56,6 +58,12 @@ const TarifReduction = () => {
     type_reduction: "",
   })
 
+  // -------------------Tarif de reduction -------------------------------
+  const carouselOptions = tarifsReduction?.map((item) => ({
+    id: item.id,
+    label: item.designation,
+    image: item.photo ? `http://127.0.0.1:8000/storage/${item.photo}` : "http://localhost:8000/storage/repas-img.webp",
+  }));
   //---------------form-------------------//
   const [newReduction, setNewReduction] = useState({
     type_reduction: "",
@@ -401,6 +409,9 @@ const [newTypeReduction, setNewTypeReduction] = useState({
         percentage: false,
       });
 
+        // Désélectionner toutes les cases cochées
+        setSelectedItems([]);
+
       if (formContainerStyle.right === "-100%") {
         setFormContainerStyle({ right: "0" });
         setTableContainerStyle({ marginRight: "650px" });
@@ -685,16 +696,19 @@ const [newTypeReduction, setNewTypeReduction] = useState({
           <table>
             <thead>
               <tr>
-                <th>Tarif Reduction Code</th>
+              <th>Tarif Reduction Code</th>
+              <th>Tarif Reduction</th>
                 <th>Type Reduction</th>
                 <th>Montant</th>
+                <th>Pourcentage</th>
               </tr>
             </thead>
             <tbody>
               ${filteredTarifreduction?.map(tarifReduction => `
                 <tr>
-                  <td>${tarifReduction?.id || ''}</td>
-                  <td>${tarifReduction.type_reduction.type_reduction || ''}</td>
+                <td>${tarifReduction?.id || ''}</td>
+                <td>${tarifReduction?.tarif_reduction?.designation || ''}</td>
+                  <td>${tarifReduction?.type_reduction?.type_reduction || ''}</td>
                   <td>${tarifReduction.montant || ''}</td>
                   <td>${tarifReduction.percentage || ''}</td>
                 </tr>
@@ -927,6 +941,7 @@ const filteredTarifreduction = tarifReduction?.filter((tarifReduction) => {
       === selectedCategory : true)) &&
     (
       (
+        (searchTerm ? tarifReduction?.tarif_reduction?.designation.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
         (searchTerm ? tarifReduction?.type_reduction?.type_reduction.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
         (searchTerm ? String(tarifReduction?.montant).includes(searchTerm) : true) ||
         (searchTerm ? String(tarifReduction?.percentage).includes(searchTerm) : true) 
@@ -1007,6 +1022,7 @@ const [activeIndex, setActiveIndex] = useState(0);
 const handleSelect = (selectedIndex) => {
   setActiveIndex(selectedIndex);
 };
+
 const chunkArray = (array, size) => {
   const result = [];
   for (let i = 0; i < array?.length; i += size) {
@@ -1185,24 +1201,53 @@ const displayAddTypeReduction = () => {
       <Box sx={{...dynamicStyles}}>
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 4 }}>
 
-        <div>
-      {/* Include the SearchWithExportCarousel component */}
-      <SearchWithExportCarousel
-        onSearch={handleSearch}
-        exportToExcel={exportToExcel}
-        exportToPDF={exportToPDF}
-        printTable={printTable}
-        categories={tarifReduction}  // Assuming you want to pass the entire data, but you can modify it as needed
-        selectedCategory={selectedCategory}
-        handleCategoryFilterChange={handleCategoryFilterChange}
-        activeIndex={activeIndex}
-        handleSelect={handleSelect}
-        chunks={chunks}
-        subtitle="Tarifs de Reduction"
-        Title="Liste des Tarifs"
-      />
-      {/* Additional components or logic */}
-    </div>
+       
+         
+        {/* <SearchWithExport
+              onSearch={handleSearch}
+              exportToExcel={exportToExcel}
+              exportToPDF={exportToPDF}
+              printTable={printTable}
+              categories={typesReduction} // Remplacez par la liste des catégories appropriée si nécessaire
+              chunks={chunks} // Si vous utilisez un découpage en morceaux pour un carousel
+              Title="Liste des Tarifs Reduction"
+            />
+
+          {
+          
+          <div style={{height:'125px',marginTop:'-15px',marginBottom:"25px"}}>
+          
+
+          <CarouselSelector
+                title="Tarifs de Repas"
+                options={carouselOptions}
+                selectedOption={selectedCategory}
+                onSelectOption={setSelectedCategory}
+                activeIndex={activeIndex}
+                onSelectIndex={setActiveIndex}
+              />
+
+          </div>
+
+          } */}
+
+
+<div>
+                <SearchWithExportCarousel
+                  onSearch={handleSearch}
+                  exportToExcel={exportToExcel}
+                  exportToPDF={exportToPDF}
+                  printTable={printTable}
+                  categories={chunks}
+                  selectedCategory={selectedCategory}
+                  handleCategoryFilterChange={handleCategoryFilterChange}
+                  activeIndex={activeIndex}
+                  handleSelect={handleSelect}
+                  chunks={chunks}
+                  subtitle="Tarifs de Reductions"
+                  Title="Liste des Tarifs"
+                />
+              </div>
 
           <div className="container-d-flex justify-content-start">
             <div style={{ display: "flex", alignItems: "center" ,marginTop:'-12px' ,padding:'15px'}}>
@@ -1229,13 +1274,22 @@ const displayAddTypeReduction = () => {
                     style={{ cursor: "pointer", color: "white"  }}
                   />
               </a>
-
             </div>
 
             <div className="filters">
             
 
-   
+    <Form.Select aria-label="Default select example"
+    value={typeReduction} onChange={handleReductionFilterChange}
+    style={{width:'12%' ,height:"40px",marginTop:"20px", position:'absolute', left: '81%',  top: '224px',cursor: "pointer",
+      borderRadius: "10px", color: "black", fontWeight: "bold"}}>
+    <option value="">Sélectionner Type Reduction</option>
+    {typesReduction?.map((type) => (
+        <option value={type.type_reduction}>
+          {type.type_reduction}
+        </option>
+    ))}
+    </Form.Select>
 </div>
 
         <div style={{ marginTop:"0px",}}>
@@ -1676,8 +1730,9 @@ const displayAddTypeReduction = () => {
                 className="table-responsive"
                 style={{...tableContainerStyle, overflowX: 'auto', minWidth: '650px',
                   maxHeight: '700px', overflow: 'auto',
-
                   marginTop:'0px',
+                  paddingTop:'0px'
+
                 }}
               >
                  <table className="table table-bordered" id="tarifReductionTable" style={{ marginTop: "-5px", }}>
@@ -1686,6 +1741,7 @@ const displayAddTypeReduction = () => {
       <th className="tableHead">
         <input type="checkbox" checked={selectAll} onChange={handleSelectAllChange} />
       </th>
+      <th className="tableHead">Tarif Reduction</th>
       <th className="tableHead">Type Reduction</th>
       <th className="tableHead">Montant</th>
       <th className="tableHead">Percentage</th>
@@ -1707,6 +1763,7 @@ const displayAddTypeReduction = () => {
                 onChange={() => handleCheckboxChange(tarifReduction?.id)}
               />
             </td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(tarifReduction?.tarif_reduction?.designation, searchTerm) || ''}</td>
             <td style={{ backgroundColor: "white" }}>{highlightText(tarifReduction?.type_reduction?.type_reduction, searchTerm) || ''}</td>
             <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifReduction?.montant), searchTerm) || ''}</td>
             <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifReduction?.percentage), searchTerm) || ''}</td>

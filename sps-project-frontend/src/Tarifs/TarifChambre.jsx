@@ -11,8 +11,11 @@ import Search from "../Acceuil/Search";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PeopleIcon from "@mui/icons-material/People";
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// import SearchWithExport from "../components/SearchWithExport";
+// import CarouselSelector from "../components/CarouselSelector";
 import SearchWithExportCarousel from "../components/SearchWithExportCarousel";
+
+import 'jspdf-autotable';
 import {
   faTrash,
   faFileExcel,
@@ -41,6 +44,14 @@ const TarifChambre = () => {
 
   const [tarifsChambre, setTarifsChambre] = useState([]);
 
+  // -------------------Filtre Tarifs Chambre -----------------------//
+  const carouselOptions = tarifsChambre?.map((item) => ({
+    id: item.id,
+    label: item.designation,
+    image: item.photo ? `http://127.0.0.1:8000/storage/${item.photo}` : "http://localhost:8000/storage/repas-img.webp",
+  }));
+  
+
   //---------------form-------------------//
   const [newTypeChambre, setNewTypeChambre] = useState({
     code: "",
@@ -54,6 +65,9 @@ const TarifChambre = () => {
   const [editingDesignation, setEditingDesignation] = useState({})
 
   const [hasSubmitted, setHasSubmitted] = useState(false); // Track form submission state
+  const [hasSubmittedDesignation, setHasSubmittedDesignation] = useState(false);
+  const [hasSubmittedTypeChambre, setHasSubmittedTypeChambre] = useState(false);
+
   const [newDesignation, setNewDesignation] = useState({
     id: "",
     created_at: "",
@@ -445,6 +459,10 @@ const [typesChambre, setTypesChambre] = useState([]);
         triple: "",
         lit_supp: "",
     });
+    
+      // Désélectionner toutes les cases cochées
+    setSelectedItems([]);
+
       if (formContainerStyle.right === "-100%") {
         setFormContainerStyle({ right: "0" });
         setTableContainerStyle({ marginRight: "650px" });
@@ -485,6 +503,7 @@ const [typesChambre, setTypesChambre] = useState([]);
           lit_supp: "",
       });
   
+      
       // Clear the selected product data
       setSelectedProductsData([]);
       setSelectedProductsDataRep([]);
@@ -724,9 +743,11 @@ const [typesChambre, setTypesChambre] = useState([]);
           <table>
             <thead>
               <tr>
-                <th>Tarif Chambre Code</th>
-                <th>Single</th>
-                <th>Double</th>
+              <th>Tarif Chambre Code</th>
+              <th>Tarif Chambre </th>
+              <th>Type Chambre </th>
+              <th>Single</th>
+              <th>Double</th>
                 <th>Triple</th>
                 <th>Lit Supplementaires</th>
               </tr>
@@ -734,7 +755,9 @@ const [typesChambre, setTypesChambre] = useState([]);
             <tbody>
               ${filteredTarifchambre?.map(tarifChambre => `
                 <tr>
-                  <td>${tarifChambre?.code || ''}</td>
+                <td>${tarifChambre?.code || ''}</td>
+                <td>${tarifChambre?.tarif_chambre?.designation || ''}</td>
+                  <td>${tarifChambre?.type_chambre?.type_chambre || ''}</td>
                   <td>${tarifChambre.single || ''}</td>
                   <td>${tarifChambre.double || ''}</td>
                   <td>${tarifChambre?.triple || ''}</td>
@@ -827,6 +850,7 @@ const filteredTarifchambre = tarifChambre?.filter((tarifChambre) => {
       (
         (searchTerm ? tarifChambre?.code.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
         (searchTerm ? tarifChambre?.type_chambre?.type_chambre.toLowerCase().includes(searchTerm.toLowerCase()) : true) || 
+        (searchTerm ? tarifChambre?.tarif_chambre?.designation.toLowerCase().includes(searchTerm.toLowerCase()) : true) || 
         (searchTerm ? String(tarifChambre?.single).includes(searchTerm) : true) ||
         (searchTerm ? String(tarifChambre?.double).includes(searchTerm) : true) ||
         (searchTerm ? String(tarifChambre?.triple).includes(searchTerm) : true) ||
@@ -835,12 +859,25 @@ const filteredTarifchambre = tarifChambre?.filter((tarifChambre) => {
   );
 });
 
+
+
+
+
+
+
 const handleAddTypeChambre = async () => {
-  const hasErrors = Object.values(typeErrors).some(error => error === true);
-      if (hasErrors) {
-        alert("Veuillez remplir tous les champs obligatoires.");
-        return;  
-      }
+  setHasSubmittedTypeChambre(true); // Active la validation uniquement après soumission
+
+  // Vérification si un champ est vide
+  if (!newTypeChambre.code || !newTypeChambre.type_chambre || !newTypeChambre.nb_lit || !newTypeChambre.nb_salle) {
+    Swal.fire({
+      icon: "error",
+      title: "Erreur",
+      text: "Veuillez remplir tous les champs obligatoires.",
+    });
+    return;
+  }
+
   try {
     const formData = new FormData();
     formData.append("code", newTypeChambre.code);
@@ -848,70 +885,181 @@ const handleAddTypeChambre = async () => {
     formData.append("nb_lit", newTypeChambre.nb_lit);
     formData.append("nb_salle", newTypeChambre.nb_salle);
     formData.append("commentaire", newTypeChambre.commentaire);
+
     const response = await axios.post("http://localhost:8000/api/types-chambre", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
     await fetchTarifChambre();
+    
     if (response.status === 201) {
-            Swal.fire({
-                        icon: "success",
-                        title: "Succès!",
-                        text: "Type Chambre ajoutée avec succès.",
-                      });
-                      fetchTarifChambre();
-                      setShowAddCategory(false);
+      Swal.fire({
+        icon: "success",
+        title: "Succès!",
+        text: "Type Chambre ajoutée avec succès.",
+      });
+
+      setShowAddCategory(false);
+      setNewTypeChambre({
+        code: "",
+        type_chambre: "",
+        nb_lit: "",
+        nb_salle: "",
+        commentaire: "",
+      });
+      setHasSubmittedTypeChambre(false); // Réinitialiser l'état de validation
     }
   } catch (error) {
     setErrors({
-      code: error.response.data?.errors?.code,
-      type_chambre: error.response.data?.errors?.type_chambre,
-      nb_lit: error.response.data?.errors?.nb_lit,
-      nb_salle: error.response.data?.errors?.nb_salle,
-      commentaire: error.response.data?.errors?.commentaire,
+      code: error.response?.data?.errors?.code,
+      type_chambre: error.response?.data?.errors?.type_chambre,
+      nb_lit: error.response?.data?.errors?.nb_lit,
+      nb_salle: error.response?.data?.errors?.nb_salle,
+      commentaire: error.response?.data?.errors?.commentaire,
     });
   }
 };
 
+
+// const handleAddTypeChambre = async () => {
+//   const hasErrors = Object.values(typeErrors).some(error => error === true);
+//       if (hasErrors) {
+//         alert("Veuillez remplir tous les champs obligatoires.");
+//         return;  
+//       }
+//   try {
+//     const formData = new FormData();
+//     formData.append("code", newTypeChambre.code);
+//     formData.append("type_chambre", newTypeChambre.type_chambre);
+//     formData.append("nb_lit", newTypeChambre.nb_lit);
+//     formData.append("nb_salle", newTypeChambre.nb_salle);
+//     formData.append("commentaire", newTypeChambre.commentaire);
+//     const response = await axios.post("http://localhost:8000/api/types-chambre", formData, {
+//       headers: {
+//         "Content-Type": "multipart/form-data",
+//       },
+//     });
+
+//     await fetchTarifChambre();
+//     if (response.status === 201) {
+//             Swal.fire({
+//                         icon: "success",
+//                         title: "Succès!",
+//                         text: "Type Chambre ajoutée avec succès.",
+//                       });
+//                       fetchTarifChambre();
+//                       setShowAddCategory(false);
+//     }
+//   } catch (error) {
+//     setErrors({
+//       code: error.response.data?.errors?.code,
+//       type_chambre: error.response.data?.errors?.type_chambre,
+//       nb_lit: error.response.data?.errors?.nb_lit,
+//       nb_salle: error.response.data?.errors?.nb_salle,
+//       commentaire: error.response.data?.errors?.commentaire,
+//     });
+//   }
+// };
+
+
+
+
+
 const handleAddDesignation = async () => {
   try {
-    const hasErrors = Object.values(tarifChambreErrors).some(error => error === true);
-      if (hasErrors) {
-        alert("Veuillez remplir tous les champs obligatoires.");
-        return;  
-      }
-    const formData = new FormData();
-    if (newDesignation.photo) {
-      formData.append('photo', newDesignation.photo);
+    setHasSubmittedDesignation(true); // Active la validation uniquement pour ce champ
+
+    if (!newDesignation.designation) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Veuillez saisir une désignation.",
+      });
+      return;
     }
-    formData.append("designation", newDesignation.designation);
-    
-    const response = await axios.post(
-      "http://localhost:8000/api/desigs-chambre", formData
+
+    // Vérifier si la désignation existe déjà
+    const exists = tarifsChambre.some(
+      (tarif) => tarif.designation.toLowerCase().trim() === newDesignation.designation.toLowerCase().trim()
     );
 
-    await fetchTarifChambre(); 
+    if (exists) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Cette désignation existe déjà.",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    if (newDesignation.photo) {
+      formData.append("photo", newDesignation.photo);
+    }
+    formData.append("designation", newDesignation.designation);
+
+    const response = await axios.post("http://localhost:8000/api/desigs-chambre", formData);
+
+    await fetchTarifChambre();
     Swal.fire({
-                icon: "success",
-                title: "Succès!",
-                text: "Tarif Chambre ajoutée avec succès.",
-              }); // Hide the modal after success
-              setShowAddDesignation(false);
-              setNewDesignation({
-                photo: null,
-                designation: "",
-              })
+      icon: "success",
+      title: "Succès!",
+      text: "Tarif Chambre ajoutée avec succès.",
+    });
+
+    setShowAddDesignation(false);
+    setNewDesignation({ photo: null, designation: "" });
+    setHasSubmittedDesignation(false); // Réinitialise la validation de la désignation
   } catch (error) {
     setTimeout(() => {
       setErrors({
-        designation: error.response.data?.errors?.designation,
-        photo: error.response.data?.errors?.photo,
+        designation: error.response?.data?.errors?.designation,
+        photo: error.response?.data?.errors?.photo,
       });
-  }, 3000);
+    }, 3000);
   }
 };
+
+
+
+
+// const handleAddDesignation = async () => {
+//   try {
+//     const hasErrors = Object.values(tarifChambreErrors).some(error => error === true);
+//       if (hasErrors) {
+//         alert("Veuillez remplir tous les champs obligatoires.");
+//         return;  
+//       }
+//     const formData = new FormData();
+//     if (newDesignation.photo) {
+//       formData.append('photo', newDesignation.photo);
+//     }
+//     formData.append("designation", newDesignation.designation);
+    
+//     const response = await axios.post(
+//       "http://localhost:8000/api/desigs-chambre", formData
+//     );
+
+//     await fetchTarifChambre(); 
+//     Swal.fire({
+//                 icon: "success",
+//                 title: "Succès!",
+//                 text: "Tarif Chambre ajoutée avec succès.",
+//               }); // Hide the modal after success
+//               setShowAddDesignation(false);
+//               setNewDesignation({
+//                 photo: null,
+//                 designation: "",
+//               })
+//   } catch (error) {
+//     setTimeout(() => {
+//       setErrors({
+//         designation: error.response.data?.errors?.designation,
+//         photo: error.response.data?.errors?.photo,
+//       });
+//   }, 3000);
+//   }
+// };
 
 const handleSaveTypeChambre = async () => {
   try {
@@ -1098,24 +1246,51 @@ const sanitizeInput = (val) => {
       <Box sx={{...dynamicStyles}}>
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 4 }}>
 
-        <div>
-      {/* Include the SearchWithExportCarousel component */}
-      <SearchWithExportCarousel
-        onSearch={handleSearch}
-        exportToExcel={exportToExcel}
-        exportToPDF={exportToPDF}
-        printTable={printTable}
-        categories={tarifChambre}  // Assuming you want to pass the entire data, but you can modify it as needed
-        selectedCategory={selectedCategory}
-        handleCategoryFilterChange={handleCategoryFilterChange}
-        activeIndex={activeIndex}
-        handleSelect={handleSelect}
-        chunks={chunks}
-        subtitle="Tarifs de chambre"
-        Title="Liste des Tarifs"
-      />
-      {/* Additional components or logic */}
-    </div>
+       
+        {/* <SearchWithExport
+              onSearch={handleSearch}
+              exportToExcel={exportToExcel}
+              exportToPDF={exportToPDF}
+              printTable={printTable}
+              categories={typesChambre} // Remplacez par la liste des catégories appropriée si nécessaire
+              chunks={chunks} // Si vous utilisez un découpage en morceaux pour un carousel
+              Title="Liste des Tarifs Chambres"
+         />
+
+          {
+          
+          <div style={{height:'125px',marginTop:'-15px', marginBottom:"25px"}}>
+         
+          <CarouselSelector
+                  title="Tarifs de Chambre"
+                  options={carouselOptions}
+                  selectedOption={selectedCategory}
+                  onSelectOption={setSelectedCategory}
+                  activeIndex={activeIndex}
+                  onSelectIndex={setActiveIndex}
+                />
+
+          </div>
+
+          } */}
+
+
+              <div>
+                <SearchWithExportCarousel
+                  onSearch={handleSearch}
+                  exportToExcel={exportToExcel}
+                  exportToPDF={exportToPDF}
+                  printTable={printTable}
+                  categories={chunks}
+                  selectedCategory={selectedCategory}
+                  handleCategoryFilterChange={handleCategoryFilterChange}
+                  activeIndex={activeIndex}
+                  handleSelect={handleSelect}
+                  chunks={chunks}
+                  subtitle="Tarifs de Chambres"
+                  Title="Liste des Tarifs"
+                />
+              </div>
 
           <div className="container-d-flex justify-content-start">
             <div style={{ display: "flex", alignItems: "center" ,marginTop:'-16px' ,padding:'15px'}}>
@@ -1149,7 +1324,17 @@ const sanitizeInput = (val) => {
             <div className="filters" >
             
 
-   
+    <Form.Select aria-label="Default select example"
+    value={typeChambre} onChange={handleChambreFilterChange}
+    style={{width:'12%' ,height:"40px",marginTop:"20px",position:'absolute', left: '81%',  top: '224px',cursor: "pointer",
+      borderRadius: "10px", color: "black", fontWeight: "bold"}}>
+    <option value="">Sélectionner Type de Chambre</option>
+    {tarifChambre?.map((type) => (
+        <option value={type.type_chambre.type_chambre}>
+          {type.type_chambre.type_chambre}
+        </option>
+    ))}
+    </Form.Select>
 </div>
 
         <div style={{ marginTop:"0px",}}>
@@ -1343,7 +1528,8 @@ const sanitizeInput = (val) => {
                 type="text"
                 placeholder="Code Chambre"
                 name="code"
-                isInvalid={!!typeErrors.code}
+                // isInvalid={!!typeErrors.code}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.code}
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, code: e.target.value })}
               />
             </Form.Group>
@@ -1353,7 +1539,8 @@ const sanitizeInput = (val) => {
                 type="text"
                 placeholder="Type Chambre"
                 name="type_chambre"
-                isInvalid={!!typeErrors.type_chambre}
+                // isInvalid={!!typeErrors.type_chambre}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.type_chambre}
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, type_chambre: e.target.value })}
               />
             </Form.Group>
@@ -1365,7 +1552,8 @@ const sanitizeInput = (val) => {
                 placeholder="Nombre de Lit"
                 name="nb_lit"
                 min="0"
-                isInvalid={typeErrors.nb_litAdd}
+                // isInvalid={typeErrors.nb_litAdd}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.nb_litAdd}
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nb_lit: e.target.value })}
               />
             </Form.Group>
@@ -1376,7 +1564,8 @@ const sanitizeInput = (val) => {
                 placeholder="Nombre de Salle"
                 name="nb_salle"
                 min="0"
-                isInvalid={!!typeErrors.nb_salle}
+                // isInvalid={!!typeErrors.nb_salle}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.nb_salle}
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nb_salle: e.target.value })}
               />
             </Form.Group>
@@ -1386,7 +1575,8 @@ const sanitizeInput = (val) => {
               <Form.Control
                 type="text"
                 placeholder="Commentaire"
-                isInvalid={!!typeErrors.commentaire}
+                // isInvalid={!!typeErrors.commentaire}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.commentaire}
                 name="commentaire"
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, commentaire: e.target.value })}
               />
@@ -1532,9 +1722,15 @@ const sanitizeInput = (val) => {
                 type="text"
                 placeholder="Designation"
                 name="designation"
-                isInvalid={tarifChambreErrors.designationAdd}
+                // isInvalid={tarifChambreErrors.designationAdd}
+                isInvalid={hasSubmittedDesignation && !newDesignation.designation} // L'erreur ne s'affiche qu'après soumission
                 onChange={(e) => setNewDesignation({ ...newDesignation, designation: e.target.value })}
               />
+              {hasSubmittedDesignation && !newDesignation.designation && (
+              <Form.Control.Feedback type="invalid">
+                  required
+              </Form.Control.Feedback>
+              )}
             </Form.Group>
       </Form>
             
@@ -1708,27 +1904,23 @@ const sanitizeInput = (val) => {
               </Form>
             </div>
         </div>
-
-
-
-
-        
             <div className="">
               <div
                 id="tableContainer"
                 className="table-responsive"
                 style={{...tableContainerStyle, overflowX: 'auto', minWidth: '650px',
                   maxHeight: '700px', overflow: 'auto',
-
                   marginTop:'0px',
+                  paddingTop:'0px'
                 }}
               >
-                 <table className="table table-bordered" id="tarifChambreTable" style={{ marginTop: "-5px", }}>
+    <table className="table table-bordered" id="tarifChambreTable" style={{ marginTop: "-5px", }}>
   <thead className="text-center table-secondary" style={{ position: 'sticky', top: -1, backgroundColor: '#ddd', zIndex: 1,padding:'10px'}}>
     <tr className="tableHead">
       <th className="tableHead">
         <input type="checkbox" checked={selectAll} onChange={handleSelectAllChange} />
       </th>
+      <th className="tableHead">Tarif Chambre</th>
       <th className="tableHead">Tarif Code</th>
       <th className="tableHead">Type Chambre</th>
       <th className="tableHead">Single</th>
@@ -1753,6 +1945,7 @@ const sanitizeInput = (val) => {
                 onChange={() => handleCheckboxChange(tarifChambre?.id)}
               />
             </td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(tarifChambre?.tarif_chambre.designation, searchTerm) ||''}</td>
             <td style={{ backgroundColor: "white" }}>{highlightText(tarifChambre?.code, searchTerm) ||''}</td>
             <td style={{ backgroundColor: "white" }}>{highlightText(tarifChambre?.type_chambre.type_chambre, searchTerm) ||''}</td>
             <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifChambre.single), searchTerm) || ''}</td>

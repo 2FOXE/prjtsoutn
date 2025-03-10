@@ -14,12 +14,12 @@ import Search from "../Acceuil/Search";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PeopleIcon from "@mui/icons-material/People";
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// import SearchWithExport from "../components/SearchWithExport";
+// import CarouselSelector from "../components/CarouselSelector";
 import SearchWithExportCarousel from "../components/SearchWithExportCarousel";
-import FormTable from "../components/FormTable";
-import ReusableTable from "../components/ReusableTable";
+import ExpandRTable from "../components/ExpandRTable"; // Adjust the path if needed
 
-import DynamicFilter from "../components/DynamicFilter";
+import 'jspdf-autotable';
 import {
   faTrash,
   faFileExcel,
@@ -59,7 +59,13 @@ const TarifRepas = () => {
     type_repas: "",
   });
 
-
+  //-------------Filtrer par tarifs repas-------------
+  const carouselOptions = tarifsRepas?.map((item) => ({
+    id: item.id,
+    label: item.designation,
+    image: item.photo ? `http://127.0.0.1:8000/storage/${item.photo}` : "http://localhost:8000/storage/repas-img.webp",
+  }));
+   
   
 
 
@@ -142,10 +148,6 @@ const [typeRepas, setTypeRepas] = useState('');
   const [expandedRows, setExpandedRows] = useState([]);
   const [expandedRowsContact, setExpandedRowsContact] = useState([]);
   const [expandedRowsContactSite, setExpandedRowsContactsite] = useState([]);
-
-
-// filter dropdown
-  const [selectedFilters, setSelectedFilters] = useState({});
 
 
   const { open } = useOpen();
@@ -377,6 +379,10 @@ const [typeRepas, setTypeRepas] = useState('');
         designation: false,
         montant: false,
       });
+      
+        // Désélectionner toutes les cases cochées
+      setSelectedItems([]);
+
       // Si le formulaire est fermé, on l’ouvre, sinon on le laisse tel quel.
       if (formContainerStyle.right === "-100%") {
         setFormContainerStyle({ right: "0" });
@@ -389,7 +395,7 @@ const [typeRepas, setTypeRepas] = useState('');
       setTableContainerStyle({ marginRight: "0" });
       setSelectedCategory("")
       setShowForm(false); // Hide the form
-
+      setSelectedItems([]);
       // Reset the form data
       setFormData({
         type_repas: "", 
@@ -404,6 +410,7 @@ const [typeRepas, setTypeRepas] = useState('');
         montant: false,
       });
 
+      
 
       setHasSubmitted(false); // Reset the submission state
       setSelectedProductsData([])
@@ -646,6 +653,7 @@ const [typeRepas, setTypeRepas] = useState('');
             <thead>
               <tr>
                 <th>Tarif Repas Code</th>
+                <th>Tarif Repas</th>
                 <th>Type Repas</th>
                 <th>Montant</th>
               </tr>
@@ -654,8 +662,8 @@ const [typeRepas, setTypeRepas] = useState('');
               ${filteredTarifrepas?.map(tarifRepas => `
                 <tr>
                   <td>${tarifRepas?.id || ''}</td>
-                  <td>${tarifRepas.type_repas.type_repas || ''}</td>
-                  <td>${tarifRepas.tarif_repas.designation || ''}</td>
+                  <td>${tarifRepas?.tarif_repas?.designation || ''}</td>
+                  <td>${tarifRepas?.type_repas?.type_repas || ''}</td>
                   <td>${tarifRepas.montant || ''}</td>
                 </tr>
               `).join('')}
@@ -740,39 +748,18 @@ const handleRepasFilterChange = (e) => {
 
 
 
-const filteredTarifrepas = tarifRepas.filter((tarif) => {
-  let matchesSearch = true;
-  if (searchTerm) {
-    matchesSearch =
-      (tarif.type_repas?.type_repas &&
-        tarif.type_repas.type_repas
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())) ||
-      (tarif.montant &&
-        tarif.montant.toString().includes(searchTerm));
-  }
-
-  let matchesFilters = true;
-  // Ensure correct filter comparison
-  if (selectedFilters.typeRepas) {
-    matchesFilters = matchesFilters && tarif.type_repas?.id === selectedFilters.typeRepas;
-  }
-
-  if (selectedFilters.designation) {
-    matchesFilters = matchesFilters && tarif.tarif_repas?.id === selectedFilters.designation;
-  }
-
-  return matchesSearch && matchesFilters;
+const filteredTarifrepas = tarifRepas?.filter((tarifRepas) => {
+  return (
+    ((typeRepas ? tarifRepas?.type_repas.type_repas == typeRepas : true) &&
+    (selectedCategory ? tarifRepas.tarif_repas?.id
+      === selectedCategory : true)) &&
+      (
+        (searchTerm ? tarifRepas?.tarif_repas?.designation?.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
+        (searchTerm ? tarifRepas?.type_repas?.type_repas?.toLowerCase().includes(searchTerm.toLowerCase()) : true) ||
+        (searchTerm ? String(tarifRepas?.montant)?.includes(searchTerm) : true) 
+      )
+    ); 
 });
-
-
-
-// Check if your selected filters look something like this:
-console.log("Selected Filters:", selectedFilters);
-
-
-
-
 
 const handleSaveRepas = async () => {
   try {
@@ -998,59 +985,15 @@ const handleSaveDesignation = async () => {
 const handleShowTarifRepas = () => {
   setShowAddDesignation(true)
 }
-
-
-// colom for reuisibleTable 
-const columns = [
-  { label: 'Type Repas', field: 'type_repas.type_repas' },
-  { label: 'Montant', field: 'montant' },
-];
-
-
-const filters = [
-  {
-    label: "Choisir Type Repas",
-    key: "typeRepas",
-    options: typesRepas.map((type) => ({
-      value: type.id,
-      label: type.type_repas,
-    })),
-  },
-  {
-    label: "Choisir Tarif Repas",
-    key: "designation",
-    options: tarifsRepas.map((tarif) => ({
-      value: tarif.id,
-      label: tarif.designation,
-    })),
-  },
-];
-
-console.log("typesRepas", typesRepas);
-console.log("tarifsRepas", tarifsRepas);
-
-//  drop down filter
-
-const handleFilterChange = (key, value) => {
-  setSelectedFilters((prevFilters) => ({
-    ...prevFilters,
-    [key]: value,
-  }));
-};
-
-
-console.log('tarifRepas', tarifRepas);
-console.log("Selected Filters:", selectedFilters);
-
-
-
   return (
     <ThemeProvider theme={createTheme()}>
       <Box sx={{...dynamicStyles}}>
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 4 }}>
 
-       
-        <div>
+
+
+
+    <div>
       <SearchWithExportCarousel
         onSearch={handleSearch}
         exportToExcel={exportToExcel}
@@ -1066,27 +1009,63 @@ console.log("Selected Filters:", selectedFilters);
          Title="Liste des Tarifs"
       />
     </div>
-
-
-
-    <DynamicFilter
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onAddClick={handleShowFormButtonClick}
-        addButtonLabel="Ajouter Tarif Repas"
-      />
-    
-
-
-
-                                         {/* Formside */}
+          
 
         <div className="container-d-flex justify-start sm:justify-between">
           <div style={{ display: "flex", alignItems: "center", marginTop: '-12px', padding: '15px' }}>
+
+            <button
+              onClick={handleShowFormButtonClick}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                backgroundColor: "#329982",
+                color: "white",
+                borderRadius: "10px",
+                fontWeight: "bold",
+                marginLeft: "96%",  // Keep your marginLeft for large screens
+                padding: "6px 15px",
+                border: "none",
+                height: "40px",
+              }}
+              className="gap-2 AjouteBotton sm:ml-0 md:ml-auto" // Add responsive margin class
+            >
+
+                <FontAwesomeIcon
+                    icon={faPlus}
+                    className=" AjouteBotton"
+                    style={{ cursor: "pointer" ,color: "white"}}
+                  />
+              </button>
             </div>
             <div className="filters" 
             >
-       
+        <Form.Select
+        aria-label="Default select example"
+        value={typeRepas}
+        onChange={handleRepasFilterChange}
+        style={{
+          width: '12%', // Keep your width for large screens
+          height: "40px",
+          position: 'absolute',
+          marginTop:"20px",
+          left: '81%', // Keep your left for large screens
+          top: '224px',
+          cursor: "pointer",
+          borderRadius: "10px",
+          color: "black",
+          fontWeight: "bold",
+        }}
+        className="sm:w-3/4 md:w-1/2 lg:w-1/4"  // Add responsive width here
+      >
+    <option value="" style={{ fontWeight: "bold", color: "white" }}>Sélectionner Type Repas</option>
+        {
+          typesRepas?.map((type) => (
+            <option value={type.type_repas}>{type.type_repas}</option>
+          ))
+        }
+    </Form.Select>
 </div>
 
         <div style={{ marginTop:"0px",}}>
@@ -1527,37 +1506,94 @@ console.log("Selected Filters:", selectedFilters);
                 className="table-responsive"
                 style={{...tableContainerStyle, overflowX: 'auto', minWidth: '650px',
                   maxHeight: '700px', overflow: 'auto',
-
                   marginTop:'0px',
+                  paddingTop:'0px'
                 }}
               >
+                
+  <table className="table table-bordered" id="tarifRepasTable" style={{ marginTop: "-5px", }}>
+  <thead className="text-center table-secondary" style={{ position: 'sticky', top: -1, backgroundColor: '#ddd', zIndex: 1,padding:'10px'}}>
+    <tr className="tableHead">
+      <th className="tableHead">
+        <input type="checkbox" checked={selectAll} onChange={handleSelectAllChange} />
+      </th>
+      <th className="tableHead">Tarifs Repas</th>
+      <th className="tableHead">Type Repas</th>
+      <th className="tableHead">Montant</th>
+      <th className="tableHead">Action</th>
+    </tr>
+  </thead>
+  <tbody className="text-center" style={{ backgroundColor: '#007bff' }}>
+    {filteredTarifrepas
+      ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      ?.map((tarifRepas) => {
+      return(
+        <React.Fragment>
+          <tr>
+      
+            <td style={{ backgroundColor: "white" }}>
+              <input
+                type="checkbox"
+                checked={selectedItems.includes(tarifRepas?.id)}
+                onChange={() => handleCheckboxChange(tarifRepas?.id)}
+              />
+            </td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(tarifRepas?.tarif_repas.designation, searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(tarifRepas?.type_repas.type_repas, searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(String(tarifRepas.montant), searchTerm) || ''}</td>
+            <td style={{ backgroundColor: "white", whiteSpace: "nowrap" }}>
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <FontAwesomeIcon
+      onClick={() => handleEdit(tarifRepas)}
+      icon={faEdit}
+      style={{ color: "#007bff", cursor: "pointer", marginRight: "10px" }}
+    />
+    <FontAwesomeIcon
+      onClick={() => handleDelete(tarifRepas?.id)}
+      icon={faTrash}
+      style={{ color: "#ff0000", cursor: "pointer", marginRight: "10px" }}
+    />
+  </div>  
+</td>
+          </tr>
 
+        </React.Fragment>
+      )
+       
+})}
+  </tbody>
+</table>
 
-
-                      {/* //table side  */}
-
-
-
-                      <ReusableTable
-                          data={filteredTarifrepas}
-                          columns={columns}
-                          selectAll={selectAll}
-                          handleSelectAllChange={handleSelectAllChange}
-                          selectedItems={selectedItems}
-                          handleCheckboxChange={handleCheckboxChange}
-                          handleEdit={handleEdit}
-                          handleDelete={handleDelete}
-                          handleDeleteSelected={handleDeleteSelected}
-                          page={page}
-                          rowsPerPage={rowsPerPage}
-                          handleChangePage={handleChangePage}
-                          handleChangeRowsPerPage={handleChangeRowsPerPage}
-                          searchTerm={searchTerm}
-                          highlightText={highlightText}
-                        />
-
-                  {/* End of table side */}
-
+                {/* )} */}
+               
+                <a href="#">
+                  <Button
+                  className="btn btn-danger btn-sm"
+                  onClick={handleDeleteSelected}
+                  disabled={selectedItems?.length === 0}
+                  style={{
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                    fontSize: "17px",
+                    color: "white",
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  Supprimer selection
+                </Button>
+                </a>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10,15,20, 25]}
+                  component="div"
+                  count={filteredTarifrepas?.length || 0}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
               </div>
             </div>
           </div>

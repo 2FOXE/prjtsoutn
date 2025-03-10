@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedInteger("nb_lit");
             $table->unsignedInteger("nb_salle");
             $table->enum("climat", ["oui", "non"]);
-            $table->unsignedInteger("wifi");
+            $table->enum("wifi", ["oui", "non"]);
             $table->unsignedBigInteger("vue_id");
             $table->unsignedBigInteger("etage_id");
             $table->foreign('type_chambre')->references('id')->on('types_chambre');

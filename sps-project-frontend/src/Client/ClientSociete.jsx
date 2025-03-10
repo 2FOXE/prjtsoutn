@@ -1884,8 +1884,8 @@ const handleCategoryFilterChange = (catId) => {
                                         <div className=" bgSecteur" >
 
 <Carousel activeIndex={activeIndex} onSelect={handleSelect} interval={null}
- nextIcon={<FaArrowRight size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%' ,marginTop:'-50px',marginRight:"5px",marginLeft:"-5px"}} />}
- prevIcon={<FaArrowLeft size="2x" color="@ffffff" style={{backgroundColor:"black" ,borderRadius:'50%',marginTop:'-50px',marginRight:"-5px",marginLeft:"5px"}} />}>
+nextIcon={<FaArrowRight size="30px" style={{ color: "white", backgroundColor: "black", borderRadius: '50%', padding: '5px' }} />}
+prevIcon={<FaArrowLeft size="30px" style={{ color: "white", backgroundColor: "black", borderRadius: '50%', padding: '5px' }} />}>
 
   {chunks?.map((chunk, chunkIndex) => (
     <Carousel.Item key={chunkIndex}>

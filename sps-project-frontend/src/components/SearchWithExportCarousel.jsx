@@ -82,8 +82,9 @@ const SearchWithExportCarousel = ({
         </h5>
         <div className="bgSecteur">
           <Carousel activeIndex={activeIndex} onSelect={handleSelect} interval={null}
-            nextIcon={<FaArrowRight size="2x" style={{ backgroundColor: "black", borderRadius: '50%' }} />}
-            prevIcon={<FaArrowLeft size="2x" style={{ backgroundColor: "black", borderRadius: '50%' }} />}
+            nextIcon={<FaArrowRight size="30px" style={{ color: "white", backgroundColor: "black", borderRadius: '50%', padding: '5px' }} />}
+            prevIcon={<FaArrowLeft size="30px" style={{ color: "white", backgroundColor: "black", borderRadius: '50%', padding: '5px' }} />}
+            
           >
             {validChunks.map((chunk, chunkIndex) => (
               <Carousel.Item key={chunkIndex}>

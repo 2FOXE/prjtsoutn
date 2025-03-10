@@ -51,7 +51,6 @@ const ClientList = () => {
   const [secteurClient, setSecteurClient] = useState([]);
 
   const [siteClients, setSiteClients] = useState([]);
-  
   //---------------form-------------------//
   const [newCategory, setNewCategory] = useState({ categorie: "" });
   const [showEditModal, setShowEditModal] = useState(false);
@@ -1002,14 +1001,14 @@ const [villeFilter, setVilleFilter] = useState('');
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        selectedItems.forEach((id) => {
+        selectedItems.forEach((client) => {
           Swal.fire({
             icon: "success",
             title: "Succès!",
             text: "Client supprimé avec succès.",
           });
           axios
-            .delete(`http://localhost:8000/api/clients/${id.id}`)
+            .delete(`http://localhost:8000/api/clients/${client}`)
             .then(() => {
               fetchClients();
             })
@@ -1029,21 +1028,64 @@ const [villeFilter, setVilleFilter] = useState('');
     setSelectedItems([]);
   };
 
+// --------------------------------------------------selectionner les checknox------------------------
+
+  // const handleSelectAllChange = () => {
+  //   setSelectAll(!selectAll);
+  //   if (selectAll) {
+  //     setSelectedItems([]);
+  //   } else {
+  //     setSelectedItems(clients?.map((client) => client.id));
+  //   }
+  // };
+
   const handleSelectAllChange = () => {
-    setSelectAll(!selectAll);
-    if (selectAll) {
-      setSelectedItems([]);
+    const newSelectAll = !selectAll;
+    setSelectAll(newSelectAll);
+  
+    // Récupérer uniquement les clients de la page actuelle
+    const clientsOnCurrentPage = filteredClients.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    
+    if (newSelectAll) {
+      // Ajouter uniquement les clients visibles
+      setSelectedItems(prevSelectedItems => [
+        ...prevSelectedItems,
+        ...clientsOnCurrentPage.map(client => client.id)
+      ]);
     } else {
-      setSelectedItems(clients?.map((client) => client.id));
+      // Supprimer uniquement les clients de la page actuelle
+      setSelectedItems(prevSelectedItems =>
+        prevSelectedItems.filter(id => !clientsOnCurrentPage.some(client => client.id === id))
+      );
     }
   };
+
+
+  // const handleCheckboxChange = (itemId) => {
+  //   if (selectedItems.includes(itemId)) {
+  //     setSelectedItems(selectedItems.filter((id) => id !== itemId));
+  //   } else {
+  //     setSelectedItems([...selectedItems, itemId]);
+  //   }
+  // };
+
+
   const handleCheckboxChange = (itemId) => {
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems.filter((id) => id !== itemId));
+    let updatedSelectedItems = [...selectedItems];
+  
+    if (updatedSelectedItems.includes(itemId)) {
+      updatedSelectedItems = updatedSelectedItems.filter(id => id !== itemId);
     } else {
-      setSelectedItems([...selectedItems, itemId]);
+      updatedSelectedItems.push(itemId);
     }
+  
+    setSelectedItems(updatedSelectedItems);
+  
+    // Vérifier si tous les éléments de la page sont sélectionnés
+    const clientsOnCurrentPage = filteredClients.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    setSelectAll(clientsOnCurrentPage.every(client => updatedSelectedItems.includes(client.id)));
   };
+
 
   const exportToExcel = () => {
     const table = document.getElementById('clientsTable');
@@ -1936,7 +1978,7 @@ useEffect(() => {
           }
 
           <div className="container-d-flex justify-content-start">
-            <div style={{ display: "flex", alignItems: "center" ,marginTop:'20px' ,padding:'0'}}>
+            <div style={{ display: "flex", alignItems: "center" ,marginTop:'-16px' ,padding:'15px'}}>
              
               <a
                 onClick={handleShowFormButtonClick}
@@ -1944,14 +1986,19 @@ useEffect(() => {
                   display: "flex",
                   alignItems: "center",
                   cursor: "pointer",
-                  marginTop: "0px"
+                  backgroundColor: "#00afaa",
+                  color: "white",
+                  borderRadius: "10px",
+                  fontWeight: "bold"  , 
+                  padding: "6px 15px",
+                  height: "40px",
                 }}
-                className="AjouteBotton"
+                className="gap-2 AjouteBotton"
               >
  <FontAwesomeIcon
                     icon={faPlus}
                     className=" AjouteBotton"
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer",color: "white" }}
                   />                Ajouter Client
               </a>
 
@@ -1961,7 +2008,7 @@ useEffect(() => {
             >
             <Form.Select aria-label="Default select example"
              value={regionFilter} onChange={handleRegionFilterChange}
-             style={{width:'10%',height:"35px",position:'absolute', left: '66%', top: '224px'}}>
+             style={{width:'10%',height:"35px",position:'absolute', left: '66%', top: '224px', fontWeight: "bold", borderRadius: "10px"}}>
             <option value="">Sélectionner Region</option>
     {
       regions?.map((region)=>(
@@ -1972,7 +2019,7 @@ useEffect(() => {
 
     <Form.Select aria-label="Default select example"
     value={zoneFilter} onChange={handleZoneFilterChange}
-    style={{width:'10%' ,height:"35px",position:'absolute', left: '77%',  top: '224px'}}>
+    style={{width:'10%' ,height:"35px",position:'absolute', left: '77%',  top: '224px' ,fontWeight: "bold", borderRadius: "10px"}}>
     <option value="">Sélectionner Zone</option>
     {
       zones?.map((zone)=>(
@@ -1985,7 +2032,7 @@ useEffect(() => {
   aria-label="Default select example"
   value={villeFilter} 
   onChange={handleVilleFilterChange}
-  style={{ width: '10%', height: "35px", position:'absolute', left: '88%',  top: '224px' }}
+  style={{ width: '10%', height: "35px", position:'absolute', left: '88%',  top: '224px' ,  fontWeight: "bold", borderRadius: "10px"}}
 >
   <option value="">Sélectionner Ville</option>
   {
@@ -2894,7 +2941,7 @@ useEffect(() => {
 </div>
 
     </Form.Group>
-    <div style={{ marginLeft: '10px' }}>
+    {/* <div style={{ marginLeft: '10px' }}>
                   <a href="#" onClick={handleAddEmptyRowRep}>
                     <Button className="btn btn-sm mb-2" variant="primary" >
         <FontAwesomeIcon icon={faPlus} />
@@ -2989,7 +3036,7 @@ useEffect(() => {
   </table>
 </div>
 
-    </Form.Group>
+    </Form.Group> */}
   <Form.Group className="mt-5 d-flex justify-content-center">
         
         <Fab
@@ -4050,7 +4097,7 @@ useEffect(() => {
 </div>
 
     </Form.Group>
-    <div style={{ marginLeft: '10px' }}>
+    {/* <div style={{ marginLeft: '10px' }}>
                   <a href="#" onClick={handleAddEmptyRowRep}>
                     <Button className="btn btn-sm mb-2" variant="primary" >
         <FontAwesomeIcon icon={faPlus} />
@@ -4145,7 +4192,7 @@ useEffect(() => {
   </table>
 </div>
 
-    </Form.Group>
+    </Form.Group> */}
                 <Form.Group className="mt-5 d-flex justify-content-center">
                   
   <Fab
@@ -4173,6 +4220,7 @@ useEffect(() => {
                 style={{...tableContainerStyle, overflowX: 'auto', minWidth: '650px',
                   maxHeight: '700px', overflow: 'auto',
                   marginTop:'0px',
+                  paddingTop:'0px'
                 }}
               >
           <table className="table table-bordered" id="clientsTable" style={{ marginTop: "-5px", }}>
@@ -4197,11 +4245,11 @@ useEffect(() => {
       <th className="tableHead">Région</th>
       <th className="tableHead">Catégorie</th>
       <th className="tableHead">Secteur d'activité</th>
-      <th className="tableHead">représentant</th>
+      {/* <th className="tableHead">représentant</th> */}
       <th className="tableHead">Séance</th>
       <th className="tableHead">Montant plafond</th>
       <th className="tableHead">Mode de paiement </th>
-      <th className="tableHead "  >Action</th>
+      <th className="tableHead">Action</th>
     </tr>
   </thead>
   <tbody className="text-center" style={{ backgroundColor: '#007bff' }}>
@@ -4221,8 +4269,8 @@ useEffect(() => {
             <td style={{ backgroundColor: "white" }}>
               <input
                 type="checkbox"
-                checked={selectedItems.some((item) => item.id === client.id)}
-                onChange={() => handleSelectItem(client)}
+                checked={selectedItems.includes(client.id)} 
+                onChange={() => handleCheckboxChange(client.id)}
               />
             </td>
             <td style={{ backgroundColor: "white" }}>
@@ -4251,7 +4299,7 @@ useEffect(() => {
             <td style={{ backgroundColor: "white" }}>{highlightText(client?.region?.region ||'', searchTerm)}</td>
             <td style={{ backgroundColor: "white" }}>{highlightText(client?.categorie ||'', searchTerm)}</td>
             <td>{secteurClient.find((agent)=>agent.id===client?.secteur_id)?.secteurClient || ''}</td>
- <td style={{ backgroundColor: "white" }}>{highlightText(rep?.NomAgent || "", searchTerm) ||''}</td>     
+ {/* <td style={{ backgroundColor: "white" }}>{highlightText(rep?.NomAgent || "", searchTerm) ||''}</td>      */}
        <td style={{ backgroundColor: "white" }}>{highlightText(client.seince ||'', searchTerm)}</td>
        <td style={{ backgroundColor: "white" }}>{highlightText(client.montant_plafond ||'', searchTerm)}</td>
        <td>{highlightText(modePaimant.find((agent)=>agent.id===client?.mod_id)?.mode_paimants, searchTerm) || ''}</td>
@@ -4315,10 +4363,10 @@ useEffect(() => {
 secteur?.id)?.
 secteurClient
 || ''}</td>
-      <td>{agent.find((agent)=>agent.id===siteClient.
+      {/* <td>{agent.find((agent)=>agent.id===siteClient.
 last_represantant?.id_agent
 )?.
-NomAgent|| ''}</td>
+NomAgent|| ''}</td> */}
 
       <td >{siteClient.seince || ''}</td>
       <td >{siteClient.montant_plafond || ''}</td>
@@ -4443,6 +4491,12 @@ contact_site_clients
                   className="btn btn-danger btn-sm"
                   onClick={handleDeleteSelected}
                   disabled={selectedItems?.length === 0}
+                  style={{
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                    fontSize: "17px",
+                    color: "white",
+                  }}
                 >
                   <FontAwesomeIcon
                     icon={faTrash}

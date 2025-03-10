@@ -19,6 +19,8 @@ class TypeChambre extends Model
         "nb_lit",
         "nb_salle",
         "commentaire",
+        "capacite",
+        "nom",
     ];
     public function chambres() {
         return $this->hasMany(Chambre::class, 'type_chambres');

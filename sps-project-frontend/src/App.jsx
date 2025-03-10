@@ -1,11 +1,10 @@
-// App.jsx
 import './App.css';
-import { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './AuthContext';
-import { OpenProvider } from './Acceuil/OpenProvider.jsx';
 import Navigation from './Acceuil/Navigation';
-import { ClientsAndGroups } from './Client/clientgrp.jsx'; // Adjust the path based on your file structure
+import { Suspense, lazy } from 'react';
+import { OpenProvider } from './Acceuil/OpenProvider.jsx';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { ClientsAndGroups } from './Client/ClientGrp.jsx';
 
 
 
@@ -19,32 +18,44 @@ const TarifChambre = lazy(() => import('./Tarifs/TarifChambre'));
 const TarifRepas = lazy(() => import('./Tarifs/TarifRepas'));
 const TarifReduction = lazy(() => import('./Tarifs/TarifReduction'));
 const Chambre = lazy(() => import('./Chambre/Chambre'));
-const ChambresDisponibles = lazy(() => import('./Chambre/ChambresDisponibles'));
+const ChambresDisponibles = lazy(() => import('./Chambre/ChambresDisponibles.jsx'));
 const ReclamationPage = lazy(() => import('./reclamation/ReclamationPage'));
+const EtatChambre = lazy(() => import('./Chambre/etatChambre'));
+const Reservation = lazy(() => import('./Reservation/Reservation'));
+
+
+
+
+// const AgentList = lazy(() => import('./Agents/AgentList'));
+
 
 
 
 const App = () => {
+  const location = useLocation();
+  const showNavigation = location.pathname !== '/login';
   return (
     <AuthProvider>
       <OpenProvider>
-        <Suspense fallback={<p>Loading...</p>}>
-          <Navigation />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/clients_societe" element={<ClientList />} />
-            <Route path="/clients_particulier" element={<ClientParticulierr />} />
-            <Route path="/clientgrp" element={<ClientsAndGroups />} />
-            <Route path="/chambres" element={<Chambre />} />
-            <Route path="/tarifs_actuel" element={<TarifsActuel />} />
-            <Route path="/tarifs_chambre" element={<TarifChambre />} />
-            <Route path="/tarifs_repas" element={<TarifRepas />} />
-            <Route path="/tarifs_reduction" element={<TarifReduction />} />
-            <Route path="/reclamations" element={<ReclamationPage />} />
-            <Route path="/chambres-disponibles" element={<ChambresDisponibles />} />
-          </Routes>
-        </Suspense>
+      {showNavigation && <Navigation />}
+      <Suspense fallback={<p>Loading...</p>}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/clients_societe" element={<ClientList />} />
+        <Route path="/clients_particulier" element={<ClientParticulierr />} />
+        <Route path="/ClientGrp" element={<ClientsAndGroups />} />
+        <Route path="/chambres" element={<Chambre />} />
+        <Route path="/tarifs_actuel" element={<TarifsActuel />} />
+        <Route path="/tarifs_chambre" element={<TarifChambre />} />
+        <Route path="/tarifs_repas" element={<TarifRepas />} />
+        <Route path="/tarifs_reduction" element={<TarifReduction />} />
+        <Route path="/reclamations" element={<ReclamationPage />} />
+        <Route path="/chambres-disponibles" element={<ChambresDisponibles />} />
+        <Route path="/etat-chambre" element={<EtatChambre />} />
+        <Route path="/reservations" element={<Reservation />} />
+      </Routes>
+      </Suspense>
       </OpenProvider>
     </AuthProvider>
   );

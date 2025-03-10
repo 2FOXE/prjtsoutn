@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('clientgrp', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('group_id');
+            $table->unsignedBigInteger('group_id'); // Ensure this column exists
             $table->string('client_name');
             $table->string('client_email');
             $table->timestamps();
 
-            // Foreign Key Constraint
-            $table->foreign('groupNumber')->references('groupNumber')->on('groups')->onDelete('cascade');
-
+            // Foreign Key Constraint (Fixing the incorrect reference)
+            $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
         });
     }
 
@@ -32,3 +31,4 @@ return new class extends Migration
         Schema::dropIfExists('clientgrp');
     }
 };
+

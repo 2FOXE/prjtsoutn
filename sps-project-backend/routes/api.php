@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\Route; // Duplicate import removed
 use App\Http\Controllers\VueController;
 use App\Http\Controllers\InfoController;
 use App\Http\Controllers\ZoneController;
@@ -41,10 +40,15 @@ use App\Http\Controllers\ChambreController;
 use App\Http\Controllers\ClientGrpController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\ReservationController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EtatChambreController;
+use App\Http\Controllers\MaintenanceTypeController;
 
 
 Route::get('/user', function (Request $request) {
-    return $request->user(); 
+    return $request->user();
 })->middleware('auth:sanctum');
 
 //groups routes
@@ -72,7 +76,7 @@ Route::get('/tarifs-chambre', [TarifChambreDetailController::class, 'getAll']);
 Route::post('/tarifs-chambre', [TarifChambreDetailController::class, 'ajouterTarifChambreDetail']);
 Route::get('/tarifs-chambre/{tarif_chambre_code}', [TarifChambreDetailController::class, 'afficherTarifChambreDetail']);
 Route::put('/tarifs-chambre/{tarif_chambre_code}', [TarifChambreDetailController::class, 'updateTarifChambreDetail']);
-Route::delete( '/tarifs-chambre/{tarif_chambre_code}', [TarifChambreDetailController::class, 'supprimerTarifChambreDetail']);
+Route::delete('/tarifs-chambre/{tarif_chambre_code}', [TarifChambreDetailController::class, 'supprimerTarifChambreDetail']);
 
 // Tarifs Repas routes: Tested
 Route::get('/tarifs-repas', [TarifRepasDetailController::class, 'getAll']);
@@ -206,18 +210,18 @@ Route::put('siteclients/{siteclient}', [SiteClientController::class, 'update']);
 Route::post('siteclients', [SiteClientController::class, 'store']);
 Route::delete('siteclients/{siteclient}', [SiteClientController::class, 'destroy']);
 //region
-    Route::get('regions', [RegionController::class, 'index']);
-    Route::post('regions', [RegionController::class, 'store']);
-    Route::get('regions/{region}', [RegionController::class, 'show']);
-    Route::put('regions/{region}', [RegionController::class, 'update']);
-    Route::delete('regions/{region}', [RegionController::class, 'destroy']);
+Route::get('regions', [RegionController::class, 'index']);
+Route::post('regions', [RegionController::class, 'store']);
+Route::get('regions/{region}', [RegionController::class, 'show']);
+Route::put('regions/{region}', [RegionController::class, 'update']);
+Route::delete('regions/{region}', [RegionController::class, 'destroy']);
 
 //zone
-    Route::get('zones', [ZoneController::class, 'index']);
-    Route::post('zones', [ZoneController::class, 'store']);
-    Route::get('zones/{zone}', [ZoneController::class, 'show']);
-    Route::put('zones/{zone}', [ZoneController::class, 'update']);
-    Route::delete('zones/{zone}', [ZoneController::class, 'destroy']);
+Route::get('zones', [ZoneController::class, 'index']);
+Route::post('zones', [ZoneController::class, 'store']);
+Route::get('zones/{zone}', [ZoneController::class, 'show']);
+Route::put('zones/{zone}', [ZoneController::class, 'update']);
+Route::delete('zones/{zone}', [ZoneController::class, 'destroy']);
 
 // Secteur Clients
 Route::apiResource('secteur_clients', SecteurClientController::class);
@@ -263,7 +267,7 @@ Route::get('/intervenants/{id}', [IntervenantController::class, 'show']);
 Route::put('/intervenants/{id}', [IntervenantController::class, 'update']);
 Route::delete('/intervenants/{id}', [IntervenantController::class, 'destroy']);
 
-Route::get( '/agents', [AgentController::class, 'index']);
+Route::get('/agents', [AgentController::class, 'index']);
 Route::post('/agents', [AgentController::class, 'store']);
 Route::get('/agents/{id}', [AgentController::class, 'show']);
 Route::put('/agents/{id}', [AgentController::class, 'update']);
@@ -276,24 +280,20 @@ Route::get('/maintenances/{id}', [MaintenanceRecordController::class, 'show']);
 Route::put('/maintenances/{id}', [MaintenanceRecordController::class, 'update']);
 Route::post('/maintenances/{id}', [MaintenanceRecordController::class, 'update']);
 Route::delete('/maintenances/{id}', [MaintenanceRecordController::class, 'destroy']);
- 
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/chambres', [ChambreController::class, 'index']);
 
     Route::post('/chambres', [ChambreController::class, 'store']);
 });
 Route::get('/chambres', [ChambreController::class, 'index']);
-use Illuminate\Support\Facades\Route;
 
 
 Route::middleware('auth:sanctum')->post('/chambres', [ChambreController::class, 'store']);
 
-use App\Http\Controllers\AuthController;
 
-// Correct route for POST requests
-Route::post('/login', [AuthController::class, 'login']);
 
-Route::post('/register', [AuthController::class, 'register']);
+
 
 
 
@@ -310,3 +310,70 @@ Route::prefix('reclamations')->group(function () {
     Route::put('/departements/{id}', [ReclamationController::class, 'updateDepartment']);
     Route::delete('/departements/{id}', [ReclamationController::class, 'deleteDepartment']);
 });
+
+Route::get('/chambres', [ChambreController::class, 'getAll']);
+Route::post('/chambres', [ChambreController::class, 'ajouterChambre']);
+Route::get('/chambres/{num_chambre}', [ChambreController::class, 'afficherChambre']);
+Route::put('/chambres/{num_chambre}', [ChambreController::class, 'updateChambre']);
+Route::delete('/chambres/{num_chambre}', [ChambreController::class, 'supprimerChambre']);
+
+Route::delete('/all-chambres', [ChambreController::class, 'supprimerChambres']);
+
+Route::get('/maintenances', [MaintenanceRecordController::class, 'index']);
+Route::post('/maintenances', [MaintenanceRecordController::class, 'store']);
+Route::get('/maintenances/{id}', [MaintenanceRecordController::class, 'show']);
+Route::put('/maintenances/{id}', [MaintenanceRecordController::class, 'update']);
+Route::post('/maintenances/{id}', [MaintenanceRecordController::class, 'update']);
+Route::delete('/maintenances/{id}', [MaintenanceRecordController::class, 'destroy']);
+// Get all room states
+
+
+Route::get('/etat-chambre', [EtatChambreController::class, 'index']);
+
+// Get a specific room state by room number 
+
+Route::get('/etat-chambre/{num_chambre}', [EtatChambreController::class, 'show']);
+
+// Create a new room state
+Route::post('/etat-chambre', [EtatChambreController::class, 'store']);
+
+// Update an existing room state by room number
+Route::put('/etat-chambre/{num_chambre}', [EtatChambreController::class, 'update']);
+
+// Delete a room state by room number
+Route::delete('/etat-chambre/{num_chambre}', [EtatChambreController::class, 'destroy']);
+
+// Get rooms with their states (custom endpoint)
+Route::get('/chambres/etat', [EtatChambreController::class, 'getChambresWithEtat']);
+
+// Add maintenance types route
+Route::get('/maintenance-types', [MaintenanceTypeController::class, 'index']);
+
+// Add maintenance types POST route
+Route::post('/maintenance-types', [MaintenanceTypeController::class, 'store']);
+
+// Add maintenance types DELETE route
+Route::delete('/maintenance-types/{id}', [MaintenanceTypeController::class, 'destroy']);
+
+// Add maintenance types PUT route
+Route::put('/maintenance-types/{id}', [MaintenanceTypeController::class, 'update']);
+
+// To store a new chambre
+Route::post('chambres', [ChambreController::class, 'store']);
+
+
+Route::get('/reservations', [ReservationController::class, 'getAll']);
+Route::post('/reservations', [ReservationController::class, 'ajouterReservation']);
+Route::get('/reservations/{reservation_number}', [ReservationController::class, 'afficherReservation']);
+Route::put('/reservations/{reservation_number}', [ReservationController::class, 'updateReservation']);
+Route::delete('/reservations/{reservation_number}', [ReservationController::class, 'supprimerReservation']);
+Route::get('/available-rooms', [ReservationController::class, 'getAvailableRooms']);
+Route::get('/reservations', [ReservationController::class, 'getReservationsByDateRange']);
+Route::get('/reservations', [ReservationController::class, 'getAll']);
+Route::post('/reservations', [ReservationController::class, 'ajouterReservation']);
+Route::get('/reservations/{id}', [ReservationController::class, 'afficherReservation']);
+Route::put('/reservations/{id}', [ReservationController::class, 'updateReservation']);
+Route::delete('/reservations/{id}', [ReservationController::class, 'supprimerReservation']);
+
+Route::get('/clients-societe', [ClientController::class, 'getSocieteClients']);
+Route::get('/clients-particuliers', [ClientParticulierController::class, 'index']);

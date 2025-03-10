@@ -192,6 +192,8 @@ const [villeFilter, setVilleFilter] = useState('');
     try {
       const response = await axios.get("http://localhost:8000/api/all-data-client-particulier");
       const data = response.data;
+      console.log("Données des clients récupérées :", data); // Vérifiez ici
+
       setClients(data.clients);
       setUsers(data.users);
       setZones(data.zones);
@@ -208,6 +210,7 @@ const [villeFilter, setVilleFilter] = useState('');
       localStorage.setItem("regions", JSON.stringify(data.regions));
       localStorage.setItem("siteClients", JSON.stringify(data.site_clients || []));
     } catch (error) {
+      console.error('Erreur lors de la récupération des clients:', error);
       if (error.response && error.response.status === 403) {
         Swal.fire({
           icon: "error",
@@ -349,8 +352,8 @@ const [villeFilter, setVilleFilter] = useState('');
       mod_id:client.mod_id,
       seince:client.seince,
       montant_plafond:client.montant_plafond,
-
     });
+  
     setSelectedProductsData(client.info_clients?.map(info => ({ ...info })));
     setSelectedProductsDataRep(client.represantant?.map(info => ({ ...info })));
 
@@ -362,6 +365,7 @@ const [villeFilter, setVilleFilter] = useState('');
       closeForm();
     }
   };
+
   useEffect(() => {
     if (editingClientId !== null) {
       setFormContainerStyle({ right: "0" });
@@ -373,7 +377,54 @@ const [villeFilter, setVilleFilter] = useState('');
     let isValid = true;
     let newErrors = {...errors};
   
-    
+    if (!formData.CodeClient) {
+      newErrors.CodeClient = 'required';
+      isValid = false;
+    } else {
+      newErrors.CodeClient = '';
+    }
+    if (!formData.secteur_id) {
+      newErrors.secteur_id = 'required';
+      isValid = false;
+    } else {
+      newErrors.secteur_id = '';
+    }
+    if (!formData.name) {
+      newErrors.name = 'required';
+      isValid = false;
+    } else {
+      newErrors.name = '';
+    }
+    if (!formData.prenom) {
+      newErrors.prenom = 'required';
+      isValid = false;
+    } else {
+      newErrors.prenom = '';
+    }
+    if (!formData.cin) {
+      newErrors.cin = 'required';
+      isValid = false;
+    } else {
+      newErrors.cin = '';
+    }
+    if (!formData.civilite) {
+      newErrors.civilite = 'required';
+      isValid = false;
+    } else {
+      newErrors.civilite = '';
+    }
+    if (!formData.nationalite) {
+      newErrors.nationalite = 'required';
+      isValid = false;
+    } else {
+      newErrors.nationalite = '';
+    }
+    if (!formData.adresse) {
+      newErrors.adresse = 'required';
+      isValid = false;
+    } else {
+      newErrors.adresse = '';
+    }
     //   let arr = ["name", "prenom", "CodeClient", "tele", "adresse", "civilite", "nationalite", "tele"]
     //   arr.forEach((prop) => {
     //     if (formData[prop] === "") {
@@ -394,52 +445,56 @@ const [villeFilter, setVilleFilter] = useState('');
     setErrors(newErrors);
     return isValid;
   };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // console.log("Formulaire soumis");
     if (!validateForm()) {
+       // console.log("Formulaire invalide");
       return;
     }
+    console.log("Formulaire validé");
     const url = editingClient
       ? `http://localhost:8000/api/clients_particulier/${editingClient.id}`
       : "http://localhost:8000/api/clients_particulier";
-    
+      
     let requestData;
+    
 
     if (editingClient) {
-      requestData ={
-      _method: "put",
-      CodeClient: formData.CodeClient,
-      name: formData.name,
-      prenom: formData.prenom,
-      cin: formData.cin,
-      logoC: formData.logoC,
-      civilite: formData.civilite,
-      nationalite: formData.nationalite,
-      abreviation: formData.abreviation,
-      categorie: formData.categorie,
-      adresse: formData.adresse,
-      tele: formData.tele,
-      ville: formData.ville,
-      zone_id: formData.zone_id,
-      region_id: formData.region_id,
-      agent_id: formData.agent_id,
-      secteur_id: formData.secteur_id,
-      code_postal: formData.code_postal,
-      montant_plafond: formData.montant_plafond,
-      seince: formData.seince,
-      mod_id:formData.mod_id,
-      // Enfants 
-      enfantPrenom: selectedProductsData.prenom || "walo",
-      enfantAge: selectedProductsData.age|| 1
-      }
-
-  }else {
+      requestData = {
+        _method: "put",
+        CodeClient: formData.CodeClient,
+        name: formData.name,
+        prenom: formData.prenom,
+        cin: formData.cin,
+        logoC: formData.logoC,
+        civilite: formData.civilite,
+        nationalite: formData.nationalite,
+        abreviation: formData.abreviation,
+        categorie: formData.categorie,
+        adresse: formData.adresse,
+        tele: formData.tele,
+        ville: formData.ville,
+        zone_id: formData.zone_id,
+        region_id: formData.region_id,
+        agent_id: formData.agent_id,
+        secteur_id: formData.secteur_id,
+        code_postal: formData.code_postal,
+        montant_plafond: formData.montant_plafond,
+        seince: formData.seince,
+        mod_id: formData.mod_id,
+        enfantPrenom: selectedProductsData.prenom || "",
+        enfantAge: selectedProductsData.age || ""
+      };
+    } else {
       const formDatad = new FormData();
       formDatad.append("CodeClient", formData.CodeClient);
       formDatad.append("name", formData.name);
       formDatad.append("prenom", formData.prenom);
       formDatad.append("cin", formData.cin);
-      formDatad.append("civilite", formData.name);
+      formDatad.append("civilite", formData.civilite);
       formDatad.append("nationalite", formData.nationalite);
       formDatad.append("abreviation", formData.abreviation);
       formDatad.append("categorie", formData.categorie);
@@ -449,8 +504,7 @@ const [villeFilter, setVilleFilter] = useState('');
       formDatad.append("zone_id", formData.zone_id);
       formDatad.append("region_id", formData.region_id);
       formDatad.append("code_postal", formData.code_postal);
-      if (formData.logoC)
-        formDatad.append("logoC", formData.logoC);
+      
       formDatad.append("secteur_id", formData.secteur_id || selectedCategory);
       formDatad.append("mod_id", formData.mod_id);
       formDatad.append("agent_id", formData.agent_id);
@@ -458,10 +512,18 @@ const [villeFilter, setVilleFilter] = useState('');
       formDatad.append("date_fin", formData.date_fin);
       formDatad.append("seince", formData.seince);
       formDatad.append("montant_plafond", formData.montant_plafond);
-      // if (productData) {
-      // formDatad.append("enfantPrenom", productData?.prenom);
-      // formDatad.append("enfantAge", productData?.age);
-      // }
+      if (formData.logoC) {
+        formDatad.append("logoC", formData.logoC);
+      }
+      if (selectedProductsData && selectedProductsData.length > 0) {
+        selectedProductsData.forEach((enfant) => {
+          formDatad.append("enfantPrenom", enfant.prenom);
+          formDatad.append("enfantAge", enfant.age);
+        });
+      } else {
+        formDatad.append("enfantPrenom", ""); // ou null si nécessaire
+        formDatad.append("enfantAge", "");   // ou null si nécessaire 
+      }
 
       requestData = formDatad;
     }
@@ -471,20 +533,24 @@ const [villeFilter, setVilleFilter] = useState('');
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      })
-      
-      if (response.status === 200) {
+      });
+
+      console.log("Réponse reçue : ", response);
+
+      if (response.status === 200 || response.status === 201) {
         fetchClients();
         const successMessage = `Client ${
           editingClient ? "modifié" : "ajouté"
         } avec succès.`;
+
         Swal.fire({
           icon: "success",
           title: "Succès!",
           text: successMessage,
         });
-        setSelectedProductsData([])
-        setSelectedProductsDataRep([])
+        
+        setSelectedProductsData([]);
+        setSelectedProductsDataRep([]);
         setFormData({
           CodeClient: "",
           name: "",
@@ -501,14 +567,14 @@ const [villeFilter, setVilleFilter] = useState('');
           region_id: "",
           code_postal: "",
           logoC: null,
-          secteur_id:"",
-          agent_id:"",
-          id_agent:"",
-          date_debut:"",
-          date_fin:"",
-          mod_id:"",
-          seince:"",
-          montant_plafond:"",
+          secteur_id: "",
+          agent_id: "",
+          id_agent: "",
+          date_debut: "",
+          date_fin: "",
+          mod_id: "",
+          seince: "",
+          montant_plafond: "",
         });
         setErrors({
           CodeClient: "",
@@ -530,6 +596,11 @@ const [villeFilter, setVilleFilter] = useState('');
         closeForm();
       }
     } catch (error) {
+      console.error("Erreur lors de l'ajout du client:", error);
+      if (error.response && error.response.data) {
+      console.log("Détails de l'erreur : ", error.response.data.errors);
+      setErrors(error.response?.data?.errors || {});
+      
       setTimeout(() => {
         setErrors({
           CodeClient: error.response.data?.errors?.CodeClient,
@@ -559,6 +630,8 @@ const [villeFilter, setVilleFilter] = useState('');
       }, 3000);
     }
   };
+};
+
 
   //------------------------- CLIENT FORM---------------------//
 
@@ -636,7 +709,6 @@ const [villeFilter, setVilleFilter] = useState('');
       updatedItems.splice(selectedIndex, 1);
       setSelectedItems(updatedItems);
     }
-
   };
 
   const getSelectedClientIds = () => {
@@ -712,8 +784,8 @@ const [villeFilter, setVilleFilter] = useState('');
         seince: formDataSC.seince,
         montant_plafond: formDataSC.montant_plafond,
         //Enfant
-        enfantPrenom: "temp",
-        enfantAge: 1
+         enfantPrenom: selectedProductsData.prenom || "",
+        enfantAge: selectedProductsData.age || ""
       };
     
     } else {
@@ -737,11 +809,18 @@ const [villeFilter, setVilleFilter] = useState('');
       formDataScd.append("mod_id", formDataSC.mod_id);
       formDataScd.append("montant_plafond", formDataSC.montant_plafond);
       formDataScd.append("client_id", selectedClientIds.join(", "));
-      if (formDataSC.logoSC) 
+      if (formDataSC.logoSC) {
         formDataScd.append("logoSC", formDataSC.logoSC);
-      formDataScd.append("enfantPrenom", "temp_add");
-      formDataScd.append("enfantAge", 2);
-
+      }
+      if (selectedProductsData && selectedProductsData.length > 0) {
+        selectedProductsData.forEach((enfant) => {
+      formDataScd.append("enfantPrenom", enfant.prenom);
+      formDataScd.append("enfantAge", enfant.age);
+      });
+      } else {
+        formDataScd.append("enfantPrenom", ""); // ou null si nécessaire
+        formDataScd.append("enfantAge", "");   // ou null si nécessaire
+      }
       
       requestData = formDataScd;
     }
@@ -751,7 +830,8 @@ const [villeFilter, setVilleFilter] = useState('');
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      })
+      });
+      console.log(response.data); // Vérifiez la réponse de l'API
       // selectedProductsData.filter((info) => info.name = formData.name)
 
       const formDataRep = {
@@ -806,6 +886,7 @@ const [villeFilter, setVilleFilter] = useState('');
       setEditingClient(null);
       }
     } catch (error) {
+      console.error('Erreur lors de l\'ajout/modification du client:', error);
       setTimeout(() => {
         setErrors({
           codeSiteClient: error.response.data?.errors?.codeSiteClient,
@@ -923,7 +1004,6 @@ const [villeFilter, setVilleFilter] = useState('');
       mod_id:"",
       secteur_id:"",
       seince:"",
-      secteur_id:"",
       montant_plafond: "",
     });
     setSelectedItems([])
@@ -968,7 +1048,7 @@ const [villeFilter, setVilleFilter] = useState('');
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`http://localhost:8000/api/clients_particulier/${id.id}`)
+          .delete(`http://localhost:8000/api/clients_particulier/${id}`)
           .then(() => {
             fetchClients();
             Swal.fire({
@@ -1007,18 +1087,19 @@ const [villeFilter, setVilleFilter] = useState('');
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        selectedItems.forEach((id) => {
+        selectedItems.forEach((client) => {
+          Swal.fire({
+            icon: "success",
+            title: "Succès!",
+            text: "Client supprimé avec succès.",
+          });
           axios
-            .delete(`http://localhost:8000/api/clients_particulier/${id.id}`)
+            .delete(`http://localhost:8000/api/clients_particulier/${client}`)
             .then(() => {
               fetchClients();
-              Swal.fire({
-                icon: "success",
-                title: "Succès!",
-                text: "Client supprimé avec succès.",
-              });
             })
             .catch((error) => {
+              console.error("Erreur lors de la suppression du client:", error);
               Swal.fire({
                 icon: "error",
                 title: "Erreur!",
@@ -1033,21 +1114,70 @@ const [villeFilter, setVilleFilter] = useState('');
     setSelectedItems([]);
   };
 
+  
+// --------------------------------------------------selectionner les checknox------------------------
+  // const handleSelectAllChange = () => {
+  //   setSelectAll(!selectAll);
+  //   if (selectAll) {
+  //     setSelectedItems([]);
+  //   } else {
+  //     setSelectedItems(clients?.map((client) => client.id));
+  //   }
+  // };
+
+  
   const handleSelectAllChange = () => {
-    setSelectAll(!selectAll);
-    if (selectAll) {
-      setSelectedItems([]);
+    const newSelectAll = !selectAll;
+    setSelectAll(newSelectAll);
+  
+    // Récupérer uniquement les clients de la page actuelle
+    const clientsOnCurrentPage = filteredClients.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    
+    if (newSelectAll) {
+      // Ajouter uniquement les clients visibles
+      setSelectedItems(prevSelectedItems => [
+        ...prevSelectedItems,
+        ...clientsOnCurrentPage.map(client => client.id)
+      ]);
     } else {
-      setSelectedItems(clients?.map((client) => client.id));
+      // Supprimer uniquement les clients de la page actuelle
+      setSelectedItems(prevSelectedItems =>
+        prevSelectedItems.filter(id => !clientsOnCurrentPage.some(client => client.id === id))
+      );
     }
   };
+  
+
+  // const handleCheckboxChange = (itemId) => {
+  //   if (selectedItems.includes(itemId)) {
+  //     setSelectedItems(selectedItems.filter((id) => id !== itemId));
+  //   } else {
+  //     setSelectedItems([...selectedItems, itemId]);
+  //   }
+  // };
+
+
   const handleCheckboxChange = (itemId) => {
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems.filter((id) => id !== itemId));
+    let updatedSelectedItems = [...selectedItems];
+  
+    if (updatedSelectedItems.includes(itemId)) {
+      updatedSelectedItems = updatedSelectedItems.filter(id => id !== itemId);
     } else {
-      setSelectedItems([...selectedItems, itemId]);
+      updatedSelectedItems.push(itemId);
     }
+  
+    setSelectedItems(updatedSelectedItems);
+  
+    // Vérifier si tous les éléments de la page sont sélectionnés
+    const clientsOnCurrentPage = filteredClients.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    setSelectAll(clientsOnCurrentPage.every(client => updatedSelectedItems.includes(client.id)));
   };
+  
+
+
+
+
+
 
   const exportToExcel = () => {
     const table = document.getElementById('clientsTable');
@@ -1819,7 +1949,7 @@ useEffect(() => {
           }
 
           <div className="container-d-flex justify-content-start">
-            <div style={{ display: "flex", alignItems: "center" ,marginTop:'20px' ,padding:'0'}}>
+            <div style={{ display: "flex", alignItems: "center" ,marginTop:'-16px' ,padding:'15px'}}>
              
               <a
                 onClick={handleShowFormButtonClick}
@@ -1827,13 +1957,19 @@ useEffect(() => {
                   display: "flex",
                   alignItems: "center",
                   cursor: "pointer",
+                  backgroundColor: "#00afaa",
+                  color: "white",
+                  borderRadius: "10px",
+                  fontWeight: "bold"  , 
+                  padding: "6px 15px",
+                  height: "40px",
                 }}
-                className="AjouteBotton"
+                className="gap-2 AjouteBotton"
               >
  <FontAwesomeIcon
                     icon={faPlus}
                     className=" AjouteBotton"
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer",color: "white"  }}
                   />                Ajouter Client
               </a>
 
@@ -1843,7 +1979,7 @@ useEffect(() => {
             >
             <Form.Select aria-label="Default select example"
              value={regionFilter} onChange={handleRegionFilterChange}
-             style={{width:'10%',height:"35px",position:'absolute', left: '66%', top: '224px'}}>
+             style={{width:'10%',height:"35px",position:'absolute', left: '66%', top: '224px', fontWeight: "bold", borderRadius: "10px"}}>
             <option value="">Sélectionner Region</option>
     {
       regions?.map((region)=>(
@@ -1854,7 +1990,7 @@ useEffect(() => {
 
     <Form.Select aria-label="Default select example"
     value={zoneFilter} onChange={handleZoneFilterChange}
-    style={{width:'10%' ,height:"35px",position:'absolute', left: '77%',  top: '224px'}}>
+    style={{width:'10%' ,height:"35px",position:'absolute', left: '77%',  top: '224px', fontWeight: "bold", borderRadius: "10px"}}>
     <option value="">Sélectionner Zone</option>
     {
       zones?.map((zone)=>(
@@ -1867,7 +2003,7 @@ useEffect(() => {
   aria-label="Default select example"
   value={villeFilter} 
   onChange={handleVilleFilterChange}
-  style={{ width: '10%', height: "35px", position:'absolute', left: '88%',  top: '224px' }}
+  style={{ width: '10%', height: "35px", position:'absolute', left: '88%',  top: '224px', fontWeight: "bold", borderRadius: "10px" }}
 >
   <option value="">Sélectionner Ville</option>
   {
@@ -2814,7 +2950,7 @@ Region
 </div>
 
     </Form.Group>
-    <div style={{ marginLeft: '10px' }}>
+    {/* <div style={{ marginLeft: '10px' }}>
                   <a href="#" onClick={handleAddEmptyRowRep}>
                     <Button className="btn btn-sm mb-2" variant="primary" >
         <FontAwesomeIcon icon={faPlus} />
@@ -2906,7 +3042,7 @@ Region
   </table>
 </div>
 
-    </Form.Group>
+    </Form.Group> */}
   <Form.Group className="mt-5 d-flex justify-content-center">
         
         <Fab
@@ -4008,7 +4144,7 @@ Region
 </div>
 
     </Form.Group>
-    <div style={{ marginLeft: '10px' }}>
+    {/* <div style={{ marginLeft: '10px' }}>
                   <a href="#" onClick={handleAddEmptyRowRep}>
                     <Button className="btn btn-sm mb-2" variant="primary" >
         <FontAwesomeIcon icon={faPlus} />
@@ -4103,7 +4239,7 @@ Region
   </table>
 </div>
 
-    </Form.Group>
+    </Form.Group> */}
                 <Form.Group className="mt-5 d-flex justify-content-center">
                   
   <Fab
@@ -4131,6 +4267,7 @@ Region
                 style={{...tableContainerStyle, overflowX: 'auto', minWidth: '650px',
                   maxHeight: '700px', overflow: 'auto',
                   marginTop:'0px',
+                  paddingTop:'0px'
                 }}
               >
                  <table className="table table-bordered" id="clientsTable" style={{ marginTop: "-5px", }}>
@@ -4158,7 +4295,7 @@ Region
       <th className="tableHead">Région</th>
       <th className="tableHead">Catégorie</th>
       <th className="tableHead">Secteur d'activité</th>
-      <th className="tableHead">représentant</th>
+      {/* <th className="tableHead">représentant</th> */}
       <th className="tableHead">Séance</th>
       <th className="tableHead">Montant plafond</th>
       <th className="tableHead">Mode de paiement </th>
@@ -4183,8 +4320,8 @@ Region
             <td style={{ backgroundColor: "white" }}>
               <input
                 type="checkbox"
-                checked={selectedItems.some((item) => item.id === client.id)}
-                onChange={() => handleSelectItem(client)}
+                checked={selectedItems.includes(client.id)} 
+                onChange={() => handleCheckboxChange(client.id)} 
               />
             </td>
             <td style={{ backgroundColor: "white" }}>
@@ -4195,31 +4332,31 @@ Region
                   style={{ width: "50px", height: "50px", borderRadius: "50%" }}
                 />
             </td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.CodeClient, searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.name , searchTerm)  ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.prenom , searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.cin , searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.civilite , searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.nationalite , searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.abreviation, searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.adresse, searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.tele , searchTerm) ||''} <button onClick={() => toggleRowInfo(client.id)} style={{
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.CodeClient ?? "", searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.name  ?? "", searchTerm)  ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.prenom ?? "" , searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.cin ?? "" , searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.civilite ?? "" , searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.nationalite ?? "" , searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.abreviation ?? "" , searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.adresse  ?? "" , searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.tele  ?? "" , searchTerm) ||''} <button onClick={() => toggleRowInfo(client.id)} style={{
               border:'none'
               ,backgroundColor:'white'
             }}>
               <FontAwesomeIcon icon={faList}
              /></button> </td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.ville, searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.ville ?? "", searchTerm) ||''}</td>
 
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.code_postal, searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client?.zone?.zone, searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client?.region?.region, searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.categorie, searchTerm) ||''}</td>
-            <td>{highlightText(secteurClient.find((agent)=>agent.id===client?.secteur_id)?.secteurClient, searchTerm) || ''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(rep?.NomAgent , searchTerm)||''}</td>     
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.seince, searchTerm) ||''}</td>
-            <td style={{ backgroundColor: "white" }}>{highlightText(client.montant_plafond, searchTerm) ||''}</td>
-            <td>{highlightText(modePaimant.find((agent)=>agent.id===client?.mod_id)?.mode_paimants, searchTerm) || ''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.code_postal ?? "", searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client?.zone?.zone ?? "", searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client?.region?.region ?? "", searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.categorie ?? "", searchTerm) ||''}</td>
+            <td>{highlightText(secteurClient.find((agent)=>agent.id===client?.secteur_id)?.secteurClient ?? "", searchTerm) || ''}</td>
+            {/* <td style={{ backgroundColor: "white" }}>{highlightText(rep?.NomAgent ?? "" , searchTerm)||''}</td>      */}
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.seince ?? "", searchTerm) ||''}</td>
+            <td style={{ backgroundColor: "white" }}>{highlightText(client.montant_plafond ?? "", searchTerm) ||''}</td>
+            <td>{highlightText(modePaimant.find((agent)=>agent.id===client?.mod_id)?.mode_paimants ?? "", searchTerm) || ''}</td>
   <td style={{ backgroundColor: "white", whiteSpace: "nowrap" }}>
   <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
     <FontAwesomeIcon
@@ -4280,10 +4417,10 @@ Region
 secteur?.id)?.
 secteurClient
 || ''}</td>
-      <td>{agent.find((agent)=>agent.id===siteClient.
+      {/* <td>{agent.find((agent)=>agent.id===siteClient.
 last_represantant?.id_agent
 )?.
-NomAgent|| ''}</td>
+NomAgent|| ''}</td> */}
 
       <td >{siteClient.seince || ''}</td>
       <td >{siteClient.montant_plafond || ''}</td>
@@ -4358,9 +4495,9 @@ info_site_clients?.map((info_clients) => (
                                                         >
                                                             <thead>
                                                             <tr>
-                                                                <th   className="ColoretableForm">Nom</th>
-                                                                <th   className="ColoretableForm">Prenom</th>
-                                                                <th   className="ColoretableForm">Age</th>
+                                                                <th  className="ColoretableForm">Nom</th>
+                                                                <th  className="ColoretableForm">Prenom</th>
+                                                                <th  className="ColoretableForm">Age</th>
                                                                 {/* <th    style={{ backgroundColor: "#adb5bd" }}>Prix Vente</th>
                                                                 <th    style={{ backgroundColor: "#adb5bd" }}>Total HT </th> */}
                                                                 {/* <th className="text-center">Action</th> */}
@@ -4406,6 +4543,12 @@ info_site_clients?.map((info_clients) => (
                   className="btn btn-danger btn-sm"
                   onClick={handleDeleteSelected}
                   disabled={selectedItems?.length === 0}
+                  style={{
+                    borderRadius: "10px",
+                    fontWeight: "bold",
+                    fontSize: "17px",
+                    color: "white",
+                  }}
                 >
                   <FontAwesomeIcon
                     icon={faTrash}

@@ -32,8 +32,9 @@ const CarouselSelector = ({
           activeIndex={activeIndex}
           onSelect={onSelectIndex}
           interval={null}
-          nextIcon={<FaArrowRight size="2x" color="white" style={{ backgroundColor: "black", borderRadius: '50%' }} />}
-          prevIcon={<FaArrowLeft size="2x" color="white" style={{ backgroundColor: "black", borderRadius: '50%' }} />}
+          nextIcon={<FaArrowRight size="30px" style={{ color: "white", backgroundColor: "black", borderRadius: '50%', padding: '5px' }} />}
+            prevIcon={<FaArrowLeft size="30px" style={{ color: "white", backgroundColor: "black", borderRadius: '50%', padding: '5px' }} />}
+            
         >
           {chunks?.map((chunk, chunkIndex) => (
             <Carousel.Item key={chunkIndex}>
