@@ -20,6 +20,8 @@ class TypeChambreSeeder extends Seeder
                 'nb_lit' => 1, // Number of beds
                 'nb_salle' => 1, // Number of bathrooms
                 'commentaire' => 'Chambre simple avec un lit.', // Comment
+                'capacite' => 1, // Capacity of the room
+                'nom' => 'Chambre Simple', // Room name
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -29,6 +31,8 @@ class TypeChambreSeeder extends Seeder
                 'nb_lit' => 2,
                 'nb_salle' => 1,
                 'commentaire' => 'Chambre double avec deux lits.',
+                'capacite' => 2,
+                'nom' => 'Chambre Double',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -38,6 +42,8 @@ class TypeChambreSeeder extends Seeder
                 'nb_lit' => 3,
                 'nb_salle' => 1,
                 'commentaire' => 'Chambre triple avec trois lits.',
+                'capacite' => 3,
+                'nom' => 'Chambre Triple',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
