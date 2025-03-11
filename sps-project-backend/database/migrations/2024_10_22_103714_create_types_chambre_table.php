@@ -13,8 +13,8 @@ return new class extends Migration {
             $table->integer('nb_lit'); // Nombre de lits
             $table->integer('nb_salle'); // Nombre de salles de bain
             $table->text('commentaire')->nullable(); // Commentaire optionnel
-            $table->string('nom');  // Example column
-            $table->integer('capacite'); 
+            $table->string('nom')->nullable();  // Example column
+            $table->integer('capacite')->nullable(); 
             $table->timestamps();
         });
     }
