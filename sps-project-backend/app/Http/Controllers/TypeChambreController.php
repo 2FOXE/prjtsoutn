@@ -22,7 +22,7 @@ class TypeChambreController extends Controller
             'nb_salle' => 'required|integer',
             'commentaire' => 'nullable|string',
             "capacite"=>'nullable|integer',
-            // "nom"=>'nullable|string'
+            "nom"=>'nullable|string'
             ]);
             $typeChambre = TypeChambre::create($validatedData);
             return response()->json($typeChambre, 201);
