@@ -1785,6 +1785,8 @@ const handleSaveModP = async () => {
     });
   }
 };
+console.log("Données  :", filteredClients); // Vérifiez ici
+
 const handleDeleteModP = async (categorieId) => {
   try {
      axios.delete(`http://localhost:8000/api/mode-paimants/${categorieId}`);

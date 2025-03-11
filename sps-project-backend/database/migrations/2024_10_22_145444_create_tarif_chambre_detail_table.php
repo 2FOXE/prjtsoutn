@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->unsignedBigInteger("tarif_chambre");
-            // $table->unsignedBigInteger("type_chambre");
+            $table->unsignedBigInteger("type_chambre");
             $table->double("single");
             $table->double("double");
             $table->double("triple");
             $table->unsignedInteger("lit_supp");
             $table->foreign('tarif_chambre')->references('id')->on('tarifs_chambre')->onDelete('cascade');
-            // $table->foreign('type_chambre')->references('id')->on('types_chambre')->onDelete('cascade');
+            $table->foreign('type_chambre')->references('id')->on('types_chambre')->onDelete('cascade');
             $table->timestamps();
         });
     }

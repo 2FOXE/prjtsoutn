@@ -10,13 +10,13 @@ class TarifChambreDetailController extends Controller
 {
     public function getAll()
     {
-        $typesChambre = TypeChambre::all();
+        // $typesChambre = TypeChambre::all();
         $tarifsChambreDetail = TarifChambreDetail::with(['type_chambre', 'tarif_chambre'])->get();
-        $tarifsChambre = TarifChambre::all();
+        // $tarifsChambre = TarifChambre::all();
         return response()->json([
             "tarifsChambreDetail" => $tarifsChambreDetail,
-            "typesChambre" => $typesChambre,
-            "tarifsChambre" => $tarifsChambre
+            // "typesChambre" => $typesChambre,
+            // "tarifsChambre" => $tarifsChambre
         ]);
     }
 

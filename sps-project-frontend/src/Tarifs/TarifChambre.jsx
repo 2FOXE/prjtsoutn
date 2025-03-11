@@ -156,6 +156,7 @@ const [typesChambre, setTypesChambre] = useState([]);
   const currentChambres = tarifChambre?.slice(indexOfFirstTarif, indexOfLastTarif);
   //-------------------Selected-----------------------/
   const [selectedItems, setSelectedItems] = useState([]);
+  const [data, setData] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   //-------------------Search-----------------------/
   const [searchTerm, setSearchTerm] = useState("");
@@ -177,40 +178,72 @@ const [typesChambre, setTypesChambre] = useState([]);
 
   const fetchTarifChambre = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/tarifs-chambre");
-      const data = response.data;
-  
-      setTarifChambre(data.tarifsChambreDetail);
-      setTarifsChambre(data.tarifsChambre);
-      setTypesChambre(data.typesChambre);
-  
-      localStorage.setItem("tarifChambre", JSON.stringify(data.tarifsChambreDetail));
-      localStorage.setItem("tarifsChambre", JSON.stringify(data.tarifsChambre));
-      localStorage.setItem("typesChambre", JSON.stringify(data.typesChambre));
+        const response = await axios.get("http://localhost:8000/api/tarifs-chambre");
+        console.log('Réponse complète:', response);
+
+        setData(response.data);
+        console.log('Données tarif chambre:', response.data);
+
+        console.log('tarifsChambreDetail:', data.tarifsChambreDetail);
+        console.log('tarifsChambre:', data.tarifsChambre);
+        console.log('typesChambre:', data.typesChambre);
+
+        setTarifChambre(data.tarifsChambreDetail);
+        setTarifsChambre(data.tarifsChambre);
+        setTypesChambre(data.typesChambre);
+
+        localStorage.setItem("tarifChambre", JSON.stringify(data.tarifsChambreDetail));
+        localStorage.setItem("tarifsChambre", JSON.stringify(data.tarifsChambre));
+        localStorage.setItem("typesChambre", JSON.stringify(data.typesChambre));
+
+        console.log("Données stockées dans localStorage !");
     } catch (error) {
-      if (error.response && error.response.status === 403) {
-        Swal.fire({
-          icon: "error",
-          title: "Accès refusé",
-          text: "Vous n'avez pas l'autorisation de voir la liste des Tarifs Chambre.",
-        });
-      }
+        console.error('Erreur lors de la récupération des tarifs chambre:', error);
+        
+        if (error.response && error.response.status === 403) {
+            Swal.fire({
+                icon: "error",
+                title: "Accès refusé",
+                text: "Vous n'avez pas l'autorisation de voir la liste des Tarifs Chambre.",
+            });
+        }
     }
-  };
-  
-  useEffect(() => {
+};
+
+
+useEffect(() => {
+    console.log("Vérification des données dans localStorage...");
+
     const storedTarifChambre = localStorage.getItem("tarifChambre");
     const storedTarifsChambre = localStorage.getItem("tarifsChambre");
     const storedTypesChambre = localStorage.getItem("typesChambre");
-    storedTarifsChambre && setTarifsChambre(JSON.parse(storedTarifsChambre));
-    storedTarifChambre && setTarifChambre(JSON.parse(storedTarifChambre));
-    storedTypesChambre && setTypesChambre(JSON.parse(storedTypesChambre));
 
-    if (!storedTarifChambre || !storedTypesChambre || !storedTarifsChambre)
-      fetchTarifChambre();
-    
-  }, []);
+    console.log("TarifChambre stocké:", storedTarifChambre);
+    console.log("TarifsChambre stocké:", storedTarifsChambre);
+    console.log("TypesChambre stocké:", storedTypesChambre);
 
+    if (storedTarifsChambre) {
+        setTarifsChambre(JSON.parse(storedTarifsChambre));
+        console.log("TarifsChambre récupéré depuis localStorage !");
+    }
+
+    if (storedTarifChambre) {
+        setTarifChambre(JSON.parse(storedTarifChambre));
+        console.log("TarifChambre récupéré depuis localStorage !");
+    }
+
+    if (storedTypesChambre) {
+        setTypesChambre(JSON.parse(storedTypesChambre));
+        console.log("TypesChambre récupéré depuis localStorage !");
+    }
+
+    if (!storedTarifChambre || !storedTypesChambre || !storedTarifsChambre) {
+        console.log("Aucune donnée trouvée dans localStorage, appel de l'API...");
+        fetchTarifChambre();
+    }
+}, []);
+
+console.log('data tarif chambresGGGGGGGGGGGGGGGGGGGGGGGGG',data);
 
   const toggleRow = (tarifChambreId) => {
     setExpandedRows((prevExpandedRows) =>

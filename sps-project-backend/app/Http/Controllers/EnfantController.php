@@ -10,6 +10,16 @@ class EnfantController extends Controller
 {
 
 
+
+    public function index(){
+
+        $enfant=Enfant::all();
+        return response()->json([
+            'enfants'=>$enfant,
+        ]);
+    }
+
+
     public function store(Request $request)
     {
         // Validate the incoming request

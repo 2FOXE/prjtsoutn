@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TypeChambre;
 use Illuminate\Http\Request;
+use Ramsey\Uuid\Type\Integer;
 
 class TypeChambreController extends Controller
 {
@@ -20,6 +21,8 @@ class TypeChambreController extends Controller
             'nb_lit' => 'required|integer',
             'nb_salle' => 'required|integer',
             'commentaire' => 'nullable|string',
+            "capacite"=>'nullable|integer',
+            // "nom"=>'nullable|string'
             ]);
             $typeChambre = TypeChambre::create($validatedData);
             return response()->json($typeChambre, 201);
