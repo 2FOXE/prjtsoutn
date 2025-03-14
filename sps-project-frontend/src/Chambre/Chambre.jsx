@@ -165,6 +165,7 @@ const [typeFilter, setTypeFilter] = useState('');
       console.log("sdfghj",response.data);
       const data = response.data;
       setChambres(data.chambres);
+      console.log("la liset des chmbres hewhhlwiuhptiurthpiuerthiueruuuuuuqh",data.chambres)
       await storeDataInIndexedDB(data.chambres, 'chambres');
       setVues(data.vues);
       setEtages(data.etages);
@@ -176,7 +177,6 @@ const [typeFilter, setTypeFilter] = useState('');
   };
   useEffect(() => {
     // Check if data exists in local storage and set the state variables accordingly
-
 
       fetchChambres();
     
@@ -356,98 +356,104 @@ const [typeFilter, setTypeFilter] = useState('');
   }, [formData, newVue, newTypeChambre, newEtage, submitted]);
 
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setSubmitted(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitted(true);
 
-  const hasErrors = Object.values(errors).some(error => error === true);
-  if (hasErrors) {
-    Swal.fire({
-      icon: "error",
-      title: "Erreur!",
-      text: "Veuillez remplir tous les champs obligatoires.",
-    });
-    return;  
-  }
-  const url = editingChambre
-      ? `http://localhost:8000/api/chambres/${editingChambre.id}`
-      : "http://localhost:8000/api/chambres";
-  const method = editingChambre ? "put" : "post";
-
-  let requestData;
-
-  if (editingChambre) {
-    requestData ={
-    type_chambre: formData.type_chambre,
-    num_chambre: formData.num_chambre,
-    etage_id: formData.etage || selectedEtage,
-    nb_lit: formData.nb_lit,
-    nb_salle: formData.nb_salle,
-    climat: formData.climat,
-    wifi: formData.wifi,
-    vue_id: formData.vue || selectedVue,
+    // Vérifier s'il y a des erreurs dans le formulaire
+    const hasErrors = Object.values(errors).some(error => error === true);
+    if (hasErrors) {
+        Swal.fire({
+            icon: "error",
+            title: "Erreur!",
+            text: "Veuillez remplir tous les champs obligatoires.",
+        });
+        return;  
     }
-  }
-  else {
-  const formDatad = new FormData();
-  formDatad.append("type_chambre", formData.type_chambre);
-  formDatad.append("num_chambre", formData.num_chambre);
-  formDatad.append("etage_id", formData.etage || selectedEtage);
-  formDatad.append("nb_lit", formData.nb_lit);
-  formDatad.append("nb_salle", formData.nb_salle);
-  formDatad.append("climat", formData.climat);
-  formDatad.append("wifi", formData.wifi);
-  formDatad.append("vue_id", formData.vue || selectedVue);
-  requestData = formDatad;
-  }
 
-  try {
-      const response = await axios({
-          method: method,
-          url: url,
-          data: requestData,
-      });
-      
-      if (response.status === 200 || response.status === 201) {
-          fetchChambres();  // Fetch updated data after successful submit
-          const successMessage = `Chambre ${editingChambre ? "modifié" : "ajouté"} avec succès.`;
-          Swal.fire({
-              icon: "success",
-              title: "Succès!",
-              text: successMessage,
-          });
-          // Reset form and errors, but keep the form open with the new data
-          setFormData({
-              type_chambre: "",
-              num_chambre: "",
-              etage: "",
-              nb_lit: "",
-              nb_salle: "",
-              climat: "",
-              wifi: "",
-              vue: "",
-          });
-          setErrors({
-              type_chambre: "",
-              etage: "",
-              nb_lit: "",
-              nb_salle: "",
-              climat: "",
-              wifi: "",
-              vue: "",
-          });
-          setEditingChambre(null);
-          // Do not close the form here if you want to keep it open
-      }
-  } catch (error) {
-      if (error.response) {
-          // Handle error
-      }
-      setTimeout(() => {
-          setErrors({});
-      }, 3000);
-  }
+    // Préparer les données à envoyer sous forme de JSON
+    const requestData = {
+        type_chambre: formData.type_chambre,
+        num_chambre: formData.num_chambre,
+        etage_id: formData.etage || selectedEtage,
+        nb_lit: formData.nb_lit,
+        nb_salle: formData.nb_salle,
+        climat: formData.climat,
+        wifi: formData.wifi,
+        vue_id: formData.vue || selectedVue
+    };
+
+    console.log("Données envoyées :", requestData);
+    console.log("Chambre en édition :", editingChambre);
+
+    try {
+        if (editingChambre) {
+            // Mise à jour (PUT)
+            const response = await axios.put(
+                `http://localhost:8000/api/chambres/${editingChambre.id}`, 
+                requestData, 
+                { headers: { "Content-Type": "application/json" } }
+            );
+
+            if (response.status === 200) {
+                fetchChambres();  // Rafraîchir la liste
+                Swal.fire({
+                    icon: "success",
+                    title: "Succès!",
+                    text: "Chambre modifiée avec succès.",
+                });
+            }
+        } else {
+            // Ajout (POST)
+            const response = await axios.post(
+                "http://localhost:8000/api/chambres", 
+                requestData, 
+                { headers: { "Content-Type": "application/json" } }
+            );
+
+            if (response.status === 201) {
+                fetchChambres();  // Rafraîchir la liste
+                Swal.fire({
+                    icon: "success",
+                    title: "Succès!",
+                    text: "Chambre ajoutée avec succès.",
+                });
+            }
+        }
+
+        // Réinitialiser le formulaire
+        setFormData({
+            type_chambre: "",
+            num_chambre: "",
+            etage: "",
+            nb_lit: "",
+            nb_salle: "",
+            climat: "",
+            wifi: "",
+            vue: "",
+        });
+        setErrors({});
+        setEditingChambre(null);
+        closeForm();
+    } catch (error) {
+        if (error.response) {
+            Swal.fire({
+                icon: "error",
+                title: "Erreur!",
+                text: error.response.data.message || "Une erreur s'est produite.",
+            });
+        } else {
+            console.error("Erreur API:", error);
+        }
+
+        setTimeout(() => {
+            setErrors({});
+        }, 3000);
+    }
 };
+
+  
+  
 
 
 // Update deletion handler to use chambre.id instead of num_chambre
@@ -1307,8 +1313,8 @@ const columns = [
   { key: "vue", label: "Vue", render: (item) => item.vue?.vue || '' },
   { key: "nb_lit", label: "Nombre de lit" },
   { key: "nb_salle", label: "Nombre de Salle" },
-  { key: "climat", label: "Climat", render: (item) => item.climat ? "Oui" : "Non" },
-  { key: "wifi", label: "Wifi", render: (item) => item.wifi ? "Oui" : "Non" },
+  { key: "climat", label: "Climat", render: (item) => item.climat=='oui' ? "Oui" : "Nom" },
+  { key: "wifi", label: "Wifi", render: (item) => item.wifi=='oui' ? "Oui" : "Nom" },
 ];
 
   return (

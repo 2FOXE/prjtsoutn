@@ -141,8 +141,8 @@ class ClientParticulierController extends Controller
                 $client = ClientParticulier::create($validatedData);
 
                 $validatedDataEnfant = $request->validate([
-                    'enfantPrenom' => 'required|string',
-                    'enfantAge' => 'integer|required'
+                    'enfantPrenom' => 'nullable|string',
+                    'enfantAge' => 'integer|nullable'
                 ]);
                 if ($validatedDataEnfant["enfantPrenom"] || $validatedDataEnfant["enfantAge"])
                     Enfant::create([

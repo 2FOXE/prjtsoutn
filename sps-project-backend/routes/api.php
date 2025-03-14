@@ -45,11 +45,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EtatChambreController;
 use App\Http\Controllers\MaintenanceTypeController;
-
+use App\Http\Controllers\ReclamationChambreController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::apiResource('reclamations_chambre',ReclamationChambreController::class);
+
+
+
+
 
 //groups routes
 Route::get('/groups', [GroupController::class, 'index']);

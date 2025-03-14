@@ -449,106 +449,64 @@ const [villeFilter, setVilleFilter] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // console.log("Formulaire soumis");
+  
     if (!validateForm()) {
-       // console.log("Formulaire invalide");
       return;
     }
+  
     console.log("Formulaire validé");
+  
     const url = editingClient
       ? `http://localhost:8000/api/clients_particulier/${editingClient.id}`
       : "http://localhost:8000/api/clients_particulier";
-      
-    let requestData;
-    
-
+  
+    const requestData = {
+      CodeClient: formData.CodeClient,
+      name: formData.name,
+      prenom: formData.prenom,
+      cin: formData.cin,
+      civilite: formData.civilite,
+      nationalite: formData.nationalite,
+      abreviation: formData.abreviation,
+      categorie: formData.categorie,
+      adresse: formData.adresse,
+      tele: formData.tele,
+      ville: formData.ville,
+      zone_id: formData.zone_id,
+      region_id: formData.region_id,
+      code_postal: formData.code_postal,
+      secteur_id: formData.secteur_id || selectedCategory,
+      mod_id: formData.mod_id,
+      agent_id: formData.agent_id,
+      date_debut: formData.date_debut,
+      date_fin: formData.date_fin,
+      seince: formData.seince,
+      montant_plafond: formData.montant_plafond,
+      enfantPrenom: selectedProductsData?.prenom || "",
+      enfantAge: selectedProductsData?.age || "",
+    };
+  
     if (editingClient) {
-      requestData = {
-        _method: "put",
-        CodeClient: formData.CodeClient,
-        name: formData.name,
-        prenom: formData.prenom,
-        cin: formData.cin,
-        logoC: formData.logoC,
-        civilite: formData.civilite,
-        nationalite: formData.nationalite,
-        abreviation: formData.abreviation,
-        categorie: formData.categorie,
-        adresse: formData.adresse,
-        tele: formData.tele,
-        ville: formData.ville,
-        zone_id: formData.zone_id,
-        region_id: formData.region_id,
-        agent_id: formData.agent_id,
-        secteur_id: formData.secteur_id,
-        code_postal: formData.code_postal,
-        montant_plafond: formData.montant_plafond,
-        seince: formData.seince,
-        mod_id: formData.mod_id,
-        enfantPrenom: selectedProductsData.prenom || "",
-        enfantAge: selectedProductsData.age || ""
-      };
-    } else {
-      const formDatad = new FormData();
-      formDatad.append("CodeClient", formData.CodeClient);
-      formDatad.append("name", formData.name);
-      formDatad.append("prenom", formData.prenom);
-      formDatad.append("cin", formData.cin);
-      formDatad.append("civilite", formData.civilite);
-      formDatad.append("nationalite", formData.nationalite);
-      formDatad.append("abreviation", formData.abreviation);
-      formDatad.append("categorie", formData.categorie);
-      formDatad.append("adresse", formData.adresse);
-      formDatad.append("tele", formData.tele);
-      formDatad.append("ville", formData.ville);
-      formDatad.append("zone_id", formData.zone_id);
-      formDatad.append("region_id", formData.region_id);
-      formDatad.append("code_postal", formData.code_postal);
-      
-      formDatad.append("secteur_id", formData.secteur_id || selectedCategory);
-      formDatad.append("mod_id", formData.mod_id);
-      formDatad.append("agent_id", formData.agent_id);
-      formDatad.append("date_debut", formData.date_debut);
-      formDatad.append("date_fin", formData.date_fin);
-      formDatad.append("seince", formData.seince);
-      formDatad.append("montant_plafond", formData.montant_plafond);
-      if (formData.logoC) {
-        formDatad.append("logoC", formData.logoC);
-      }
-      if (selectedProductsData && selectedProductsData.length > 0) {
-        selectedProductsData.forEach((enfant) => {
-          formDatad.append("enfantPrenom", enfant.prenom);
-          formDatad.append("enfantAge", enfant.age);
-        });
-      } else {
-        formDatad.append("enfantPrenom", ""); // ou null si nécessaire
-        formDatad.append("enfantAge", "");   // ou null si nécessaire 
-      }
-
-      requestData = formDatad;
+      requestData._method = "put";
     }
-
+  
     try {
       const response = await axios.post(url, requestData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
       });
-
+  
       console.log("Réponse reçue : ", response);
-
+  
       if (response.status === 200 || response.status === 201) {
         fetchClients();
-        const successMessage = `Client ${
-          editingClient ? "modifié" : "ajouté"
-        } avec succès.`;
-
         Swal.fire({
           icon: "success",
           title: "Succès!",
-          text: successMessage,
+          text: `Client ${editingClient ? "modifié" : "ajouté"} avec succès.`,
         });
-        
+  
         setSelectedProductsData([]);
         setSelectedProductsDataRep([]);
         setFormData({
@@ -576,61 +534,23 @@ const [villeFilter, setVilleFilter] = useState('');
           seince: "",
           montant_plafond: "",
         });
-        setErrors({
-          CodeClient: "",
-          name: "",
-          prenom: "",
-          cin: "",
-          civilite: "",
-          nationalite: "",
-          abreviation: "",
-          adresse: "",
-          categorie: "",
-          tele: "",
-          ville: "",
-          zone_id: "",
-          region_id: "",
-          code_postal: "",
-        });
+        setErrors({});
         setEditingClient(null);
         closeForm();
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout du client:", error);
-      if (error.response && error.response.data) {
-      console.log("Détails de l'erreur : ", error.response.data.errors);
-      setErrors(error.response?.data?.errors || {});
-      
-      setTimeout(() => {
-        setErrors({
-          CodeClient: error.response.data?.errors?.CodeClient,
-          name: error.response.data?.errors?.name,
-          prenom: error.response.data?.errors?.prenom,
-          cin: error.response.data?.errors?.cin,
-          civilite: error.response.data?.errors?.civilite,
-          nationalite: error.response.data?.errors?.nationalite,
-          abreviation: error.response.data?.errors?.abreviation,
-          adresse: error.response.data?.errors?.adresse,
-          tele: error.response.data?.errors?.tele,
-          categorie: error.response.data?.errors?.categorie,
-          ville: error.response.data?.errors?.ville,
-          zone_id: error.response.data?.errors?.zone_id,
-          region_id: error.response.data?.errors?.region_id,
-          code_postal: error.response.data?.errors?.code_postal,
-          logoC: error.response.data?.errors?.logoC,
-          secteur_id: error.response.data?.errors?.secteur_id,
-          agent_id: error.response.data?.errors?.agent_id,
-          id_agent: error.response.data?.errors?.id_agent,
-          date_debut: error.response.data?.errors?.date_debut,
-          date_fin: error.response.data?.errors?.date_fin,
-          mod_id: error.response.data?.errors?.mod_id,
-          seince: error.response.data?.errors?.seince,
-          montant_plafond: error.response.data?.errors?.montant_plafond,
-        });
-      }, 3000);
+      if (error.response?.data?.errors) {
+        console.log("Détails de l'erreur : ", error.response.data.errors);
+        setErrors(error.response.data.errors);
+  
+        setTimeout(() => {
+          setErrors({});
+        }, 3000);
+      }
     }
   };
-};
+  
 
 
   //------------------------- CLIENT FORM---------------------//
@@ -1840,6 +1760,8 @@ const handleCategoryFilterChange = (catId) => {
 useEffect(() => {
 
 },[])
+
+
   return (
     <ThemeProvider theme={createTheme()}>
       <Box sx={{...dynamicStyles}}>
@@ -2900,6 +2822,8 @@ Region
     </thead>
     <tbody>
       {selectedProductsData?.map((productData, index) => (
+
+        
         <tr key={index.id}>
           <td style={{ backgroundColor: 'white', width: '20%' }}>
             <Form.Control
@@ -4070,16 +3994,16 @@ Region
                     className="form-control-sm"
                   />
                 </Form.Group> */}
-                <div style={{ marginLeft: '10px' }}>
+                <div style={{ marginLeft: '0px' }}>
                   <a href="#" onClick={handleAddEmptyRow}>
                     <Button className="btn btn-sm mb-2" variant="primary" >
         <FontAwesomeIcon icon={faPlus} />
       </Button>
-      <span style={{ margin: "0 8px" }}></span>
+      <span style={{ margin: "0 30px" }}></span>
 
       <strong style={{
-        color:'black'
-      } } >Ajouter Enfants</strong>
+        color:'red'
+      } } >Ajouter Enfants </strong>
                   </a>
       
     </div>
@@ -4246,7 +4170,7 @@ Region
                   
   <Fab
     variant="extended"
-    className="btn-sm Fab mb-2 mx-2"
+    className="btn-sm Fab mb-8 mx-2"
     type="submit"
   >
     Valider

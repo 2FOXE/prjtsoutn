@@ -24,6 +24,14 @@ class  Reclamation extends Model
         return $this->hasMany(Historique::class, 'reclamation_id');
     }
 
+
+    //  relation de reclamation chambres 
+    public  function reclamationsChambre(){
+        return  $this->hasMany(ReclamationChambre::class);
+    }
+
+
+
     protected static function boot()
     {
         parent::boot();
@@ -48,5 +56,8 @@ class  Reclamation extends Model
                 Log::info("📌 Historique ajouté pour la réclamation ID: {$reclamation->id} | Suivi: {$reclamation->suivi}");
             }
         });
+
+
     }
+    
 }

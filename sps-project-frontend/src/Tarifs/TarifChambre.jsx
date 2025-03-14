@@ -59,7 +59,9 @@ const TarifChambre = () => {
     nb_lit: "",
     nb_salle: "",
     commentaire: "",
-    lit_supp: ""
+    lit_supp: "",
+    nom:"",
+    capacite:""
   });
   const [editingTypeChambre, setEditingTypeChambre] = useState({})
   const [editingDesignation, setEditingDesignation] = useState({})
@@ -117,7 +119,6 @@ const [typesChambre, setTypesChambre] = useState([]);
     type_chambre: "", 
     nb_salle: "",		
     nb_lit: "",
-    nb_litAdd: "",
     commentaire: "",
   });
   const [tarifChambreErrors, setTarifChambreErrors] = useState({
@@ -317,7 +318,7 @@ console.log('data tarif chambresGGGGGGGGGGGGGGGGGGGGGGGGG',data);
       newTypeErrors.code = newTypeChambre.code === "" || typesCodes.some((chambre) => sanitizeInput(chambre.code) === sanitizeInput(newTypeChambre.code)) 
       && sanitizeInput(newTypeChambre.code) != sanitizeInput(editingTypeChambre.code);
       newTypeErrors.nb_lit = newTypeChambre.nb_lit === "";
-      newTypeErrors.nb_litAdd = newTypeChambre.nb_lit === "";
+      newTypeErrors.nb_lit = newTypeChambre.nb_lit === "";
       newTypeErrors.nb_salle = newTypeChambre.nb_salle === "";
       newTypeErrors.commentaire = newTypeChambre.commentaire === "";
       newTypeErrors.type_chambre = newTypeChambre.type_chambre === "" || typesCodes.some((chambre) => sanitizeInput(chambre.type_chambre) === sanitizeInput(newTypeChambre.type_chambre))
@@ -870,7 +871,7 @@ const handleAddTypeChambre = async () => {
   setHasSubmittedTypeChambre(true); // Active la validation uniquement après soumission
 
   // Vérification si un champ est vide
-  if (!newTypeChambre.code || !newTypeChambre.type_chambre || !newTypeChambre.nb_lit || !newTypeChambre.nb_salle) {
+  if (!newTypeChambre.code || !newTypeChambre.type_chambre || !newTypeChambre.nb_lit || !newTypeChambre.nb_salle || !newTypeChambre.nom ||!newTypeChambre.capacite ) {
     Swal.fire({
       icon: "error",
       title: "Erreur",
@@ -886,6 +887,8 @@ const handleAddTypeChambre = async () => {
     formData.append("nb_lit", newTypeChambre.nb_lit);
     formData.append("nb_salle", newTypeChambre.nb_salle);
     formData.append("commentaire", newTypeChambre.commentaire);
+    formData.append("nom", newTypeChambre.nom);
+    formData.append("capacite", newTypeChambre.capacite);
 
     const response = await axios.post("http://localhost:8000/api/types-chambre", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -907,6 +910,9 @@ const handleAddTypeChambre = async () => {
         nb_lit: "",
         nb_salle: "",
         commentaire: "",
+         nom:"",
+        capacite:""
+
       });
       setHasSubmittedTypeChambre(false); // Réinitialiser l'état de validation
     }
@@ -1234,7 +1240,9 @@ const DisplayAddTypeChambre = () => {
     type_chambre: "",
     nb_salle: "",
     nb_lit: "",
-    commentaire: ""
+    commentaire: "",
+    nom:"",
+    capacite:""
   })
   setErrors({})
 }
@@ -1553,8 +1561,8 @@ const sanitizeInput = (val) => {
                 placeholder="Nombre de Lit"
                 name="nb_lit"
                 min="0"
-                // isInvalid={typeErrors.nb_litAdd}
-                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.nb_litAdd}
+                // isInvalid={typeErrors.nb_lit}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.nb_lit}
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nb_lit: e.target.value })}
               />
             </Form.Group>
@@ -1582,6 +1590,31 @@ const sanitizeInput = (val) => {
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, commentaire: e.target.value })}
               />
             </Form.Group>
+            <Form.Group>
+              <Form.Label>nom</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="nom"
+                name="nom"
+            
+                // isInvalid={typeErrors.nb_lit}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.nom}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nom: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>capacite</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="capacite"
+                name="capacite"
+            
+                // isInvalid={typeErrors.nb_lit}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.capacite}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, capacite: e.target.value })}
+              />
+            </Form.Group>
+           
       </Form>
             
             <Form.Group className="mt-3">
@@ -1861,6 +1894,30 @@ const sanitizeInput = (val) => {
                 isInvalid={typeErrors.commentaire}
                 value={newTypeChambre.commentaire}
                 onChange={(e) => setNewTypeChambre({ ...newTypeChambre, commentaire: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>nom</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="nom"
+                name="nom"
+            
+                // isInvalid={typeErrors.nb_lit}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.nom}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, nom: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>capacite</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="capacite"
+                name="capacite"
+            
+                // isInvalid={typeErrors.nb_lit}
+                isInvalid={hasSubmittedTypeChambre && !newTypeChambre.capacite}
+                onChange={(e) => setNewTypeChambre({ ...newTypeChambre, capacite: e.target.value })}
               />
             </Form.Group>
         </Form>

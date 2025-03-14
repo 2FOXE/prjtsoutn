@@ -10,7 +10,7 @@ class Chambre extends Model
     use HasFactory;
 
     protected $table = 'chambres';
-    protected $primaryKey = 'num_chambre';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'num_chambre',
@@ -22,6 +22,13 @@ class Chambre extends Model
         'vue_id',  // Foreign key to the Vue model
         'etage_id',
     ];
+
+
+    //  relation de reclamation chambres 
+    public  function reclamationsChambre(){
+        return  $this->hasMany(ReclamationChambre::class);
+    }
+
 
     /**
      * Define the relationship to the `TypeChambre` model.
@@ -72,9 +79,9 @@ class Chambre extends Model
         return $this->hasMany(EtatChambre::class, 'num_chambre', 'num_chambre');
     }
 
-    public function reservations()
-{
-    return $this->belongsToMany(Reservation::class, 'details_reservation');
-}
+            public function reservations()
+        {
+            return $this->belongsToMany(Reservation::class, 'details_reservation');
+        }
 
 }
