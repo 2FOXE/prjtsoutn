@@ -52,7 +52,7 @@ class ReservationController extends Controller
                 'reservations' => $transformedReservations
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error fetching reservations: ' . $e->getMessage());
+            Log::error('Error fetching reservations: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Error fetching reservations',

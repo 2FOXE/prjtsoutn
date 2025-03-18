@@ -130,6 +130,7 @@ const Navigation = () => {
   const [client, setClient] = useState(false);
   const [tarif, setTarif] = useState(false);
   const [chambres, setChambres] = useState(false); // New state for chambres submenu
+  const [salleConference, setSalleConference] = useState(false); // New state for salle confrence submenu
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -148,6 +149,8 @@ const Navigation = () => {
       setTarif(!tarif);
     } else if (menu === 'chambres') {
       setChambres(!chambres);
+    }else if (menu === 'salles conference') {
+      setSalleConference(!salleConference);
     }
   };
 
@@ -603,6 +606,90 @@ const Navigation = () => {
                 />
               )}
             </StyledMenuItem>
+              {/* salle confernce Menu - Modified to be a dropdown */}
+              <StyledMenuItem
+              button
+              onClick={() => toggleSubmenu('salles conference')}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <FaFileInvoiceDollar style={{ color: 'white', fontSize: '20px' }} />
+              </ListItemIcon>
+              {open && (
+                <>
+                  <ListItemText 
+                    primary="salles conference"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontWeight: salleConference ? 'bold' : 'normal',
+                        fontSize: '15px'
+                      } 
+                    }}
+                  />
+                  {salleConference ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
+                </>
+              )}
+            </StyledMenuItem>
+
+            {/* salle confernce Submenu */}
+            <Collapse in={salleConference && open} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+              <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/SalleConferenceList"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Liste des Chambres"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+                {/* <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/chambres-disponibles"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Chambres Disponibles"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/etat-chambre"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Etat Chambre"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem> */}
+
+              </List>
+            </Collapse>
 
           </List>
           

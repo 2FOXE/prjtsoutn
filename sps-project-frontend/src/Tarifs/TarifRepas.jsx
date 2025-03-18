@@ -993,7 +993,7 @@ const handleShowTarifRepas = () => {
 
 
 
-    <div>
+    <div  className="">
       <SearchWithExportCarousel
         onSearch={handleSearch}
         exportToExcel={exportToExcel}

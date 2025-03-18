@@ -272,7 +272,6 @@ const ReclamationPage = () => {
     selectedDate,
   ]);
 
-  console.log("dadadadddddddddddddddddddddddddddddddddd", selectedChambresData);
 
   const handleEditDepartment = async () => {
     try {

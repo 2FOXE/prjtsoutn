@@ -22,6 +22,7 @@ const ChambresDisponibles = lazy(() => import('./Chambre/ChambresDisponibles.jsx
 const ReclamationPage = lazy(() => import('./reclamation/ReclamationPage'));
 const EtatChambre = lazy(() => import('./Chambre/etatChambre'));
 const Reservation = lazy(() => import('./Reservation/Reservation'));
+const SalleConferenceList = lazy(() => import('./salles Conference/SalleConferenceList.jsx'));
 
 
 
@@ -54,6 +55,7 @@ const App = () => {
         <Route path="/chambres-disponibles" element={<ChambresDisponibles />} />
         <Route path="/etat-chambre" element={<EtatChambre />} />
         <Route path="/reservations" element={<Reservation />} />
+        <Route path="/SalleConferenceList" element={<SalleConferenceList />} />
       </Routes>
       </Suspense>
       </OpenProvider>

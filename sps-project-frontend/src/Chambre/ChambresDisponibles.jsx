@@ -115,7 +115,7 @@ const ChambresDisponibles = () => {
 
   useEffect(() => {
     setFilteredChambres(
-      chambres.filter(chambre => {
+      types.filter(chambre => {
         const numChambre = chambre.num_chambre ? String(chambre.num_chambre).toLowerCase() : "";
         const typeChambre = chambre.type_chambre ? String(chambre.type_chambre).toLowerCase() : "";
 
@@ -206,6 +206,7 @@ const ChambresDisponibles = () => {
     });
     doc.save('chambres_disponibles_table.pdf');
   };
+  console.log(types)
 
   return (
     <ThemeProvider theme={createTheme()}>
@@ -251,7 +252,7 @@ const ChambresDisponibles = () => {
               <RangePicker onChange={handleDateChange} />
             </div>
             {error && <div className="alert alert-danger">{error}</div>}
-            <div className="mb-3">
+            <div className="mb-4">
               <ExpandRTable
                 columns={[
                   { key: 'num_chambre', label: 'Num Chambre', render: (item) => item.num_chambre },

@@ -46,12 +46,16 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EtatChambreController;
 use App\Http\Controllers\MaintenanceTypeController;
 use App\Http\Controllers\ReclamationChambreController;
+use App\Http\Controllers\SalleConferenceController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-
+// reclamation chambre route
 Route::apiResource('reclamations_chambre',ReclamationChambreController::class);
+
+// salle conference route
+Route::apiResource('salles_conference',SalleConferenceController::class);
 
 
 
