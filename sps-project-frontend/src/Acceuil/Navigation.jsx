@@ -130,7 +130,7 @@ const Navigation = () => {
   const [client, setClient] = useState(false);
   const [tarif, setTarif] = useState(false);
   const [chambres, setChambres] = useState(false); // New state for chambres submenu
-  const [salleConference, setSalleConference] = useState(false); // New state for salle confrence submenu
+  const [reserverBooking, setReserverBooking] = useState(false); // New state for salle confrence submenu
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -150,7 +150,7 @@ const Navigation = () => {
     } else if (menu === 'chambres') {
       setChambres(!chambres);
     }else if (menu === 'salles conference') {
-      setSalleConference(!salleConference);
+      setReserverBooking(!reserverBooking);
     }
   };
 
@@ -617,26 +617,26 @@ const Navigation = () => {
               {open && (
                 <>
                   <ListItemText 
-                    primary="salles conference"
+                    primary="Reserve Booking"
                     primaryTypographyProps={{ 
                       style: { 
-                        fontWeight: salleConference ? 'bold' : 'normal',
+                        fontWeight: reserverBooking ? 'bold' : 'normal',
                         fontSize: '15px'
                       } 
                     }}
                   />
-                  {salleConference ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
+                  {reserverBooking ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
                 </>
               )}
             </StyledMenuItem>
 
             {/* salle confernce Submenu */}
-            <Collapse in={salleConference && open} timeout="auto" unmountOnExit>
+            <Collapse in={reserverBooking && open} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
               <StyledMenuItem
                   button
                   component={Link}
-                  to="/SalleConferenceList"
+                  to="/reserver_booking"
                   className="submenu-item"
                 >
                   <ListItemIcon sx={{ minWidth: 40 }}>

@@ -16,6 +16,7 @@ class TarifChambreDetailSeeder extends Seeder
         DB::table('tarif_chambre_detail')->insert([
             [
                 'code' => 'Code 1',
+                'chambre_id' => 1,
                 'tarif_chambre' => 1, // Foreign key to tarif_chambre_detail
                 'type_chambre' => 1,   // Foreign key to types_chambre
                 'single' => 100.00,
@@ -27,6 +28,7 @@ class TarifChambreDetailSeeder extends Seeder
             ],
             [
                 'code' => 'Code 2',
+                'chambre_id' => 2,
                 'tarif_chambre' => 2,
                 'type_chambre' => 2,
                 'single' => 120.00,
@@ -38,6 +40,7 @@ class TarifChambreDetailSeeder extends Seeder
             ],
             [
                 'code' => 'Code 3',
+                'chambre_id' => 3,
                 'tarif_chambre' => 3,
                 'type_chambre' => 3,
                 'single' => 140.00,

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use Illuminate\Http\Request;
-use App\Models\ClientGrp;
+use App\Models\CliengGrp;
+use App\Models\Clientgrp;
 
 class ClientGrpController extends Controller
 {
@@ -55,7 +57,7 @@ class ClientGrpController extends Controller
                 return response()->json(['error' => 'group_id is required'], 400);
             }
     
-            $clients = ClientGrp::where('group_id', $groupId)->get();
+            $clients = Clientgrp::where('group_id', $groupId)->get();
     
             return response()->json($clients);
         } catch (\Exception $e) {

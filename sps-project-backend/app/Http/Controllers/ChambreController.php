@@ -5,21 +5,24 @@ use App\Models\Chambre;
 use App\Models\TypeChambre;
 use App\Models\Vue;
 use App\Models\Etage;
+use App\Models\TarifChambreDetail;
 use Illuminate\Http\Request;
 
 class ChambreController extends Controller
 {
     public function getAll()
     {
-        $chambres = Chambre::with(['typeChambre', 'vue', 'etage'])->get();
+        $chambres = Chambre::with(['typeChambre', 'vue', 'etage','tarifChambreDetail','demande_reservation'])->get();
         $types = TypeChambre::all();
         $vues = Vue::all();
         $etages = Etage::all();
+        $tarifChambreDetail = TarifChambreDetail::all();
         return response()->json([
             'chambres' => $chambres,
             'types' => $types,
             'vues' => $vues,
-            'etages' => $etages
+            'etages' => $etages,
+            'tarifChambreDetail' => $tarifChambreDetail,
         ]);
     }
     

@@ -6,6 +6,7 @@ import tailwindcss from "@tailwindcss/vite"
 
 
 
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -16,9 +17,10 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': '/src',  // Cela permet de résoudre '@' vers le dossier 'src'
+      "@": path.resolve(__dirname, "./src"),
     },
   },
+  
  
   optimizeDeps: {
     exclude: ['chunk-XWHUCNNG']

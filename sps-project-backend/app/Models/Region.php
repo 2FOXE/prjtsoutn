@@ -17,4 +17,8 @@ class Region extends Model
     public function siteclients() {
         return $this->hasMany(SiteClient::class);
     }
+    public function ville() {
+        return $this->hasMany(Ville::class);
+    }
+
 }

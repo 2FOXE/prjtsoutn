@@ -14,7 +14,9 @@ class ModePaimantController extends Controller
     {
         // Récupérer tous les modes de paiement
         $modes = ModePaimant::all();
-        return response()->json($modes);
+        return response()->json([
+            'modes'=>$modes,
+        ]);
     }
 
     /**

@@ -34,12 +34,12 @@ class DatabaseSeeder extends Seeder
             TarifRepasDetailSeeder::class,
             TarifReductionDetailSeeder::class,
             TypeChambreSeeder::class,
-            TarifChambreDetailSeeder::class,
             TarifActuelSeeder::class,
             ClientParticulierSeeder::class,
             VueSeeder::class,
             EtageSeeder::class,
-            ChambreSeeder::class
+            ChambreSeeder::class,
+            TarifChambreDetailSeeder::class,
         ]);
     }
 }

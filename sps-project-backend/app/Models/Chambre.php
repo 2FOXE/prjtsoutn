@@ -44,6 +44,12 @@ class Chambre extends Model
     public function type_chambre() {
         return $this->belongsTo(TypeChambre::class, 'type_chambre_id');
     }
+    public function tarifChambreDetail() {
+        return $this->hasOne(TarifChambreDetail::class, 'chambre_id', 'id');
+    }
+    public function demande_reservation() {
+        return $this->hasMany(DemandeReservation::class);
+    }
 
 
     /**

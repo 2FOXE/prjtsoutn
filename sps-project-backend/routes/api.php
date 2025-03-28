@@ -43,6 +43,7 @@ use App\Http\Controllers\ReclamationController;
 use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DemandeReservationController;
 use App\Http\Controllers\EtatChambreController;
 use App\Http\Controllers\MaintenanceTypeController;
 use App\Http\Controllers\ReclamationChambreController;
@@ -56,6 +57,11 @@ Route::apiResource('reclamations_chambre',ReclamationChambreController::class);
 
 // salle conference route
 Route::apiResource('salles_conference',SalleConferenceController::class);
+
+
+Route::apiResource('demandes_reservation',DemandeReservationController::class);
+
+Route::get('/login',[AuthController::class,'index']);
 
 
 

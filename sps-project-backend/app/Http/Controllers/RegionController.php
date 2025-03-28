@@ -15,11 +15,12 @@ class RegionController extends Controller
      */
     public function index()
     {
-            $region = Region::all();
+            $region = Region::with(['ville'])->get();
             $count = Region::count();
 
             return response()->json([
-                'message' => 'Liste des Regions récupérée avec succès', 'Region' => $region,
+                'message' => 'Liste des Regions récupérée avec succès',
+                 'Region' => $region,
                 'count' => $count
             ], 200);
     }

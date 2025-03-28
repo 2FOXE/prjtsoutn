@@ -10,6 +10,7 @@ class TarifChambreDetail extends Model
 {
     protected $fillable = [
         'code',
+        'chambre_id',
         "tarif_chambre",
         "type_chambre",
         "single",
@@ -27,6 +28,9 @@ class TarifChambreDetail extends Model
     }
     public function type_chambre() {
         return $this->belongsTo(TypeChambre::class, "type_chambre");
+    }
+    public function chambre() {
+        return $this->belongsTo(chambre::class);
     }
 
     protected $table = "tarif_chambre_detail";

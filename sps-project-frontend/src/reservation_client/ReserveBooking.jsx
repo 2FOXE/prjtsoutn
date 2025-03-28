@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -9,13 +9,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import  hero_image from "../../public/banner_hero.jpg"
+
 
 
 
 // import { Button } from "@/components/ui/button"
 
-const SalleConferenceList = () => {
+const ReserveBooking = () => {
   const { open } = useOpen();
     const { dynamicStyles } = useOpen();
     const [date, setDate] = useState(new Date())  // Pas besoin de spécifier "Date | undefined", on initialise avec la date actuelle
@@ -26,28 +26,21 @@ const SalleConferenceList = () => {
   return (
     <ThemeProvider theme={createTheme()}>
       <Box sx={{...dynamicStyles}}>
-        <Box component="main" sx={{   mt:5,  }}>
+        <Box component="main"  x sx={{   mt:5,  }}>
 
-         {/* <Button variant="default">Destructive</Button> */}
-         <div className="mb-8">
+    
+        <div className="mb-8    ">
         {/* Composant Card pour le conteneur principal */}
-        <Card className="overflow-hidden border-0 shadow-xl">
+        <Card  className=" bg-image border-0 shadow-xl">
           <div className="">
             {/* Image d'arrière-plan avec Next.js Image */}
-            <div className=" w-full">
-              <img
-                src={hero_image}
-                alt="Luxury hotel"
-                fill
-                className="object-cover brightness-[0.85] max-h-90 w-full"
-                priority
-              />
+            
               {/* Overlay gradient */}
               {/* <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div> */}
-            </div>
+            
 
             {/* Contenu du héros */}
-            <div className="absolute inset-0 flex flex-col justify-center md:px-8 lg:px-14">
+            <div className=" flex mt-8 py-4 flex-col justify-center md:px-8 lg:px-14">
               <div className="">
                 {/* Badge pour mise en avant */}
                 <Badge className="mb-2 bg-gray-800 cursor-pointer hover:bg-gray-900   text-white  border-0 px-3 py-1 text-sm">
@@ -94,13 +87,13 @@ const SalleConferenceList = () => {
           </div>
         </Card>
       </div>
-         
 
 
+  
         </Box>
       </Box>
     </ThemeProvider>
   );
 };
 
-export default SalleConferenceList;
+export default ReserveBooking;
