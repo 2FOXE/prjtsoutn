@@ -160,6 +160,11 @@ body.no-scroll {
 }
 
 @media screen and (max-width: 800px) {
+  .hidden-img {
+    display: none !important;
+  }
+}
+@media screen and (max-width: 800px) {
   .hidden-nav {
     display: none !important;
   }

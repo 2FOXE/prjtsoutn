@@ -39,7 +39,8 @@ class StoreDemandeReservationRequest extends FormRequest
             'demandes_speciales' => 'nullable|string',
             'paimant_id' => 'required|exists:mode_paimants,id',
             'region_id' => 'required|exists:regions,id',
-            'ville_id' => 'required|exists:villes,id'
+            'ville_id' => 'required|exists:villes,id',
+            'user_id' => 'exists:users,id',
         ];
     }
 }

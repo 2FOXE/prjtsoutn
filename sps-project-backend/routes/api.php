@@ -61,7 +61,10 @@ Route::apiResource('salles_conference',SalleConferenceController::class);
 
 Route::apiResource('demandes_reservation',DemandeReservationController::class);
 
-Route::get('/login',[AuthController::class,'index']);
+Route::post('/login',[AuthController::class,'login']);
+Route::post('/register',[AuthController::class,'register']);
+Route::get('/logout',[AuthController::class,'logout']);
+
 
 
 

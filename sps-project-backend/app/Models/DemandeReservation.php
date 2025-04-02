@@ -30,7 +30,8 @@ class DemandeReservation extends Model
         'ville_id',
         'region_id',
         'demandes_speciales',
-        'paimant_id'
+        'paimant_id',
+        'user_id',
 
 
     ];

@@ -21,7 +21,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useNavigate } from "react-router-dom";
 import ChambreDetaillReserveForm from "./ChambreDetaillReserveForm";
-import TicketPrix from "./Ticket/TicketPrix";
 import handleErrorTest from "./Toast/ErrorToast";
 import { FetchRegion } from "@/redux/actions/RegionAtion";
 import handleToastAccept from "./Toast/HandelToastAccept";

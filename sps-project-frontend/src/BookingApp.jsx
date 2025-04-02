@@ -3,6 +3,7 @@ import { Fragment, Suspense, lazy } from "react";
 import { CircularProgress } from "@mui/material";
 import NavBare from "./UserReservation/Layout/NavBare";
 import  LoginForm  from "./UserReservation/Auth/LoginForm";
+import RegisterForm from "./UserReservation/Auth/RegisterForm";
 
 const Test = lazy(() => import("./UserReservation/ChambreList"));
 const ReservationForm = lazy(() => import("./UserReservation/pages/ReservationForm"));
@@ -36,9 +37,9 @@ const BookingApp = () => {
     >
       <Routes>
         <Route path="/login"  element={<LoginForm/>}/>
+          <Route path="/register"  element={<RegisterForm/>}/>
         <Route  path="/" element={<NavBare/>}  >
         <Route index element={<Test />} />
-          {/* <Route path="/register"  element={<Register/>}/> */}
         <Route path="/reservation/" element={<ReservationForm />} />
         </Route>
       </Routes>

@@ -3,6 +3,7 @@ import { ChambreReducre } from "./Reducres/ChambreReducer";
 import  {RegionVilleReducer}  from "./Reducres/RegionVilleReducer";
 import { PaimantReducer } from "./Reducres/PaimantReducer";
 import { DemandeReserReducer } from "./Reducres/DemandeReserReducer";
+import { UserReducer } from "./Reducres/UserReducer";
 
 
 // Initial State
@@ -73,7 +74,8 @@ const rootReducer = combineReducers({
     Chambre:ChambreReducre,
     RegionVille:RegionVilleReducer,
     Paimant:PaimantReducer,
-    DemandeReser:DemandeReserReducer
+    DemandeReser:DemandeReserReducer,
+    User:UserReducer
 });
 
 export default rootReducer;
