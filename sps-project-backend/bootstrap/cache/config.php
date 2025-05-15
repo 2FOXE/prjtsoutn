@@ -161,8 +161,8 @@
       'file' => 
       array (
         'driver' => 'file',
-        'path' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\framework/cache/data',
-        'lock_path' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\framework/cache/data',
+        'path' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\framework/cache/data',
+        'lock_path' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\framework/cache/data',
       ),
       'memcached' => 
       array (
@@ -246,7 +246,7 @@
       array (
         'driver' => 'sqlite',
         'url' => NULL,
-        'database' => 'sps-project',
+        'database' => 'spsproject3',
         'prefix' => '',
         'foreign_key_constraints' => true,
         'busy_timeout' => NULL,
@@ -258,8 +258,8 @@
         'driver' => 'mysql',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'sps-project',
+        'port' => '3307',
+        'database' => 'spsproject3',
         'username' => 'root',
         'password' => '',
         'unix_socket' => '',
@@ -278,8 +278,8 @@
         'driver' => 'mariadb',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'sps-project',
+        'port' => '3307',
+        'database' => 'spsproject3',
         'username' => 'root',
         'password' => '',
         'unix_socket' => '',
@@ -298,8 +298,8 @@
         'driver' => 'pgsql',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'sps-project',
+        'port' => '3307',
+        'database' => 'spsproject3',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8',
@@ -313,8 +313,8 @@
         'driver' => 'sqlsrv',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'sps-project',
+        'port' => '3307',
+        'database' => 'spsproject3',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8',
@@ -363,14 +363,14 @@
       'local' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\app/private',
+        'root' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\app/private',
         'serve' => true,
         'throw' => false,
       ),
       'public' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\app/public',
+        'root' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\app/public',
         'url' => 'http://127.0.0.1:8000/storage',
         'visibility' => 'public',
         'throw' => false,
@@ -390,7 +390,7 @@
     ),
     'links' => 
     array (
-      'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\public\\storage' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\app/public',
+      'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\public\\storage' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\app/public',
     ),
   ),
   'image' => 
@@ -461,14 +461,14 @@
       'single' => 
       array (
         'driver' => 'single',
-        'path' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\logs/laravel.log',
+        'path' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'replace_placeholders' => true,
       ),
       'daily' => 
       array (
         'driver' => 'daily',
-        'path' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\logs/laravel.log',
+        'path' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'days' => 14,
         'replace_placeholders' => true,
@@ -533,7 +533,7 @@
       ),
       'emergency' => 
       array (
-        'path' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\logs/laravel.log',
+        'path' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\logs/laravel.log',
       ),
     ),
   ),
@@ -609,7 +609,7 @@
       'theme' => 'default',
       'paths' => 
       array (
-        0 => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\resources\\views/vendor/mail',
+        0 => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\resources\\views/vendor/mail',
       ),
     ),
   ),
@@ -725,7 +725,7 @@
     'lifetime' => '120',
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\framework/sessions',
+    'files' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\framework/sessions',
     'connection' => NULL,
     'table' => 'sessions',
     'store' => NULL,
@@ -823,9 +823,9 @@
   array (
     'paths' => 
     array (
-      0 => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\resources\\views',
+      0 => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\resources\\views',
     ),
-    'compiled' => 'C:\\Users\\pc\\Desktop\\full stack projects\\sps-project\\sps-project\\sps-project\\sps-project-backend\\storage\\framework\\views',
+    'compiled' => 'C:\\Users\\taous\\Desktop\\sps-proj\\sps-project-backend\\storage\\framework\\views',
   ),
   'tinker' => 
   array (

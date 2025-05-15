@@ -76,18 +76,19 @@ class SalleConferenceController extends Controller
     }
     
     
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        $salle_conference=SalleConference::find($id);
+        $salle_conference = SalleConference::find($id);
+    
         if (!$salle_conference) {
-            return response()->json([
-                'message' => "Salle non trouvée"
-            ], 404);
+            return response()->json(['message' => 'Salle non trouvée'], 404);
         }
+    
         $salle_conference->delete();
         Cache::forget("SalleConference_list");
-        return  response()->json([
-            "message"=>"salle conferenece supprimer avec succès"
-        ],200);
+    
+        return response()->json(['message' => 'Salle supprimée avec succès'], 200);
     }
-}
+    
+    }
+

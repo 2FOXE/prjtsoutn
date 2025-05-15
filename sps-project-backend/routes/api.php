@@ -48,6 +48,12 @@ use App\Http\Controllers\EtatChambreController;
 use App\Http\Controllers\MaintenanceTypeController;
 use App\Http\Controllers\ReclamationChambreController;
 use App\Http\Controllers\SalleConferenceController;
+use App\Http\Controllers\GestioTheatreController;
+use App\Http\Controllers\ReservEvenementController;
+
+// This single line replaces all the CRUD routes for 'reservations'.
+Route::apiResource('reservationss', ReservEvenementController::class);
+Route::apiResource('evenements',GestioTheatreController::class);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

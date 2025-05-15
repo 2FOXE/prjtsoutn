@@ -3,37 +3,28 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { Form, Button, Modal, Carousel } from "react-bootstrap";
 import Navigation from "../Acceuil/Navigation";
+import { highlightText } from '../utils/textUtils';
 import TablePagination from "@mui/material/TablePagination";
-import { highlightText } from "../utils/textUtils";
-// import PrintList from "./PrintList";
-// import ExportPdfButton from "./exportToPdf";
 import "jspdf-autotable";
 import Search from "../Acceuil/Search";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PeopleIcon from "@mui/icons-material/People";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import ExpandRTable from "../components/ExpandRTable";
+import Select from 'react-select';  
 import {
   faTrash,
   faFileExcel,
   faPlus,
-  faMinus,
-  faCircleInfo,
-  faSquarePlus,
   faEdit,
-  faList,
   faPrint,
   faFilePdf,
-  faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import * as XLSX from "xlsx";
 import "../style.css";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import { Checkbox, Fab, Toolbar } from "@mui/material";
-import { useOpen } from "../Acceuil/OpenProvider"; // Importer le hook personnalisé
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
+import { useOpen } from "../Acceuil/OpenProvider"; // 
 
 //------------------------- Tarifs Actuel ---------------------//
 const TarifsActuel = () => {

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('date_fin');
             $table->integer('duree');
             $table->integer('nombre_personnes');
-            $table->enum('status', ['en attende', 'confirmée', 'annulée'])->default('en attente');
+            $table->enum('status', ['en attende', 'confirmée', 'annulée']);
             $table->decimal('montant_total', 10, 2); // Prix total de la réservation
             $table->timestamps();
         });

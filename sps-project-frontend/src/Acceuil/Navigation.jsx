@@ -126,11 +126,12 @@ const LogoutButton = styled(ListItem)(({ theme }) => ({
 
 // Main Navigation component
 const Navigation = () => {
+  const [theatre, setTheatre] = useState(false); // État pour gérer le sous-menu Théâtre
   // State variables
   const [client, setClient] = useState(false);
   const [tarif, setTarif] = useState(false);
   const [chambres, setChambres] = useState(false); // New state for chambres submenu
-  const [reserverBooking, setReserverBooking] = useState(false); // New state for salle confrence submenu
+  const [salleConference, setSalleConference] = useState(false); // New state for salle confrence submenu
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -149,10 +150,13 @@ const Navigation = () => {
       setTarif(!tarif);
     } else if (menu === 'chambres') {
       setChambres(!chambres);
-    }else if (menu === 'salles conference') {
-      setReserverBooking(!reserverBooking);
+    } else if (menu === 'salles conference') {
+      setSalleConference(!salleConference);
+    } else if (menu === 'theatre') { // Nouvelle condition pour "Théâtre"
+      setTheatre(!theatre);
     }
   };
+  
 
   // Handle logout
   const handleLogoutClick = async () => {
@@ -606,6 +610,25 @@ const Navigation = () => {
                 />
               )}
             </StyledMenuItem>
+            <StyledMenuItem
+              button
+              component={Link}
+              to="/salleconference"
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <FaFileInvoiceDollar style={{ color: 'white', fontSize: '20px' }} />
+              </ListItemIcon>
+              {open && (
+                <ListItemText 
+                  primary="salle de conferrnce"
+                  primaryTypographyProps={{ 
+                    style: { 
+                      fontSize: '15px' 
+                    } 
+                  }}
+                />
+              )}
+            </StyledMenuItem>
               {/* salle confernce Menu - Modified to be a dropdown */}
               <StyledMenuItem
               button
@@ -614,36 +637,94 @@ const Navigation = () => {
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <FaFileInvoiceDollar style={{ color: 'white', fontSize: '20px' }} />
               </ListItemIcon>
+              
               {open && (
                 <>
                   <ListItemText 
-                    primary="Reserve Booking"
+                    primary="theatre"
                     primaryTypographyProps={{ 
                       style: { 
-                        fontWeight: reserverBooking ? 'bold' : 'normal',
+                        fontWeight: salleConference ? 'bold' : 'normal',
                         fontSize: '15px'
                       } 
                     }}
                   />
-                  {reserverBooking ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
+                  {salleConference ? <ChevronRightIcon sx={{ color: 'white' }} /> : <ChevronLeftIcon sx={{ color: 'white' }} />}
                 </>
               )}
             </StyledMenuItem>
 
             {/* salle confernce Submenu */}
-            <Collapse in={reserverBooking && open} timeout="auto" unmountOnExit>
+            <Collapse in={salleConference && open} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
               <StyledMenuItem
                   button
                   component={Link}
-                  to="/reserver_booking"
+                  to="/reservertheatre"
                   className="submenu-item"
                 >
                   <ListItemIcon sx={{ minWidth: 40 }}>
                     <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
                   </ListItemIcon>
                   <ListItemText 
-                    primary="Liste des Chambres"
+                    primary="reservationspectacles"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+                {/* <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/chambres-disponibles"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Chambres Disponibles"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem>
+                <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/etat-chambre"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Etat Chambre"
+                    primaryTypographyProps={{ 
+                      style: { 
+                        fontSize: '14px' 
+                      } 
+                    }}
+                  />
+                </StyledMenuItem> */}
+
+              </List>
+              <List component="div" disablePadding>
+              <StyledMenuItem
+                  button
+                  component={Link}
+                  to="/theatrelist"
+                  className="submenu-item"
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <FaFileInvoiceDollar style={{ color: 'white', fontSize: '18px' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="spectacles"
                     primaryTypographyProps={{ 
                       style: { 
                         fontSize: '14px' 
@@ -693,6 +774,7 @@ const Navigation = () => {
 
           </List>
           
+          
           {/* Spacer to push logout to bottom */}
           <Box sx={{ flexGrow: 1 }} />
           
@@ -702,6 +784,7 @@ const Navigation = () => {
             onClick={handleLogoutClick}
           >
             <ListItemIcon>
+                  
               <ExitToAppIcon style={{ color: "red" }} />
             </ListItemIcon>
             {open && (
@@ -715,9 +798,13 @@ const Navigation = () => {
                 }}
               />
             )}
+   
+
           </LogoutButton>
         </Drawer>
+        
       </Box>
+      
     </ThemeProvider>
   );
 };
