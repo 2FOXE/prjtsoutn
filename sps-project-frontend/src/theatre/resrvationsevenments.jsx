@@ -23,6 +23,7 @@ const AfficherReservations = () => {
   const [formData, setFormData] = useState({
     idclient: "",
     idSpectacle: "",
+    prix: "",
     systemedepaiment: "",
     nombredesbilletts: "",
     status: "",
@@ -115,6 +116,12 @@ const AfficherReservations = () => {
 
   // Handle adding or updating reservation
   const handleAddOrUpdateReservation = async () => {
+    // Validate required fields
+    if (!formData.idclient || !formData.idSpectacle || !formData.prix || !formData.systemedepaiment || !formData.nombredesbilletts || !formData.status) {
+      Swal.fire("Erreur!", "Veuillez remplir tous les champs obligatoires.", "error");
+      return;
+    }
+
     // Create a copy of the form data with mapped status
     const submissionData = {
       ...formData,
@@ -238,6 +245,7 @@ const AfficherReservations = () => {
     setFormData({
       idclient: "",
       idSpectacle: "",
+      prix: "",
       systemedepaiment: "",
       nombredesbilletts: "",
       status: "",
@@ -258,6 +266,7 @@ const AfficherReservations = () => {
     } : {
       idclient: "",
       idSpectacle: "",
+      prix: "",
       systemedepaiment: "",
       nombredesbilletts: "",
       status: "",
@@ -308,6 +317,7 @@ const AfficherReservations = () => {
   const columns = [
     { label: "ID Client", key: "idclient", minWidth: 100 },
     { label: "ID Spectacle", key: "idSpectacle", minWidth: 100 },
+    { label: "Prix", key: "prix", minWidth: 100 },
     { label: "Système de paiement", key: "systemedepaiment", minWidth: 150 },
     { label: "Nombre de billets", key: "nombredesbilletts", minWidth: 120 },
     { label: "Status", key: "status", minWidth: 100 },
@@ -442,6 +452,21 @@ const AfficherReservations = () => {
                         </option>
                       ))}
                     </Form.Control>
+                  </Col>
+                </Row>
+                <Row style={{ marginBottom: "10px" }}>
+                  <Col md={4}>
+                    <Form.Label style={{ fontWeight: "bold" }}>Prix</Form.Label>
+                  </Col>
+                  <Col md={8}>
+                    <Form.Control
+                      type="number"
+                      name="prix"
+                      value={formData.prix}
+                      onChange={handleInputChange}
+                      placeholder="Prix"
+                      required
+                    />
                   </Col>
                 </Row>
                 <Row style={{ marginBottom: "10px" }}>

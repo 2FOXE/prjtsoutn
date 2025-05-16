@@ -318,7 +318,7 @@ Route::middleware('auth:sanctum')->post('/chambres', [ChambreController::class, 
 
 
 
-
+Route::apiResource('reservations-evenements', ReservEvenementController::class);
 
 
 
