@@ -241,21 +241,37 @@ const fetchAvailableRooms = async () => {
       });
 
       if (response.data && response.data.rooms) {
-        setAvailableRooms(response.data.rooms);
+        // Set available rooms with proper data structure
+        const formattedRooms = response.data.rooms.map(room => ({
+          id: room.id,
+          num_chambre: room.num_chambre,
+          type_chambre: room.type_chambre || 'Unknown',
+          vue: room.vue || 'Unknown',
+          etage: room.etage || 'Unknown'
+        }));
+        
+        setAvailableRooms(formattedRooms);
 
-        // Extract unique values using the correct property names
-        const uniqueTypes = [...new Set(response.data.rooms.map(room => room.type_chambre))];
-        const uniqueEtages = [...new Set(response.data.rooms.map(room => room.etage))];
-        const uniqueVues = [...new Set(response.data.rooms.map(room => room.vue))];
+        // Extract unique values with fallback to 'Unknown'
+        const uniqueTypes = [...new Set(formattedRooms.map(room => room.type_chambre))];
+        const uniqueEtages = [...new Set(formattedRooms.map(room => room.etage))];
+        const uniqueVues = [...new Set(formattedRooms.map(room => room.vue))];
 
         setRoomTypes(uniqueTypes);
         setRoomEtages(uniqueEtages);
         setRoomVues(uniqueVues);
       } else {
         setAvailableRooms([]);
+        setRoomTypes([]);
+        setRoomEtages([]);
+        setRoomVues([]);
       }
     } catch (error) {
       console.error("Error fetching available rooms:", error);
+      setAvailableRooms([]);
+      setRoomTypes([]);
+      setRoomEtages([]);
+      setRoomVues([]);
     }
   }
 };
@@ -1164,8 +1180,8 @@ const chunkArray = (array, size) => {
         </tr>
       </thead>
       <tbody>
-        {selectedRooms.length > 0 ? (
-          selectedRooms.map((room, rowIndex) => (
+        {availableRooms.length > 0 ? (
+          availableRooms.map((room, rowIndex) => (
             <tr key={rowIndex}>
               <td>
                 <Form.Control

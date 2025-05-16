@@ -8,7 +8,7 @@ use Database\Seeders\TarifRepasSeeder;
 use Database\Seeders\TarifActuelSeeder;
 use Database\Seeders\TarifChambreSeeder;
 use Database\Seeders\TarifReductionSeeder;
-
+use Illuminate\Support\Facades\Hash;
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -17,7 +17,13 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        User::factory(1)->create();
+        User::factory(1)->create([
+            'prenom' => 'admin',
+            'nom' => 'admin',
+            'telephone' => '0600000000',
+            'email' => 'admin@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
         $this->call([
             RegionSeeder::class,
             ZoneSeeder::class,

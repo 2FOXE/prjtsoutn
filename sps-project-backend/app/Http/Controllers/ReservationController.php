@@ -9,6 +9,7 @@ use App\Models\Client;
 use App\Models\ClientParticulier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 
 class ReservationController extends Controller
@@ -73,6 +74,7 @@ class ReservationController extends Controller
             'date_fin' => 'required|date|after_or_equal:date_debut',
             'status' => 'required|in:en attente, confirmé, annulé',
         ]);        
+
         if ($validatedData['client_type'] === 'societe') {
             $client = Client::find($validatedData['client_id']);
         } else {
@@ -82,27 +84,21 @@ class ReservationController extends Controller
             return response()->json(['error' => 'Client not found'], 404);
         }
 
-        /*$chambre = Chambre::with('tarifChambreDetail')->findOrFail($validatedData['chambre_id']);
-
-        // Compute number of nights and calculate total cost using tariff details
-        $nights = (strtotime($validatedData['date_fin']) - strtotime($validatedData['date_debut'])) / (60 * 60 * 24);
-        $rate = $chambre->tarifChambreDetail ? $chambre->tarifChambreDetail->single : 0;
-        $totalTarif = $rate * $nights;
-        $validatedData['montant_total'] = $totalTarif;*/
-
         $reservationNum = isset($validatedData['reservation_num']) ? $validatedData['reservation_num'] : 'R' . strtoupper(Str::random(6));
         try {
             // Create reservation
-            $reservation = Reservation::create([
-                'reservation_num' => $reservationNum,
-                'client_id' => $validatedData['client_id'],
-                'client_type' => $validatedData['client_type'],
-                'reservation_date' => $validatedData['reservation_date'],
-                'date_debut' => $validatedData['date_debut'],
-                'date_fin' => $validatedData['date_fin'],
-                'status' => $validatedData['status'],
-            ]);
+            $reservation = new Reservation();
+            $reservation->reservation_number = $reservationNum;
+            $reservation->client_id = $validatedData['client_id'];
+            $reservation->client_type = $validatedData['client_type'];
+            $reservation->reservation_date = $validatedData['reservation_date'];
+            $reservation->date_debut = $validatedData['date_debut'];
+            $reservation->date_fin = $validatedData['date_fin'];
+            $reservation->status = $validatedData['status'];
+            $reservation->chambre_id = $validatedData['chambre_ids'][0]; // Set first room as primary
+            $reservation->save();
     
+            // Attach all rooms to the reservation
             foreach ($validatedData['chambre_ids'] as $chambre_id) {
                 $reservation->chambres()->attach($chambre_id);
             }
@@ -113,7 +109,8 @@ class ReservationController extends Controller
                 'error' => 'Error creating reservation',
                 'message' => $e->getMessage()
             ], 500);
-        }    }
+        }
+    }
 
     public function afficherReservation($id)
     {
@@ -183,58 +180,46 @@ class ReservationController extends Controller
     }
     public function getAvailableRooms(Request $request)
     {
-        // Validate incoming request data
-        $validatedData = $request->validate([
-            'date_debut' => 'required|date',
-            'date_fin'   => 'required|date|after_or_equal:date_debut',
-        ]);
-    
-        Log::info("Fetching available rooms for dates:", $validatedData);
-    
         try {
+            // Validate incoming request data
+            $validatedData = $request->validate([
+                'date_debut' => 'required|date',
+                'date_fin'   => 'required|date|after_or_equal:date_debut',
+            ]);
+
             // Get available rooms that are not booked in the date range
             $availableRooms = Chambre::with(['type_chambre', 'vue', 'etage'])
                 ->whereDoesntHave('reservations', function ($query) use ($validatedData) {
                     $query->where(function ($query) use ($validatedData) {
                         $query->where('date_debut', '<', $validatedData['date_fin'])
                               ->where('date_fin', '>', $validatedData['date_debut'])
-                              ->where('status', '!=', 'annulé'); // Exclude cancelled reservations
+                              ->where('status', '!=', 'cancelled');
                     });
                 })
                 ->get();
-    
-            Log::info("Available rooms count:", ['count' => $availableRooms->count()]);
-    
-            $availableRooms->each(function ($room) {
-                Log::info("Room details:", [
-                    'room_id' => $room->id,
-                    'type_chambre' => $room->type_chambre ? $room->type_chambre->commentaire : 'No Type',
-                    'vue' => $room->vue ? $room->vue->vue : 'No Vue',
-                    'etage' => $room->etage ? $room->etage->etage : 'No Etage'
-                ]);
-            });
-    
+
             // Map rooms to return the necessary details
             $roomsWithNames = $availableRooms->map(function ($room) {
                 return [
                     'id' => $room->id,
                     'num_chambre' => $room->num_chambre,
-                    'type_chambre' => $room->type_chambre ? $room->type_chambre->commentaire : 'Unknown', 
-                    'vue' => $room->vue ? $room->vue->vue : 'Unknown', 
-                    'etage' => $room->etage ? $room->etage->etage : 'Unknown', 
+                    'type_chambre' => is_object($room->type_chambre) ? $room->type_chambre->commentaire : 'Unknown', 
+                    'vue' => is_object($room->vue) ? $room->vue->vue : 'Unknown', 
+                    'etage' => is_object($room->etage) ? $room->etage->etage : 'Unknown', 
                 ];
             });
-    
+
             return response()->json([
                 'rooms' => $roomsWithNames, 
                 'count' => $availableRooms->count(),
             ]);
-    
+
         } catch (\Exception $e) {
-            Log::error("Error fetching available rooms: " . $e->getMessage(), [
-                'stack' => $e->getTraceAsString()
-            ]);
-            return response()->json(['error' => 'Error fetching available rooms'], 500);
+            Log::error("Error fetching available rooms: " . $e->getMessage());
+            return response()->json([
+                'error' => 'Error fetching available rooms',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
     
